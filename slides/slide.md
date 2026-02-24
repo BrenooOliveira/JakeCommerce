@@ -10,22 +10,21 @@ footer: "Lab. de Engenharia de Software"
 transition: fade-out
 ---
 
-# JakeCommerce
-#### Paixão por Moda e Salsichinhas
+# JakeBooks
+#### Paixão por Livros e Salsichinhas
 ###### por: Breno de Oliveira
 
 ![bg w:500  right:50%](imgs/logo_real.png)
 
 ---
-# Entrega 01 – 18/02/2026  
-## E-Commerce de Roupas: JakeCommerce
+# Entrega 01 – 02/03/2026  
+## E-Commerce de Livros: JakeBooks
 
 **Tecnologias Utilizadas**
 
 - **Backend:** Java 21 + Spring Boot  
 - **Frontend:** Thymeleaf + Bootstrap  
 - **Banco de Dados:** PostgreSQL  
-- **Testes:** Cypress  
 - **Integração de IA:** Microserviço em Python
 - **IA no Desenvolvimento:** Projects no ChatGPT  
 
