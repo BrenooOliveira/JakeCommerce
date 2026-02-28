@@ -1,0 +1,24 @@
+name: Validate HTML
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install HTML Validator
+        run: npm install -g html-validator-cli
+
+      - name: Validate HTML files
+        run: html-validator --file=./ --verbose

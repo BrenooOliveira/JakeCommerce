@@ -1,0 +1,37 @@
+<h3>Meu Carrinho</h3>
+
+<div th:if="${carrinho.status == 'EXPIRANDO'}"
+     class="alert alert-warning">
+    Seu carrinho irá expirar em menos de 5 minutos!
+</div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Livro</th>
+        <th>Quantidade</th>
+        <th>Valor Unitário</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${carrinho.itens}">
+        <td th:text="${item.livro.titulo}"></td>
+
+        <td>
+            <input type="number"
+                   th:value="${item.quantidade}"
+                   min="1"
+                   max="10"
+                   class="form-control">
+        </td>
+
+        <td th:text="${item.valorUnitario}"></td>
+        <td th:text="${item.quantidade * item.valorUnitario}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/pedido/checkout}" class="btn btn-primary">
+    Finalizar Compra
+</a>

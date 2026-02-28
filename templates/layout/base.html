@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:replace="${title}">JakeBooks</title>
+
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+
+<div th:replace="layout/navbar :: navbar"></div>
+
+<div class="container mt-4">
+    <div th:replace="${content}"></div>
+</div>
+
+<div th:replace="layout/footer :: footer"></div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
