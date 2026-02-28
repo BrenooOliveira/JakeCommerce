@@ -18,7 +18,7 @@ jobs:
 
       - name: Validate HTML (errors only)
         run: |
-          java -jar dist/vnu.jar \
+          java -jar vnu.jar \
             --skip-non-html \
             --errors-only \
             --exit-zero-always \
