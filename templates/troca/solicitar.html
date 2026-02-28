@@ -1,0 +1,16 @@
+<h3>Solicitar Troca</h3>
+
+<form th:action="@{/trocas}" method="post">
+
+    <input type="hidden" name="pedidoId" th:value="${pedido.id}">
+
+    <div class="mb-3">
+        <label>Motivo</label>
+        <textarea name="motivo" required class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-warning">
+        Solicitar Troca
+    </button>
+
+</form>
