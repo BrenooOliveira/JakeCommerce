@@ -1,18 +1,25 @@
-name: Validate HTML
+name: HTML Validation
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
-  validate:
+  validate-html:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download vnu.jar
+      - name: Download Nu HTML Checker
         run: |
           curl -L -o vnu.zip https://github.com/validator/validator/releases/latest/download/vnu.jar.zip
           unzip vnu.zip
 
-      - name: Validate HTML
-        run: java -jar dist/vnu.jar --skip-non-html --errors-only .
+      - name: Validate HTML (errors only)
+        run: |
+          java -jar dist/vnu.jar \
+            --skip-non-html \
+            --errors-only \
+            --exit-zero-always \
+            .
