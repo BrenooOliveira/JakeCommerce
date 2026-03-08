@@ -377,7 +377,7 @@ public class LivroService {
                         livro.getEstoque().getId(),
                         livro.getEstoque().getQuantidade(),
                         livro.getEstoque().getCustoAtual(),
-                        livro.getEstoque().getDataEntrada()
+                        livro.getEstoque().getDataEntrada().atStartOfDay()
                 ) : null;
 
         return new LivroDetalheDTO(
@@ -399,6 +399,20 @@ public class LivroService {
                 categoriasDTO,
                 estoqueDTO
         );
+    }
+
+    /**
+     * Lista todos os livros ativos do sistema.
+     * Utilizado para populares selects em formulários.
+     *
+     * @return lista de DTOs de detalhes de todos os livros ativos
+     */
+    public List<LivroDetalheDTO> listarTodos() {
+        List<Livro> livros = livroRepository.findAll();
+        
+        return livros.stream()
+                .map(this::converterParaDetalheDTO)
+                .collect(Collectors.toList());
     }
 
     /**

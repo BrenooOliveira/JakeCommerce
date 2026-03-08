@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Detalhes do Cliente</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-person"></i> <span th:text="${cliente.nome()}"></span>
+                    </h1>
+                    <p class="text-muted">
+                        Código: <span class="fw-bold" th:text="${cliente.codigo()}"></span>
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group" role="group">
+                        <a th:href="@{/clientes/{codigo}/editar(codigo=${cliente.codigo()})}"
+                           class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalInativar">
+                            <i class="bi bi-x-lg"></i> Inativar
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalSenha">
+                            <i class="bi bi-lock"></i> Alterar Senha
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards de Resumo -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card border-start border-primary border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">Status</h6>
+                            <span class="badge" 
+                                  th:classappend="${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).ATIVO} ? 'bg-success' : (${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).BLOQUEADO} ? 'bg-danger' : 'bg-secondary')"
+                                  th:text="${#strings.replace(cliente.status().toString(), '_', ' ')}"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-info border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-info">Email</h6>
+                            <p class="mb-0" th:text="${cliente.email()}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-warning border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">Telefone</h6>
+                            <p class="mb-0" th:text="${cliente.telefone()}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-secondary border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-secondary">CPF</h6>
+                            <p class="mb-0" th:text="${cliente.cpf()}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Abas -->
+            <ul class="nav nav-tabs mb-4" id="clienteTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="dados-tab" data-bs-toggle="tab" data-bs-target="#dados" type="button" role="tab" aria-controls="dados" aria-selected="true">
+                        <i class="bi bi-person-lines-fill"></i> Dados Pessoais
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="enderecos-tab" data-bs-toggle="tab" data-bs-target="#enderecos" type="button" role="tab" aria-controls="enderecos" aria-selected="false">
+                        <i class="bi bi-geo-alt"></i> Endereços
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cartoes-tab" data-bs-toggle="tab" data-bs-target="#cartoes" type="button" role="tab" aria-controls="cartoes" aria-selected="false">
+                        <i class="bi bi-credit-card"></i> Cartões
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos" type="button" role="tab" aria-controls="pedidos" aria-selected="false">
+                        <i class="bi bi-bag"></i> Pedidos
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Conteúdo das Abas -->
+            <div class="tab-content" id="clienteTabsContent">
+                
+                <!-- Aba: Dados Pessoais -->
+                <div class="tab-pane fade show active" id="dados" role="tabpanel" aria-labelledby="dados-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Nome</h6>
+                                    <p class="fw-bold" th:text="${cliente.nome()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Data de Nascimento</h6>
+                                    <p class="fw-bold" th:text="${#temporals.format(cliente.dataNascimento(), 'dd/MM/yyyy')}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Gênero</h6>
+                                    <p class="fw-bold" th:text="${cliente.genero()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">CPF</h6>
+                                    <p class="fw-bold" th:text="${cliente.cpf()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Telefone</h6>
+                                    <p class="fw-bold" th:text="${cliente.telefone()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted">Email</h6>
+                                    <p class="fw-bold" th:text="${cliente.email()}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba: Endereços -->
+                <div class="tab-pane fade" id="enderecos" role="tabpanel" aria-labelledby="enderecos-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Endereços Cadastrados</h5>
+                        <a th:href="@{/clientes/{codigo}/enderecos/novo(codigo=${cliente.codigo()})}"
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-lg"></i> Adicionar
+                        </a>
+                    </div>
+
+                    <!-- Lista de Endereços -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3" th:each="endereco : ${cliente.enderecos()}">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <span th:text="${endereco.nomeIdentificador()}"></span>
+                                        <span class="badge" 
+                                              th:classappend="${endereco.tipoEndereco().toString() == 'COBRANCA'} ? 'bg-info' : 'bg-success'"
+                                              th:text="${endereco.tipoEndereco() == T(com.les.jakebooks.model.enums.TipoEndereco).COBRANCA ? 'Cobrança' : 'Entrega'}"></span>
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1">
+                                        <span th:text="${endereco.logradouro()}"></span>, 
+                                        <span th:text="${endereco.numero()}"></span>
+                                    </p>
+                                    <p class="mb-1">
+                                        <span th:text="${endereco.bairro()}"></span> - 
+                                        <span th:text="${endereco.cidade()}"></span>/<span th:text="${endereco.estado()}"></span>
+                                    </p>
+                                    <p class="mb-0">
+                                        <span th:text="${endereco.cep()}"></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem quando não há endereços -->
+                    <div th:if="${cliente.enderecos().isEmpty()}" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Nenhum endereço cadastrado. 
+                        <a th:href="@{/clientes/{codigo}/enderecos/novo(codigo=${cliente.codigo()})}" class="alert-link">Clique aqui para adicionar</a>
+                    </div>
+                </div>
+
+                <!-- Aba: Cartões -->
+                <div class="tab-pane fade" id="cartoes" role="tabpanel" aria-labelledby="cartoes-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Cartões Cadastrados</h5>
+                        <a th:href="@{/clientes/{codigo}/cartoes/novo(codigo=${cliente.codigo()})}"
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-lg"></i> Adicionar
+                        </a>
+                    </div>
+
+                    <!-- Lista de Cartões -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3" th:each="cartao : ${cliente.cartoes()}">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0">
+                                            <span th:text="${cartao.nomeImpresso()}"></span>
+                                        </h6>
+                                        <span class="badge bg-secondary" th:text="${cartao.bandeira()}"></span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2 font-monospace">
+                                        <i class="bi bi-credit-card"></i> 
+                                        <span>XXXX XXXX XXXX </span>
+                                        <span th:text="${#strings.substring(cartao.numero(), cartao.numero().length() - 4)}"></span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <small class="text-muted">Válido até: </small>
+                                        <span th:text="${cartao.mesValidade() + '/' + cartao.anoValidade()}"></span>
+                                    </p>
+                                    <div th:if="${cartao.preferencial()}">
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-star-fill"></i> Preferencial
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem quando não há cartões -->
+                    <div th:if="${cliente.cartoes().isEmpty()}" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Nenhum cartão cadastrado. 
+                        <a th:href="@{/clientes/{codigo}/cartoes/novo(codigo=${cliente.codigo()})}" class="alert-link">Clique aqui para adicionar</a>
+                    </div>
+                </div>
+
+                <!-- Aba: Pedidos -->
+                <div class="tab-pane fade" id="pedidos" role="tabpanel" aria-labelledby="pedidos-tab">
+                    <div class="card">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                    <th>Valor Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pedido : ${pedidos}">
+                                    <td class="fw-bold" th:text="${pedido.id()}"></td>
+                                    <td th:text="${#temporals.format(pedido.dataCriacao(), 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE} ? 'bg-success' : (${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : (${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA} ? 'bg-warning' : 'bg-primary'))"
+                                              th:text="${#strings.replace(pedido.status().toString(), '_', ' ')}"></span>
+                                    </td>
+                                    <td>
+                                        R$ <span th:text="${#numbers.formatDecimal(pedido.valorTotal(), 1, 2, 'POINT')}"></span>
+                                    </td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-outline-primary" title="Visualizar">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <!-- Mensagem quando não há pedidos -->
+                                <tr th:if="${pedidos.isEmpty()}">
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                            <p class="mt-2">Nenhum pedido realizado</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Inativar Cliente -->
+        <div class="modal fade" id="modalInativar" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle"></i> Inativar Cliente
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Tem certeza que deseja inativar este cliente?</p>
+                        <p class="text-muted small">Depois de inativado, o cliente não poderá realizar novas compras.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i> Cancelar
+                        </button>
+                        <form th:action="@{/clientes/{codigo}/inativar(codigo=${cliente.codigo()})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-check"></i> Inativar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Alterar Senha -->
+        <div class="modal fade" id="modalSenha" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-secondary text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-lock"></i> Alterar Senha
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/clientes/{codigo}/senha(codigo=${cliente.codigo()})}" method="post">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="senhaAtual" class="form-label">Senha Atual *</label>
+                                <input type="password" class="form-control" id="senhaAtual" name="senhaAtual" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="novaSenha" class="form-label">Nova Senha *</label>
+                                <input type="password" class="form-control" id="novaSenha" name="novaSenha" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmacaoNovaSenha" class="form-label">Confirmar Nova Senha *</label>
+                                <input type="password" class="form-control" id="confirmacaoNovaSenha" name="confirmacaoNovaSenha" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check"></i> Alterar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

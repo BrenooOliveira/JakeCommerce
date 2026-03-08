@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title th:text="${livro.titulo()}">Livro</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6" th:text="${livro.titulo()}"></h1>
+                    <p class="text-muted">
+                        <span th:text="'Código: ' + ${livro.codigo()}"></span> • 
+                        <span th:text="'Editora: ' + ${livro.editora().nome()}"></span>
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <a href="/livros" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Status e Preço (Cards destacados) -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-start border-info border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted text-uppercase small">Status</h6>
+                            <h5 class="card-text">
+                                <span class="badge" 
+                                      th:classappend="${livro.status() == T(com.les.jakebooks.model.enums.StatusLivro).ATIVO} ? 'bg-success' : 'bg-danger'"
+                                      th:text="${#strings.replace(livro.status().toString(), '_', ' ')}"></span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-start border-success border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted text-uppercase small">Valor de Venda</h6>
+                            <h5 class="card-text">
+                                R$ <span th:text="${#numbers.formatDecimal(livro.valorVenda(), 1, 2)}"></span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-start border-warning border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted text-uppercase small">Estoque</h6>
+                            <h5 class="card-text">
+                                <span th:if="${livro.estoque().quantidade() > 0}" 
+                                      class="badge bg-success"
+                                      th:text="${livro.estoque().quantidade() + ' un.'}"></span>
+                                <span th:if="${livro.estoque().quantidade() == 0}" 
+                                      class="badge bg-danger">Sem Estoque</span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-start border-primary border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted text-uppercase small">Grupo Precificação</h6>
+                            <h5 class="card-text" th:text="${livro.grupoPrecificacao().nome()}"></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Principais -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <!-- Sinopse -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-file-text"></i> Sinopse
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p th:text="${livro.sinopse()}"></p>
+                        </div>
+                    </div>
+
+                    <!-- Dados Técnicos -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear"></i> Dados Técnicos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted text-uppercase small fw-bold">ISBN</h6>
+                                    <p class="mb-0" th:text="${livro.isbn()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Código de Barras</h6>
+                                    <p class="mb-0" th:text="${livro.codigoBarras()}"></p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Ano de Publicação</h6>
+                                    <p class="mb-0" th:text="${livro.ano()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Edição</h6>
+                                    <p class="mb-0" th:text="${livro.edicao()}"></p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Número de Páginas</h6>
+                                    <p class="mb-0" th:text="${livro.numeroPaginas()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-muted text-uppercase small fw-bold">Dimensões</h6>
+                                    <p class="mb-0" th:text="${livro.dimensoes()}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Autores -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-pen"></i> Autores
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${livro.autores().size() > 0}">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item" th:each="autor : ${livro.autores()}">
+                                        <i class="bi bi-person"></i> 
+                                        <span th:text="${autor.nome()}"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div th:if="${livro.autores().isEmpty()}" class="text-muted">
+                                <p>Nenhum autor associado</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categorias -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-tag"></i> Categorias
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${livro.categorias().size() > 0}">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-secondary" 
+                                          th:each="categoria : ${livro.categorias()}"
+                                          th:text="${categoria.nome()}"></span>
+                                </div>
+                            </div>
+                            <div th:if="${livro.categorias().isEmpty()}" class="text-muted">
+                                <p>Nenhuma categoria associada</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações de Estoque -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-boxes"></i> Estoque
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${livro.estoque()}">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted text-uppercase small fw-bold">Quantidade</h6>
+                                        <p class="mb-0 fs-5">
+                                            <span th:text="${livro.estoque().quantidade()}"></span> unidades
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted text-uppercase small fw-bold">Custo Atual</h6>
+                                        <p class="mb-0 fs-5">
+                                            R$ <span th:text="${#numbers.formatDecimal(livro.estoque().custoAtual(), 1, 2)}"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <h6 class="text-muted text-uppercase small fw-bold">Data de Entrada</h6>
+                                        <p class="mb-0" th:text="${#temporals.format(livro.estoque().dataEntrada(), 'dd/MM/yyyy')}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="!${livro.estoque()}" class="text-muted">
+                                <p>Sem informações de estoque</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar de Ações -->
+                <div class="col-lg-4">
+                    <!-- Card de Ações -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-sliders"></i> Ações
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Botão Editar -->
+                            <a th:href="@{/livros/{codigo}/editar(codigo=${livro.codigo()})}" 
+                               class="btn btn-warning w-100 mb-2">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </a>
+
+                            <!-- Botões baseado no Status -->
+                            <div th:if="${livro.status() == T(com.les.jakebooks.model.enums.StatusLivro).ATIVO}">
+                                <!-- Se Ativo: mostrar opção de inativar -->
+                                <button 
+                                    class="btn btn-danger w-100" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalInativar">
+                                    <i class="bi bi-eye-slash"></i> Inativar
+                                </button>
+                            </div>
+
+                            <div th:if="${livro.status() == T(com.les.jakebooks.model.enums.StatusLivro).INATIVO}">
+                                <!-- Se Inativo: mostrar opção de ativar -->
+                                <button 
+                                    class="btn btn-success w-100" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalAtivar">
+                                    <i class="bi bi-arrow-up-circle"></i> Ativar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo de Precificação -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-percent"></i> Precificação
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-muted text-uppercase small fw-bold">Grupo</h6>
+                                <p class="mb-0" th:text="${livro.grupoPrecificacao().nome()}"></p>
+                            </div>
+                            <div>
+                                <h6 class="text-muted text-uppercase small fw-bold">Margem</h6>
+                                <p class="mb-0">
+                                    <span th:text="${livro.grupoPrecificacao().percentualMargem()}"></span>%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações da Editora -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-book"></i> Editora
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0" th:text="${livro.editora().nome()}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Inativar Livro -->
+    <div class="modal fade" id="modalInativar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-eye-slash"></i> Inativar Livro
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/livros/{codigo}/inativar(codigo=${livro.codigo()})}" method="post">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>Aviso:</strong> Ao inativar o livro, ele não aparecerá mais no catálogo para clientes.
+                        </div>
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">
+                                Motivo da Inativação <span class="text-danger">*</span>
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="motivo" 
+                                name="motivo" 
+                                rows="4"
+                                placeholder="Descreva o motivo da inativação..."
+                                required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-eye-slash"></i> Inativar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ativar Livro -->
+    <div class="modal fade" id="modalAtivar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-up-circle"></i> Ativar Livro
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/livros/{codigo}/ativar(codigo=${livro.codigo()})}" method="post">
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <strong>Info:</strong> Ao ativar, o livro voltará ao catálogo para clientes.
+                        </div>
+                        <div class="mb-3">
+                            <label for="justificativa" class="form-label">
+                                Justificativa da Ativação <span class="text-danger">*</span>
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="justificativa" 
+                                name="justificativa" 
+                                rows="4"
+                                placeholder="Descreva a justificativa para ativação..."
+                                required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-arrow-up-circle"></i> Ativar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

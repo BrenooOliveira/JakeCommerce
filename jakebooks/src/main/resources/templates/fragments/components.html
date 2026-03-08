@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 
+        Fragmento para card simples com título e corpo
+        Uso: <div th:insert="~{fragments/components :: simple-card(title='Meu Título', icon='book')}">Conteúdo</div>
+    -->
+    <div th:fragment="simple-card(title, icon, borderColor='primary')" class="card" th:classappend="'border-start border-' + ${borderColor} + ' border-5'">
+        <div class="card-header" th:if="${title}">
+            <h5 class="card-title mb-0">
+                <i th:class="'bi bi-' + ${icon}" th:if="${icon}"></i>
+                <span th:text="${title}"></span>
+            </h5>
+        </div>
+        <div class="card-body"></div>
+    </div>
+
+    <!-- 
+        Fragmento para card com footer de ações
+        Uso: <div th:insert="~{fragments/components :: card-with-actions(title='Minhas Ações', actions=${actions})}">Conteúdo</div>
+    -->
+    <div th:fragment="card-with-actions(title, icon, actions)" class="card">
+        <div class="card-header" th:if="${title}">
+            <h5 class="card-title mb-0">
+                <i th:class="'bi bi-' + ${icon}" th:if="${icon}"></i>
+                <span th:text="${title}"></span>
+            </h5>
+        </div>
+        <div class="card-body"></div>
+        <div class="card-footer bg-light" th:if="${actions}">
+            <div class="d-flex gap-2" th:each="action : ${actions}">
+                <!-- Actions vão aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para tabela responsiva vazia com mensagem
+        Uso: <div th:insert="~{fragments/components :: empty-table(message='Nenhum registro encontrado', icon='inbox')}"></div>
+    -->
+    <div th:fragment="empty-table(message, icon)" class="text-center py-5">
+        <div class="mb-3">
+            <i th:class="'bi bi-' + ${icon} + ' display-4 text-muted'" th:if="${icon}"></i>
+        </div>
+        <p class="text-muted lead" th:text="${message}"></p>
+    </div>
+
+    <!-- 
+        Fragmento para badge de status
+        Uso: <span th:insert="~{fragments/components :: status-badge(status='ATIVO', type='success')}"></span>
+    -->
+    <span th:fragment="status-badge(status, type)" class="badge" 
+          th:classappend="'bg-' + ${type}">
+        <span th:text="${status}"></span>
+    </span>
+
+    <!-- 
+        Fragmento para botão com ícone
+        Uso: <a th:insert="~{fragments/components :: icon-button(href='/admin/novo', icon='plus-circle', label='Novo', style='primary')}"></a>
+    -->
+    <a th:fragment="icon-button(href, icon, label, style)" 
+       th:href="${href}" 
+       class="btn"
+       th:classappend="'btn-' + ${style}">
+        <i th:class="'bi bi-' + ${icon}"></i>
+        <span th:text="${label}"></span>
+    </a>
+
+    <!-- 
+        Fragmento para ícone com tooltip
+        Uso: <i th:insert="~{fragments/components :: icon-with-tooltip(icon='info-circle', tooltip='Informação importante')}"></i>
+    -->
+    <i th:fragment="icon-with-tooltip(icon, tooltip)"
+       th:class="'bi bi-' + ${icon}"
+       data-bs-toggle="tooltip" 
+       data-bs-placement="top"
+       th:title="${tooltip}"></i>
+
+    <!-- 
+        Fragmento para campo com ajuda/descrição
+        Uso: <div th:insert="~{fragments/components :: field-with-help(field='title', help='Descrição do campo')}"></div>
+    -->
+    <div th:fragment="field-with-help(field, help)" class="form-text text-muted">
+        <small th:text="${help}"></small>
+    </div>
+
+    <!-- 
+        Fragmento para alert customizado
+        Uso: <div th:insert="~{fragments/components :: alert(type='success', message='Operação realizada!', dismissible=true)}"></div>
+    -->
+    <div th:fragment="alert(type, message, dismissible)" 
+         class="alert"
+         th:classappend="'alert-' + ${type} + (${dismissible} ? ' alert-dismissible fade show' : '')">
+        <span th:text="${message}"></span>
+        <button th:if="${dismissible}" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- 
+        Fragmento para confirmação de ação (modal Bootstrap)
+        Uso: <div th:insert="~{fragments/components :: confirm-modal(id='deletemodal', title='Confirmar exclusão', message='Tem certeza?', confirmText='Deletar', confirmHref='/delete')}"></div>
+    -->
+    <div th:fragment="confirm-modal(id, title, message, confirmText, confirmHref)" 
+         class="modal fade" 
+         th:id="${id}" 
+         tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="${title}"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p th:text="${message}"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a th:href="${confirmHref}" class="btn btn-danger" th:text="${confirmText}"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para spinner de carregamento
+        Uso: <div th:insert="~{fragments/components :: loading-spinner(message='Carregando...')}"></div>
+    -->
+    <div th:fragment="loading-spinner(message)" class="text-center py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="text-muted" th:text="${message}"></p>
+    </div>
+
+    <!-- 
+        Fragmento para lista de tarefas/itens
+        Uso: <ul th:insert="~{fragments/components :: item-list(items=${items})}"></ul>
+    -->
+    <ul th:fragment="item-list(items)" class="list-group">
+        <li class="list-group-item" th:each="item : ${items}">
+            <span th:text="${item}"></span>
+        </li>
+    </ul>
+
+    <!-- 
+        Fragmento para badge contador
+        Uso: <div th:insert="~{fragments/components :: badge-counter(label='Pedidos Pendentes', count=${count}, style='danger')}"></div>
+    -->
+    <div th:fragment="badge-counter(label, count, style)" class="card text-center">
+        <div class="card-body">
+            <h6 class="card-title text-muted text-uppercase small mb-3" th:text="${label}"></h6>
+            <div class="badge" th:classappend="'bg-' + ${style}" style="font-size: 2rem; padding: 1rem;">
+                <span th:text="${count}"></span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

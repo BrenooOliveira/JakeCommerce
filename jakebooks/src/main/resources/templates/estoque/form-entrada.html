@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Registrar Entrada de Estoque</title>
+</head>
+
+<body>
+<div layout:fragment="content" class="container py-4">
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <a href="/estoque" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-plus-lg text-primary"></i>
+            Registrar Entrada de Estoque
+        </h1>
+        <p class="text-muted small">Adicione quantidade de livros ao estoque com custo de entrada</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Card do Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square"></i>
+                        Dados da Entrada
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Alertas -->
+                    <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span th:text="${mensagemErro}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i>
+                        <span th:text="${mensagemSucesso}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Formulário -->
+                    <form method="post" 
+                          th:action="@{/estoque/entrada}"
+                          novalidate>
+
+                        <!-- Campo: Livro (Select) -->
+                        <div class="mb-3">
+                            <label for="livroId" class="form-label">
+                                <i class="bi bi-book"></i>
+                                Livro <span class="text-danger">*</span>
+                            </label>
+                            <select id="livroId" 
+                                    name="livroId" 
+                                    class="form-select"
+                                    required>
+                                <option value="">-- Selecione um livro --</option>
+                                <option th:each="livro : ${livros}"
+                                        th:value="${livro.id()}"
+                                        th:text="${livro.titulo() + ' (' + livro.codigo() + ')'}">
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Selecione o livro para registrar entrada de estoque
+                            </div>
+                        </div>
+
+                        <!-- Seção: Quantidade e Custo -->
+                        <div class="row">
+                            <!-- Campo: Quantidade -->
+                            <div class="col-md-6 mb-3">
+                                <label for="quantidade" class="form-label">
+                                    <i class="bi bi-box-seam"></i>
+                                    Quantidade <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       id="quantidade" 
+                                       name="quantidade" 
+                                       class="form-control"
+                                       min="1"
+                                       step="1"
+                                       placeholder="Ex: 10"
+                                       required>
+                                <div class="form-text">
+                                    RN0061: Deve ser maior que zero
+                                </div>
+                            </div>
+
+                            <!-- Campo: Custo -->
+                            <div class="col-md-6 mb-3">
+                                <label for="custo" class="form-label">
+                                    <i class="bi bi-cash-coin"></i>
+                                    Custo Unitário (R$) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       id="custo" 
+                                       name="custo" 
+                                       class="form-control"
+                                       min="0.01"
+                                       step="0.01"
+                                       placeholder="Ex: 25.50"
+                                       required>
+                                <div class="form-text">
+                                    RN0062: Deve ser maior que zero
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Fornecedor e Data -->
+                        <div class="row">
+                            <!-- Campo: Fornecedor -->
+                            <div class="col-md-6 mb-3">
+                                <label for="fornecedor" class="form-label">
+                                    <i class="bi bi-truck"></i>
+                                    Fornecedor <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       id="fornecedor" 
+                                       name="fornecedor" 
+                                       class="form-control"
+                                       placeholder="Ex: Distribuidora ABC"
+                                       required>
+                                <div class="form-text">
+                                    RN0051: Campo obrigatório
+                                </div>
+                            </div>
+
+                            <!-- Campo: Data de Entrada -->
+                            <div class="col-md-6 mb-3">
+                                <label for="dataEntrada" class="form-label">
+                                    <i class="bi bi-calendar-event"></i>
+                                    Data de Entrada <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" 
+                                       id="dataEntrada" 
+                                       name="dataEntrada" 
+                                       class="form-control"
+                                       th:value="${#temporals.format(dataEntrada, 'yyyy-MM-dd')}"
+                                       required>
+                                <div class="form-text">
+                                    RNF0064: Data obrigatória
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informação -->
+                        <div class="alert alert-info alert-sm mb-3">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Informação:</strong>
+                            <ul class="mb-0 ps-3">
+                                <li>O valor de venda será recalculado baseado na margem do grupo de precificação</li>
+                                <li>Se o custo registrado for maior que o anterior, será atualizado</li>
+                                <li>A quantidade será adicionada ao estoque existente</li>
+                            </ul>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-check-lg"></i> Registrar Entrada
+                            </button>
+                            <a href="/estoque" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Ajuda -->
+            <div class="card shadow-sm mt-3 border-info">
+                <div class="card-header bg-info-light border-info">
+                    <h6 class="mb-0 text-info">
+                        <i class="bi bi-question-circle"></i>
+                        O que é uma entrada de estoque?
+                    </h6>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-2">
+                        Uma entrada de estoque registra a adição de livros ao estoque da livraria. É necessário informar:
+                    </p>
+                    <ul class="mb-0 ps-3">
+                        <li><strong>Livro:</strong> Qual livro está sendo adicionado</li>
+                        <li><strong>Quantidade:</strong> Quantas unidades estão sendo adicionadas</li>
+                        <li><strong>Custo:</strong> O valor unitário de custo do livro</li>
+                        <li><strong>Fornecedor:</strong> Quem forneceu os livros</li>
+                        <li><strong>Data:</strong> Quando os livros foram recebidos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Livros</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-book-half"></i> Livros
+                    </h1>
+                    <p class="text-muted">Gerenciamento de catálogo de livros</p>
+                </div>
+                <div class="col-auto">
+                    <a href="/livros/novo" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle"></i> Novo Livro
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card de Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel"></i> Filtros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/livros}" th:object="${filtro}" method="get" class="row g-3">
+                        <!-- Filtro: Título -->
+                        <div class="col-md-4">
+                            <label for="titulo" class="form-label">Título</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="titulo" 
+                                th:field="*{titulo}"
+                                placeholder="Digite o título...">
+                        </div>
+
+                        <!-- Filtro: Autor -->
+                        <div class="col-md-4">
+                            <label for="nomeAutor" class="form-label">Autor</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="nomeAutor" 
+                                th:field="*{nomeAutor}"
+                                placeholder="Nome do autor...">
+                        </div>
+
+                        <!-- Filtro: Categoria -->
+                        <div class="col-md-4">
+                            <label for="idCategoria" class="form-label">Categoria</label>
+                            <select 
+                                class="form-select" 
+                                id="idCategoria" 
+                                th:field="*{idCategoria}">
+                                <option value="">-- Todas as categorias --</option>
+                                <option th:each="cat : ${categorias}" 
+                                        th:value="${cat.id}" 
+                                        th:text="${cat.nome}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Filtro: Status -->
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Status</label>
+                            <select 
+                                class="form-select" 
+                                id="status" 
+                                th:field="*{status}">
+                                <option value="">-- Todos os status --</option>
+                                <option th:each="status : ${statusLivros}" 
+                                        th:value="${status}" 
+                                        th:text="${#strings.replace(status.toString(), '_', ' ')}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Filtro: Preço Mínimo -->
+                        <div class="col-md-4">
+                            <label for="precoMin" class="form-label">Preço Mínimo</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="precoMin" 
+                                th:field="*{precoMin}"
+                                step="0.01"
+                                placeholder="0.00">
+                        </div>
+
+                        <!-- Filtro: Preço Máximo -->
+                        <div class="col-md-4">
+                            <label for="precoMax" class="form-label">Preço Máximo</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="precoMax" 
+                                th:field="*{precoMax}"
+                                step="0.01"
+                                placeholder="999999.99">
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                            <a href="/livros" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela de Livros -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%">Código</th>
+                                <th style="width: 35%">Título</th>
+                                <th style="width: 25%">Editora</th>
+                                <th style="width: 10%">Preço</th>
+                                <th style="width: 10%">Status</th>
+                                <th style="width: 5%">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="livro : ${page.content}">
+                                <td class="fw-bold" th:text="${livro.codigo()}"></td>
+                                <td th:text="${livro.titulo()}"></td>
+                                <td th:text="${livro.editora()}"></td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        R$ <span th:text="${#numbers.formatDecimal(livro.valorVenda(), 1, 2)}"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${livro.status() == T(com.les.jakebooks.model.enums.StatusLivro).ATIVO} ? 'bg-success' : 'bg-danger'"
+                                          th:text="${#strings.replace(livro.status().toString(), '_', ' ')}"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/livros/{codigo}(codigo=${livro.codigo()})}"
+                                           class="btn btn-outline-primary"
+                                           title="Visualizar">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{/livros/{codigo}/editar(codigo=${livro.codigo()})}"
+                                           class="btn btn-outline-warning"
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Mensagem quando não há livros -->
+                            <tr th:if="${page.isEmpty()}">
+                                <td colspan="6" class="text-center py-5">
+                                    <div th:insert="~{fragments/components :: empty-table(message='Nenhum livro encontrado com os critérios informados', icon='inbox')}"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Paginação -->
+            <div th:insert="~{fragments/pagination :: pagination(page=${page})}"></div>
+        </div>
+    </div>
+</body>
+</html>

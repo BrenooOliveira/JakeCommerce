@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Finalizar Compra</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-credit-card"></i> Finalizar Compra
+                    </h1>
+                    <p class="text-muted">Verifique seus dados e escolha a forma de pagamento</p>
+                </div>
+            </div>
+
+            <form id="formCheckout" method="POST" action="/carrinho/finalizar" class="needs-validation" novalidate>
+                <div class="row">
+                    <!-- Seção 1: Endereço de Entrega e Pagamento -->
+                    <div class="col-lg-8">
+                        
+                        <!-- Card 1: Endereço de Entrega -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-geo-alt"></i> Endereço de Entrega
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Input hidden com carrinhoId -->
+                                <input type="hidden" name="carrinhoId" th:value="${carrinho.id()}">
+
+                                <!-- Seleção de Endereço -->
+                                <div class="row">
+                                    <div th:if="${!enderecos.isEmpty()}" class="col-12">
+                                        <div class="list-group">
+                                            <label class="list-group-item" th:each="endereco, iterStat : ${enderecos}">
+                                                <input 
+                                                    type="radio" 
+                                                    name="enderecoId" 
+                                                    class="form-check-input me-2"
+                                                    th:value="${endereco.id()}"
+                                                    th:checked="${iterStat.first}"
+                                                    required>
+                                                <div class="ms-2 w-100">
+                                                    <div class="fw-bold">
+                                                        <span th:text="${endereco.nomeIdentificador()}"></span>
+                                                        <span class="badge" 
+                                                              th:classappend="${endereco.tipoEndereco().toString() == 'COBRANCA'} ? 'bg-info' : 'bg-success'"
+                                                              th:text="${endereco.tipoEndereco() == T(com.les.jakebooks.model.enums.TipoEndereco).COBRANCA ? 'Cobrança' : 'Entrega'}"></span>
+                                                    </div>
+                                                    <p class="mb-1 text-muted">
+                                                        <span th:text="${endereco.logradouro()}"></span>, 
+                                                        <span th:text="${endereco.numero()}"></span>
+                                                        <br>
+                                                        <span th:text="${endereco.bairro()}"></span> - 
+                                                        <span th:text="${endereco.cidade()}"></span>/<span th:text="${endereco.estado()}"></span>
+                                                        <br>
+                                                        <span th:text="${endereco.cep()}"></span>
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mensagem quando não há endereços -->
+                                    <div th:if="${enderecos.isEmpty()}" class="col-12">
+                                        <div class="alert alert-danger">
+                                            <i class="bi bi-exclamation-triangle"></i> 
+                                            Você não tem endereços cadastrados. 
+                                            <a href="/clientes/detalhes" class="alert-link">Clique aqui para adicionar um endereço</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Pagamento -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-credit-card"></i> Pagamento
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Abas de Pagamento -->
+                                <ul class="nav nav-tabs mb-3" id="pagamentoTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="cupom-tab" data-bs-toggle="tab" data-bs-target="#cupom" type="button" role="tab" aria-controls="cupom" aria-selected="true">
+                                            <i class="bi bi-ticket-perforated"></i> Cupom
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="cartoes-tab" data-bs-toggle="tab" data-bs-target="#cartoes" type="button" role="tab" aria-controls="cartoes" aria-selected="false">
+                                            <i class="bi bi-credit-card"></i> Cartões
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <!-- Conteúdo das Abas -->
+                                <div class="tab-content" id="pagamentoTabContent">
+                                    <!-- Tab: Cupom Promocional -->
+                                    <div class="tab-pane fade show active" id="cupom" role="tabpanel" aria-labelledby="cupom-tab">
+                                        <div class="input-group mb-3">
+                                            <input 
+                                                type="text" 
+                                                class="form-control" 
+                                                id="codigoCupom"
+                                                name="codigoCupom"
+                                                placeholder="Cole seu código de cupom aqui"
+                                                maxlength="50">
+                                            <button 
+                                                type="button" 
+                                                class="btn btn-outline-primary"
+                                                onclick="aplicarCupom()">
+                                                <i class="bi bi-check-circle"></i> Aplicar
+                                            </button>
+                                        </div>
+                                        <div id="resultadoCupom" class="alert alert-info d-none">
+                                            <i class="bi bi-info-circle"></i> 
+                                            Cupom aplicado! Desconto de 
+                                            <strong id="desconto">R$ 0,00</strong>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle"></i> 
+                                            Você pode usar apenas um cupom promocional por compra. Cupons de troca são aplicados automaticamente.
+                                        </small>
+                                    </div>
+
+                                    <!-- Tab: Cartões -->
+                                    <div class="tab-pane fade" id="cartoes" role="tabpanel" aria-labelledby="cartoes-tab">
+                                        <!-- Mensagem se não há cartões -->
+                                        <div th:if="${cartoes.isEmpty()}" class="alert alert-danger">
+                                            <i class="bi bi-exclamation-triangle"></i> 
+                                            Você não tem cartões cadastrados. 
+                                            <a href="/clientes/detalhes" class="alert-link">Clique aqui para adicionar um cartão</a>
+                                        </div>
+
+                                        <!-- Lista de Cartões -->
+                                        <div th:if="${!cartoes.isEmpty()}" id="containerCartoes">
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">
+                                                        <strong>Distribuir pagamento entre cartões</strong>
+                                                        <small class="text-muted d-block">Mínimo de R$ 10,00 por cartão</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <!-- Cada cartão em uma linha -->
+                                            <div class="row g-3 mb-3" th:each="cartao : ${cartoes}">
+                                                <div class="col-md-8">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div>
+                                                                    <h6 class="card-title mb-1" th:text="${cartao.nomeImpresso()}"></h6>
+                                                                    <p class="mb-1 font-monospace small">
+                                                                        <i class="bi bi-credit-card"></i>
+                                                                        XXXX XXXX XXXX 
+                                                                        <span th:text="${#strings.substring(cartao.numero(), cartao.numero().length() - 4)}"></span>
+                                                                    </p>
+                                                                    <span class="badge bg-secondary" th:text="${cartao.bandeira()}"></span>
+                                                                    <span class="badge bg-success" th:if="${cartao.preferencial()}">
+                                                                        <i class="bi bi-star-fill"></i> Preferencial
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">R$</span>
+                                                        <input 
+                                                            type="number"
+                                                            class="form-control valorCartao"
+                                                            th:data-cartao-id="${cartao.id()}"
+                                                            step="0.01"
+                                                            min="0"
+                                                            placeholder="0,00"
+                                                            onchange="calcularTotal()">
+                                                    </div>
+                                                    <small class="form-text text-muted d-block">
+                                                        Acima de R$ 10,00
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <!-- Verificação de total -->
+                                            <div id="validacaoPagamento" class="alert alert-warning d-none">
+                                                <i class="bi bi-warning"></i>
+                                                <span id="mensagemValidacao"></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Input hidden para armazenar dados de pagamento -->
+                                        <input type="hidden" id="pagamentoJson" name="pagamentoJson" value="[]">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 2: Resumo do Pedido -->
+                    <div class="col-lg-4">
+                        <div class="card sticky-top" style="top: 20px;">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-receipt"></i> Resumo do Pedido
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Itens -->
+                                <div class="mb-3 pb-3 border-bottom">
+                                    <h6 class="mb-2">Itens:</h6>
+                                    <div th:each="item : ${carrinho.itens()}" class="d-flex justify-content-between small mb-1">
+                                        <span>
+                                            <span th:text="${item.tituloLivro()}"></span>
+                                            (x<span th:text="${item.quantidade()}"></span>)
+                                        </span>
+                                        <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.subtotal(), 1, 2, 'POINT')}"></span></strong>
+                                    </div>
+                                </div>
+
+                                <!-- Subtotal -->
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal</span>
+                                    <span id="subtotal" th:text="'R$ ' + ${#numbers.formatDecimal(carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
+                                </div>
+
+                                <!-- Cupom (desconto) -->
+                                <div class="d-flex justify-content-between mb-2" id="linhaDesconto" style="display: none;">
+                                    <span>Desconto</span>
+                                    <span class="text-success"><strong id="valorDesconto">-R$ 0,00</strong></span>
+                                </div>
+
+                                <!-- Frete -->
+                                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                                    <span>Frete</span>
+                                    <span id="frete">
+                                        <span th:if="${carrinho.valorTotal() >= 20}" class="text-success">
+                                            <strong>Grátis!</strong>
+                                        </span>
+                                        <span th:unless="${carrinho.valorTotal() >= 20}">
+                                            R$ 15,00
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <!-- Total -->
+                                <div class="d-flex justify-content-between mb-3">
+                                    <strong class="h5">Total</strong>
+                                    <strong class="h5 text-success" id="totalFinal">
+                                        <span th:if="${carrinho.valorTotal() >= 20}">
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
+                                        </span>
+                                        <span th:unless="${carrinho.valorTotal() >= 20}">
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(carrinho.valorTotal() + 15, 1, 2, 'POINT')}"></span>
+                                        </span>
+                                    </strong>
+                                </div>
+
+                                <!-- Informações de Entrega -->
+                                <div class="alert alert-info small mb-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Entrega gratuita</strong> para pedidos acima de R$ 20,00. 
+                                    Outros pedidos têm frete de R$ 15,00.
+                                </div>
+
+                                <!-- Botão de Finalizar Compra -->
+                                <button 
+                                    type="submit" 
+                                    class="btn btn-success w-100 btn-lg"
+                                    id="btnFinalizarCompra"
+                                    th:disabled="${enderecos.isEmpty() || cartoes.isEmpty()}">
+                                    <i class="bi bi-check-lg"></i> Finalizar Compra
+                                </button>
+
+                                <!-- Aviso de campo obrigatório -->
+                                <small class="form-text text-muted d-block mt-2" th:if="${enderecos.isEmpty() || cartoes.isEmpty()}">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    Complete seu perfil com endereço e cartão para finalizar.
+                                </small>
+
+                                <!-- Terms -->
+                                <div class="form-check mt-3 pt-3 border-top">
+                                    <input class="form-check-input" type="checkbox" id="concordo" required>
+                                    <label class="form-check-label small" for="concordo">
+                                        Concordo com os <a href="#" class="text-decoration-none">termos e condições</a> da compra
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Script para cálculos e validações -->
+        <script>
+            const subtotalOriginal = parseFloat('${carrinho.valorTotal()}');
+
+            function aplicarCupom() {
+                const codigoCupom = document.getElementById('codigoCupom').value;
+                if (!codigoCupom.trim()) {
+                    alert('Digite um código de cupom');
+                    return;
+                }
+                
+                // Simular validação de cupom
+                // Em produção, fazer chamada AJAX ao servidor
+                document.getElementById('resultadoCupom').classList.remove('d-none');
+                document.getElementById('desconto').textContent = 'R$ 50,00';
+            }
+
+            function calcularTotal() {
+                const valorCartoes = [];
+                document.querySelectorAll('.valorCartao').forEach(input => {
+                    const valor = parseFloat(input.value) || 0;
+                    if (valor > 0) {
+                        valorCartoes.push({
+                            cartaoId: input.getAttribute('data-cartao-id'),
+                            valor: valor.toFixed(2)
+                        });
+                    }
+                });
+
+                // Atualizar input hidden
+                document.getElementById('pagamentoJson').value = valorCartoes
+                    .map(p => `${p.cartaoId}:${p.valor}`)
+                    .join(',');
+            }
+
+            // Validação ao submeter formulário
+            document.getElementById('formCheckout').addEventListener('submit', function(e) {
+                // Validar se endereço foi selecionado
+                const enderecoSelecionado = document.querySelector('input[name="enderecoId"]:checked');
+                if (!enderecoSelecionado) {
+                    e.preventDefault();
+                    alert('Selecione um endereço de entrega');
+                    return false;
+                }
+
+                // Validar se terms foi aceito
+                if (!document.getElementById('concordo').checked) {
+                    e.preventDefault();
+                    alert('Você deve concordar com os termos e condições');
+                    return false;
+                }
+
+                // Validar pagamento
+                const temPagamento = document.querySelectorAll('.valorCartao').length > 0;
+                if (temPagamento) {
+                    const totalPago = Array.from(document.querySelectorAll('.valorCartao'))
+                        .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+                    
+                    if (totalPago < subtotalOriginal) {
+                        e.preventDefault();
+                        alert(`Valor total do pagamento (R$ ${totalPago.toFixed(2)}) deve ser igual ao subtotal (R$ ${subtotalOriginal.toFixed(2)})`);
+                        return false;
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

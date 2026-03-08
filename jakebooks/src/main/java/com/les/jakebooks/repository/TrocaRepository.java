@@ -51,4 +51,18 @@ public interface TrocaRepository extends JpaRepository<Troca, Long> {
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim
     );
+
+    /**
+     * Busca trocas de um pedido que não estão concluídas.
+     * Utilizado para validar se existe troca em andamento.
+     */
+    @Query("SELECT t FROM Troca t WHERE t.pedido.id = :pedidoId AND (t.status = 'SOLICITADA' OR t.status = 'AUTORIZADA')")
+    List<Troca> findByPedidoIdAndStatus(@Param("pedidoId") Long pedidoId);
+
+    /**
+     * Busca todas as trocas ordenadas por data descrescente.
+     * RF0042: Visualizar trocas (admin).
+     */
+    @Query("SELECT t FROM Troca t ORDER BY t.dataSolicitacao DESC")
+    List<Troca> findAllOrderByDataSolicitacaoDesc();
 }

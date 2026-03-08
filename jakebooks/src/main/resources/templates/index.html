@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html 
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{fragments/layout}"
+    lang="pt-BR">
+<head>
+    <title>Início</title>
+</head>
+<body>
+    <div layout:fragment="content" class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-5">
+                    <i class="bi bi-house-door"></i> Bem-vindo à Livraria
+                </h1>
+                <p class="lead text-muted">
+                    Sistema de E-commerce para vendas de livros
+                </p>
+            </div>
+        </div>
+
+        <!-- Cards informativos -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-start border-primary border-5">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-book-half"></i> Livros
+                        </h5>
+                        <p class="card-text">Gerenciar catálogo de livros</p>
+                        <a href="/livros" class="btn btn-sm btn-primary">Acessar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-start border-success border-5">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-people"></i> Clientes
+                        </h5>
+                        <p class="card-text">Gerenciar clientes</p>
+                        <a href="/clientes" class="btn btn-sm btn-success">Acessar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-start border-info border-5">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-bag-check"></i> Pedidos
+                        </h5>
+                        <p class="card-text">Acompanhar pedidos</p>
+                        <a href="/pedidos" class="btn btn-sm btn-info">Acessar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-start border-warning border-5">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-boxes"></i> Estoque
+                        </h5>
+                        <p class="card-text">Controlar estoque</p>
+                        <a href="/estoque" class="btn btn-sm btn-warning">Acessar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de recursos -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle"></i> Sobre o Sistema
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            A Livraria é um sistema completo de e-commerce para gerenciar 
+                            vendas de livros, incluindo:
+                        </p>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="bi bi-check-circle text-success"></i> 
+                                Cadastro e controle de livros
+                            </li>
+                            <li class="list-group-item">
+                                <i class="bi bi-check-circle text-success"></i> 
+                                Gestão de clientes
+                            </li>
+                            <li class="list-group-item">
+                                <i class="bi bi-check-circle text-success"></i> 
+                                Processamento de pedidos
+                            </li>
+                            <li class="list-group-item">
+                                <i class="bi bi-check-circle text-success"></i> 
+                                Controle de estoque
+                            </li>
+                            <li class="list-group-item">
+                                <i class="bi bi-check-circle text-success"></i> 
+                                Análise de dados
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lightbulb"></i> Dicas Rápidas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-2">
+                            <strong>💡 Dica:</strong> Use a barra de navegação no topo para 
+                            acessar os principais módulos do sistema.
+                        </div>
+                        <div class="alert alert-info mb-2">
+                            <strong>💡 Dica:</strong> Se você é um administrador, use o 
+                            menu lateral para acessar funções administrativas.
+                        </div>
+                        <div class="alert alert-info mb-0">
+                            <strong>💡 Dica:</strong> Todas as alterações no sistema são 
+                            registradas em log para auditoria.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

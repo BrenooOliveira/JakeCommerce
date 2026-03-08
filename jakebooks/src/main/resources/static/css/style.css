@@ -1,0 +1,361 @@
+/* =============================================
+   ESTILOS CUSTOMIZADOS - LIVRARIA
+   ============================================= */
+
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+}
+
+/* =============================================
+   LAYOUT GERAL
+   ============================================= */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+main {
+    flex: 1;
+}
+
+/* =============================================
+   NAVBAR
+   ============================================= */
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.navbar .nav-link {
+    transition: color 0.3s ease;
+    margin: 0 5px;
+}
+
+.navbar .nav-link:hover {
+    color: #fff !important;
+    font-weight: 500;
+}
+
+/* =============================================
+   SIDEBAR ADMIN
+   ============================================= */
+
+.sidebar {
+    position: relative;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    border-right: 1px solid #dee2e6;
+}
+
+.sidebar h5 {
+    font-weight: 700;
+    color: #212529;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+}
+
+.sidebar h6 {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+}
+
+.sidebar ul li a {
+    color: #495057;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    background-color: #e9ecef;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.sidebar ul li a i {
+    margin-right: 8px;
+    width: 20px;
+}
+
+/* =============================================
+   ALERTAS/MENSAGENS
+   ============================================= */
+
+.alert {
+    border-left: 4px solid;
+    border-radius: 0.5rem;
+    animation: slideDown 0.3s ease-in-out;
+}
+
+.alert-success {
+    border-left-color: var(--success-color);
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.alert-danger {
+    border-left-color: var(--danger-color);
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.alert-warning {
+    border-left-color: var(--warning-color);
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.alert-info {
+    border-left-color: var(--info-color);
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+
+footer {
+    margin-top: auto;
+}
+
+footer h5 {
+    font-weight: 700;
+    color: #fff;
+}
+
+footer h6 {
+    font-weight: 700;
+    color: #fff;
+}
+
+footer a {
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: #fff !important;
+    text-decoration: underline !important;
+}
+
+/* =============================================
+   FORMULÁRIOS
+   ============================================= */
+
+.form-control,
+.form-select {
+    border-radius: 0.5rem;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #212529;
+    margin-bottom: 0.5rem;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* =============================================
+   TABELAS
+   ============================================= */
+
+.table {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table thead th {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    padding: 1rem 0.75rem;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
+/* =============================================
+   CARTÕES (CARDS)
+   ============================================= */
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+}
+
+/* =============================================
+   BOTÕES
+   ============================================= */
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+}
+
+.btn-success {
+    background-color: var(--success-color);
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+}
+
+/* =============================================
+   PAGINAÇÃO
+   ============================================= */
+
+.pagination {
+    gap: 0.25rem;
+}
+
+.page-link {
+    color: var(--primary-color);
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.page-link:hover {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* =============================================
+   RESPONSIVIDADE
+   ============================================= */
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    main {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+}
+
+/* =============================================
+   UTILITÁRIOS
+   ============================================= */
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.rounded-lg {
+    border-radius: 0.75rem;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #0b5ed7;
+    text-decoration: underline;
+}

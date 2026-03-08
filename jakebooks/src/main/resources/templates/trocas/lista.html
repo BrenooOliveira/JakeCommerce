@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Gerenciamento de Trocas</title>
+</head>
+
+<body>
+<div layout:fragment="content" class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="bi bi-arrow-repeat text-primary"></i>
+                Gerenciamento de Trocas
+            </h1>
+            <p class="text-muted small">Visualize e autorize solicitações de troca de produtos</p>
+        </div>
+        <div>
+            <span class="badge bg-info" th:text="|Total: ${#lists.size(trocas)}|"></span>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="get" th:action="@{/trocas}" class="row g-3">
+                <div class="col-md-6">
+                    <label for="statusFilter" class="form-label">
+                        <i class="bi bi-funnel"></i>
+                        Filtrar por Status
+                    </label>
+                    <select id="statusFilter" name="status" class="form-select">
+                        <option value="">-- Todos os Status --</option>
+                        <option th:each="status : ${statusTrocas}"
+                                th:value="${status}"
+                                th:text="${status.equals(statusSelecionado) ? status : status}"
+                                th:selected="${status.toString() == statusSelecionado}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-search"></i>
+                        Filtrar
+                    </button>
+                    <a href="/trocas" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Trocas -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="10%">ID Troca</th>
+                        <th width="10%">Pedido</th>
+                        <th width="25%">Cliente</th>
+                        <th width="15%">Data Solicitação</th>
+                        <th width="15%">Status</th>
+                        <th width="25%">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(trocas)}">
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                            Nenhuma troca encontrada
+                        </td>
+                    </tr>
+                    <tr th:each="troca : ${trocas}" th:if="${!#lists.isEmpty(trocas)}">
+                        <!-- ID Troca -->
+                        <td>
+                            <strong>#<span th:text="${troca.trocaId()}"></span></strong>
+                        </td>
+
+                        <!-- ID Pedido -->
+                        <td>
+                            <a th:href="@{/pedidos/{id}(id=${troca.pedidoId()})}" 
+                               class="link-primary text-decoration-none">
+                                #<span th:text="${troca.pedidoId()}"></span>
+                            </a>
+                        </td>
+
+                        <!-- Cliente -->
+                        <td>
+                            <small class="text-muted" th:text="${troca.codigoCliente()}"></small>
+                            <br>
+                            <span th:text="${troca.nomeCliente()}"></span>
+                        </td>
+
+                        <!-- Data Solicitação -->
+                        <td th:text="${#temporals.format(troca.dataSolicitacao(), 'dd/MM/yyyy HH:mm')}"></td>
+
+                        <!-- Status Badge -->
+                        <td>
+                            <th:block th:switch="${troca.status()}">
+                                <span th:case="'SOLICITADA'" class="badge bg-warning text-dark">
+                                    <i class="bi bi-exclamation-circle"></i> Solicitada
+                                </span>
+                                <span th:case="'AUTORIZADA'" class="badge bg-info">
+                                    <i class="bi bi-check-circle"></i> Autorizada
+                                </span>
+                                <span th:case="'CONCLUIDA'" class="badge bg-success">
+                                    <i class="bi bi-star"></i> Concluída
+                                </span>
+                                <span th:case="'DESCARTADA'" class="badge bg-secondary">
+                                    <i class="bi bi-x-circle"></i> Descartada
+                                </span>
+                                <span th:case="*" class="badge bg-dark" th:text="${troca.status()}"></span>
+                            </th:block>
+                        </td>
+
+                        <!-- Ações -->
+                        <td>
+                            <a th:href="@{/trocas/{id}(id=${troca.trocaId()})}"
+                               class="btn btn-sm btn-outline-primary"
+                               title="Ver detalhes">
+                                <i class="bi bi-eye"></i> Detalhes
+                            </a>
+
+                            <!-- Botão Autorizar (se SOLICITADA) -->
+                            <th:block th:if="${troca.status().toString() == 'SOLICITADA'}">
+                                <form method="post" 
+                                      th:action="@{/trocas/{id}/autorizar(id=${troca.trocaId()})}"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Tem certeza que deseja autorizar esta troca?');">
+                                    <button type="submit" class="btn btn-sm btn-success"
+                                            title="Autorizar troca">
+                                        <i class="bi bi-check"></i> Autorizar
+                                    </button>
+                                </form>
+                            </th:block>
+
+                            <!-- Botão Receber (se AUTORIZADA) -->
+                            <th:block th:if="${troca.status().toString() == 'AUTORIZADA'}">
+                                <form method="post" 
+                                      th:action="@{/trocas/{id}/receber(id=${troca.trocaId()})}"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Tem certeza que deseja confirmar o recebimento desta troca?');">
+                                    <button type="submit" class="btn btn-sm btn-info"
+                                            title="Confirmar recebimento">
+                                        <i class="bi bi-box-seam"></i> Receber
+                                    </button>
+                                </form>
+                            </th:block>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
