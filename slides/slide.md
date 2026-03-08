@@ -29,9 +29,50 @@ transition: fade-out
 - **IA no Desenvolvimento:** Projects no ChatGPT  
 
 ---
-# Kanban de Atividades
+# Estimativa
+##### Backend
+![alt text](image.png)
 
 ---
-# + SLIDES ENTREGA 1 
-## SE NECESSÁRIO
+# Estimativa
+##### Frontend + IA
+
+![alt text](image-1.png)
+
+
+---
+
+# Requisitos Funcionais Sugeridos
+
+| ID        | Nome                              | Descrição                                                                                                                         |
+| -------   | --------------------------------- | --------------------------------------------------------------                                                                                                                                          |
+| RN0063 | Limite de livros                  | Um cliente pode comprar no máximo 10 unidades do mesmo livro por pedido.                                                          |
+| RN0064 | Pedido mínimo                     | O pedido deve possuir valor mínimo de R$ 20,00 (sem frete) para poder ser finalizado.                                             | 
+|  RN0065 | Cliente inadimplente              | Cliente que possuir 3 pedidos REPROVADOS consecutivos por pagamento terá o carrinho bloqueado temporariamente.                    |
+
+---
+# Fluxo Protótipo
+> Catálogo
+
+![alt text](image-8.png)
+
+---
+# Fluxo Protótipo
+> Carrinho
+
+![alt text](image-4.png)
+
+---
+# Fluxo Protótipo
+> Checkout
+
+![alt text](image-5.png)
+
+---
+# Fluxo Protótipo
+> Detalhe do Pedido
+
+![alt text](image-6.png)
+---
+
 
