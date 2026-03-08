@@ -309,6 +309,7 @@ public class CarrinhoService {
             if (dias == 0) {
                 proximoDeExpirar = true;
                 mensagemAviso = "Seu carrinho expirará em menos de 1 dia. Complete sua compra!";
+            }
         } else {
             // Carrinho expirou
             carrinho.setStatus(StatusCarrinho.EXPIRADO);
@@ -340,7 +341,7 @@ public class CarrinhoService {
                 itensRemovidos,
                 calcularValorTotal(carrinho.getItens()),
                 mensagemAviso
-        );
+            );
     }
 
     /**

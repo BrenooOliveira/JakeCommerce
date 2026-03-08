@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="messages" class="container mt-4">
+        <!-- Mensagem de Sucesso (Verde) -->
+        <div 
+            th:if="${session.mensagemSucesso}" 
+            class="alert alert-success alert-dismissible fade show" 
+            role="alert">
+            <i class="bi bi-check-circle"></i>
+            <strong>Sucesso!</strong> 
+            <span th:text="${session.mensagemSucesso}"></span>
+            <button 
+                type="button" 
+                class="btn-close" 
+                data-bs-dismiss="alert" 
+                aria-label="Close"></button>
+        </div>
+
+        <!-- Mensagem de Erro (Vermelho) -->
+        <div 
+            th:if="${session.mensagemErro}" 
+            class="alert alert-danger alert-dismissible fade show" 
+            role="alert">
+            <i class="bi bi-exclamation-circle"></i>
+            <strong>Erro!</strong> 
+            <span th:text="${session.mensagemErro}"></span>
+            <button 
+                type="button" 
+                class="btn-close" 
+                data-bs-dismiss="alert" 
+                aria-label="Close"></button>
+        </div>
+
+        <!-- Mensagem de Aviso (Amarelo) -->
+        <div 
+            th:if="${session.mensagemAviso}" 
+            class="alert alert-warning alert-dismissible fade show" 
+            role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Aviso!</strong> 
+            <span th:text="${session.mensagemAviso}"></span>
+            <button 
+                type="button" 
+                class="btn-close" 
+                data-bs-dismiss="alert" 
+                aria-label="Close"></button>
+        </div>
+
+        <!-- Mensagem de Informação (Azul) -->
+        <div 
+            th:if="${session.mensagemInfo}" 
+            class="alert alert-info alert-dismissible fade show" 
+            role="alert">
+            <i class="bi bi-info-circle"></i>
+            <span th:text="${session.mensagemInfo}"></span>
+            <button 
+                type="button" 
+                class="btn-close" 
+                data-bs-dismiss="alert" 
+                aria-label="Close"></button>
+        </div>
+    </div>
+</body>
+</html>

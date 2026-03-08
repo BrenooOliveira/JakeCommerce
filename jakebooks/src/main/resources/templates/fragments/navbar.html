@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="bi bi-book"></i> Livraria
+            </a>
+
+            <!-- Toggle button for mobile -->
+            <button 
+                class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav" 
+                aria-expanded="false" 
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/livros">
+                            <i class="bi bi-book-half"></i> Livros
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clientes">
+                            <i class="bi bi-people"></i> Clientes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pedidos">
+                            <i class="bi bi-bag-check"></i> Pedidos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/estoque">
+                            <i class="bi bi-boxes"></i> Estoque
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analise">
+                            <i class="bi bi-graph-up"></i> Análise
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a 
+                            class="nav-link dropdown-toggle" 
+                            href="#" 
+                            id="navbarDropdown" 
+                            role="button" 
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> Usuário
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/perfil">Meu Perfil</a></li>
+                            <li><a class="dropdown-item" href="/carrinho">Carrinho</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

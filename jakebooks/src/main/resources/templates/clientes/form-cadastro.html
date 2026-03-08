@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Cadastro de Cliente</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-person-plus"></i> Novo Cliente
+                    </h1>
+                    <p class="text-muted">Preencha os dados abaixo para cadastrar um novo cliente</p>
+                </div>
+            </div>
+
+            <!-- Formulário de Cadastro -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <form th:action="@{/clientes}" method="post" th:object="${cliente}" class="needs-validation" novalidate>
+                        
+                        <!-- Card 1: Dados Pessoais -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-person"></i> Dados Pessoais
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Nome -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nome" class="form-label">Nome *</label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            id="nome" 
+                                            th:field="*{nome}"
+                                            th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid' : ''"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nome')}">
+                                            <span th:errors="*{nome}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Gênero -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="genero" class="form-label">Gênero *</label>
+                                        <select class="form-select" id="genero" th:field="*{genero}" required>
+                                            <option value="">Selecione...</option>
+                                            <option value="MASCULINO">Masculino</option>
+                                            <option value="FEMININO">Feminino</option>
+                                            <option value="OUTRO">Outro</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Data de Nascimento -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="dataNascimento" class="form-label">Data de Nascimento *</label>
+                                        <input 
+                                            type="date" 
+                                            class="form-control" 
+                                            id="dataNascimento" 
+                                            th:field="*{dataNascimento}"
+                                            th:classappend="${#fields.hasErrors('dataNascimento')} ? 'is-invalid' : ''"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dataNascimento')}">
+                                            <span th:errors="*{dataNascimento}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- CPF -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cpf" class="form-label">CPF *</label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            id="cpf" 
+                                            th:field="*{cpf}"
+                                            th:classappend="${#fields.hasErrors('cpf')} ? 'is-invalid' : ''"
+                                            placeholder="000.000.000-00"
+                                            data-mask="cpf"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('cpf')}">
+                                            <span th:errors="*{cpf}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Telefone -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="telefone" class="form-label">Telefone *</label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            id="telefone" 
+                                            th:field="*{telefone}"
+                                            th:classappend="${#fields.hasErrors('telefone')} ? 'is-invalid' : ''"
+                                            placeholder="(11) 99999-9999"
+                                            data-mask="phone"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('telefone')}">
+                                            <span th:errors="*{telefone}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <input 
+                                            type="email" 
+                                            class="form-control" 
+                                            id="email" 
+                                            th:field="*{email}"
+                                            th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}">
+                                            <span th:errors="*{email}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Segurança -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-lock"></i> Segurança
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info mb-3">
+                                    <i class="bi bi-info-circle"></i> 
+                                    A senha deve conter <strong>minúsculas</strong>, <strong>maiúsculas</strong>, <strong>números</strong> e <strong>caracteres especiais</strong> (@$!%*?&).
+                                </div>
+
+                                <!-- Senha -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="senha" class="form-label">Senha *</label>
+                                    <div class="input-group">
+                                        <input 
+                                            type="password" 
+                                            class="form-control" 
+                                            id="senha" 
+                                            th:field="*{senha}"
+                                            th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid' : ''"
+                                            placeholder="Mínimo 8 caracteres"
+                                            required>
+                                        <button 
+                                            class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="toggleSenha"
+                                            onclick="togglePasswordVisibility('senha', 'toggleSenha')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('senha')}">
+                                            <span th:errors="*{senha}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Confirmação de Senha -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirmacaoSenha" class="form-label">Confirmar Senha *</label>
+                                    <div class="input-group">
+                                        <input 
+                                            type="password" 
+                                            class="form-control" 
+                                            id="confirmacaoSenha" 
+                                            th:field="*{confirmacaoSenha}"
+                                            placeholder="Confirme sua senha"
+                                            required>
+                                        <button 
+                                            class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="toggleConfirmacao"
+                                            onclick="togglePasswordVisibility('confirmacaoSenha', 'toggleConfirmacao')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-muted d-block mt-2" id="senhaMatch">
+                                        <i class="bi bi-info-circle"></i> As senhas devem ser idênticas
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-2 mb-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-lg"></i> Cadastrar
+                            </button>
+                            <a href="/clientes" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sidebar de Ajuda -->
+                <div class="col-lg-4">
+                    <div class="card card-help">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-question-circle"></i> Dúvidas?
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold text-primary mb-2">
+                                <i class="bi bi-check-circle"></i> Campos Obrigatórios
+                            </h6>
+                            <ul class="small mb-3">
+                                <li>Todos os campos marcados com <span class="text-danger">*</span> são obrigatórios</li>
+                                <li>O CPF deve estar no formato: 000.000.000-00</li>
+                                <li>A senha deve ter pelo menos 8 caracteres</li>
+                            </ul>
+
+                            <h6 class="fw-bold text-primary mb-2">
+                                <i class="bi bi-key"></i> Requisitos de Senha
+                            </h6>
+                            <ul class="small">
+                                <li>✓ Pelo menos uma letra minúscula (a-z)</li>
+                                <li>✓ Pelo menos uma letra maiúscula (A-Z)</li>
+                                <li>✓ Pelo menos um número (0-9)</li>
+                                <li>✓ Pelo menos um caractere especial (@$!%*?&)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script para validação e visibilidade de senha -->
+        <script>
+            function togglePasswordVisibility(inputId, buttonId) {
+                const input = document.getElementById(inputId);
+                const button = document.getElementById(buttonId);
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    button.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                } else {
+                    input.type = 'password';
+                    button.innerHTML = '<i class="bi bi-eye"></i>';
+                }
+            }
+
+            // Validação de senhas coincidentes
+            const senhaInput = document.getElementById('senha');
+            const confirmacaoInput = document.getElementById('confirmacaoSenha');
+            const senhaMatchSpan = document.getElementById('senhaMatch');
+
+            function validarSenhas() {
+                if (senhaInput.value === confirmacaoInput.value && senhaInput.value.length > 0) {
+                    confirmacaoInput.classList.remove('is-invalid');
+                    confirmacaoInput.classList.add('is-valid');
+                    senhaMatchSpan.innerHTML = '<i class="bi bi-check-circle text-success"></i> Senhas conferem';
+                    senhaMatchSpan.classList.remove('text-danger');
+                    senhaMatchSpan.classList.add('text-success');
+                } else if (confirmacaoInput.value.length > 0) {
+                    confirmacaoInput.classList.remove('is-valid');
+                    confirmacaoInput.classList.add('is-invalid');
+                    senhaMatchSpan.innerHTML = '<i class="bi bi-exclamation-circle text-danger"></i> Senhas não conferem';
+                    senhaMatchSpan.classList.remove('text-success');
+                    senhaMatchSpan.classList.add('text-danger');
+                }
+            }
+
+            senhaInput.addEventListener('change', validarSenhas);
+            confirmacaoInput.addEventListener('input', validarSenhas);
+        </script>
+    </div>
+</body>
+</html>

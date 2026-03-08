@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Carrinho de Compras</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-bag"></i> Carrinho de Compras
+                    </h1>
+                    <p class="text-muted">Revise seus itens antes de finalizar a compra</p>
+                </div>
+            </div>
+
+            <!-- Banner de Aviso de Expiração -->
+            <div id="avisoExpiracao" class="alert alert-warning alert-dismissible fade d-none" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Carrinho expirando em breve!</strong>
+                Seu carrinho expirará em 
+                <span id="tempoRestante">5 minutos</span>. 
+                Finalize sua compra agora!
+            </div>
+
+            <div class="row">
+                <!-- Tabela de Itens -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-list-check"></i> Itens do Carrinho
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50%">Livro</th>
+                                        <th style="width: 15%">Valor Unit.</th>
+                                        <th style="width: 15%">Quantidade</th>
+                                        <th style="width: 15%">Subtotal</th>
+                                        <th style="width: 5%">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Itens do Carrinho -->
+                                    <tr th:each="item : ${carrinho.itens()}">
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <div>
+                                                    <p class="fw-bold mb-1" th:text="${item.tituloLivro()}"></p>
+                                                    <small class="text-muted" th:text="${'Código: ' + item.codigoLivro()}"></small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.valorUnitario(), 1, 2, 'POINT')}"></span>
+                                        </td>
+                                        <td>
+                                            <form method="POST" action="/carrinho/quantidade" class="d-inline" style="display: inline;">
+                                                <div class="input-group input-group-sm" style="width: 100px;">
+                                                    <input type="hidden" name="codigoLivro" th:value="${item.codigoLivro()}">
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn btn-outline-secondary" 
+                                                        onclick="alterarQuant(this, -1)">
+                                                        <i class="bi bi-dash"></i>
+                                                    </button>
+                                                    <input 
+                                                        type="number" 
+                                                        name="novaQuantidade"
+                                                        class="form-control form-control-sm text-center" 
+                                                        th:value="${item.quantidade()}"
+                                                        min="1" 
+                                                        max="10"
+                                                        style="border-left: none; border-right: none;"
+                                                        onchange="this.form.submit()">
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn btn-outline-secondary" 
+                                                        onclick="alterarQuant(this, 1)">
+                                                        <i class="bi bi-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.subtotal(), 1, 2, 'POINT')}"></span>
+                                        </td>
+                                        <td>
+                                            <form method="POST" th:action="@{/carrinho/remover/{codigoLivro}(codigoLivro=${item.codigoLivro()})}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Mensagem quando carrinho vazio -->
+                                    <tr th:if="${carrinho.itens().isEmpty()}">
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="bi bi-bag-x" style="font-size: 3rem;"></i>
+                                                <p class="mt-3">Seu carrinho está vazio</p>
+                                                <a href="/livros" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-shop"></i> Continuar comprando
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo e Botões -->
+                <div class="col-lg-4">
+                    <!-- Card de Resumo -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-receipt"></i> Resumo
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Subtotal -->
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal</span>
+                                <span class="font-monospace">
+                                    R$ <span th:text="${#numbers.formatDecimal(carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
+                                </span>
+                            </div>
+
+                            <!-- Frete (será calculado no checkout) -->
+                            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                                <span>Frete</span>
+                                <span class="font-monospace text-muted">A calcular</span>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Total</strong>
+                                <strong class="h5 text-primary">
+                                    R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
+                                </strong>
+                            </div>
+
+                            <!-- Info de Pedido Mínimo -->
+                            <div class="alert alert-info small mb-3" th:if="${carrinho.valorTotal() < 20}">
+                                <i class="bi bi-info-circle"></i> 
+                                Pedido mínimo de R$ 20,00 para frete grátis. 
+                                Faltam: R$ <span th:text="${#numbers.formatDecimal(#numbers.createBigDecimal('20') - carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
+                            </div>
+
+                            <!-- Botões de Ação -->
+                            <a href="/livros" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-arrow-left"></i> Continuar Comprando
+                            </a>
+                            <button 
+                                type="button" 
+                                class="btn btn-success w-100"
+                                th:disabled="${carrinho.itens().isEmpty()}"
+                                onclick="if(!this.disabled) window.location.href='/carrinho/checkout';">
+                                <i class="bi bi-credit-card"></i> Prosseguir com Pagamento
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card de Informações -->
+                    <div class="card card-help">
+                        <div class="card-header bg-light">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-circle"></i> Informações
+                            </h6>
+                        </div>
+                        <div class="card-body small text-muted">
+                            <ul class="mb-0">
+                                <li>Máximo 10 unidades por livro</li>
+                                <li>Preços sujeitos a alterações</li>
+                                <li>Carrinho expira em 24 horas</li>
+                                <li>Você pode usar cupons na finalização</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script para validação de quantidade e aviso de expiração -->
+        <script>
+            // Função para alterar quantidade com botões +/-
+            function alterarQuant(btn, delta) {
+                const form = btn.closest('form');
+                const input = form.querySelector('input[name="novaQuantidade"]');
+                let valor = parseInt(input.value) + delta;
+                
+                // Validar limites
+                if (valor < 1) valor = 1;
+                if (valor > 10) valor = 10;
+                
+                input.value = valor;
+                form.submit();
+            }
+
+            // Verificar expiração do carrinho a cada 30 segundos
+            document.addEventListener('DOMContentLoaded', function() {
+                function verificarExpiracao() {
+                    // Simular: Se carrinho expirar em menos de 5 minutos, mostrar aviso
+                    const dataExpiracao = new Date('${#temporals.format(carrinho.dataExpiracao(), 'yyyy-MM-dd\'T\'23:59:59')}');
+                    const agora = new Date();
+                    const diferenca = dataExpiracao - agora;
+                    
+                    if (diferenca > 0 && diferenca < 5 * 60 * 1000) {  // Menos de 5 minutos
+                        const minutos = Math.ceil(diferenca / 1000 / 60);
+                        document.getElementById('tempoRestante').textContent = minutos + ' minuto(s)';
+                        document.getElementById('avisoExpiracao').classList.remove('d-none');
+                    }
+                
+                
+                verificarExpiracao();
+                // Executar a cada 30 segundos
+                setInterval(verificarExpiracao, 30000);
+            });
+        </script>
+    </div>
+</body>
+</html>

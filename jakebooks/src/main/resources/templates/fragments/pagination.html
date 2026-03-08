@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 
+        Fragmento para exibir paginação
+        Uso: <div th:insert="~{fragments/pagination :: pagination(page=${page})}"></div>
+        
+        Espera um objeto 'page' do tipo Page do Spring Data JPA com:
+        - content: lista de itens
+        - number: página atual (0-indexed)
+        - size: tamanho da página
+        - totalPages: total de páginas
+        - first: true se é a primeira página
+        - last: true se é a última página
+    -->
+    <nav th:if="${page.totalPages > 1}" th:fragment="pagination(page)" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <!-- Botão Anterior -->
+            <li th:class="${page.first} ? 'page-item disabled' : 'page-item'">
+                <a 
+                    class="page-link" 
+                    href="#" 
+                    th:href="${not page.first} ? ${pageLink + '?page=' + (page.number - 1)} : '#'"
+                    th:text="Anterior"
+                    th:disabled="${page.first}">
+                </a>
+            </li>
+
+            <!-- Números de páginas -->
+            <li th:each="p : ${#numbers.sequence(0, page.totalPages - 1)}" 
+                th:class="${p == page.number} ? 'page-item active' : 'page-item'">
+                <a 
+                    class="page-link" 
+                    th:href="${pageLink + '?page=' + p}"
+                    th:text="${p + 1}">
+                </a>
+            </li>
+
+            <!-- Botão Próximo -->
+            <li th:class="${page.last} ? 'page-item disabled' : 'page-item'">
+                <a 
+                    class="page-link" 
+                    href="#" 
+                    th:href="${not page.last} ? ${pageLink + '?page=' + (page.number + 1)} : '#'"
+                    th:text="Próximo"
+                    th:disabled="${page.last}">
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Info de paginação simples -->
+    <div th:if="${page}" class="text-center text-muted mb-3">
+        <small>
+            Mostrando página <span th:text="${page.number + 1}"></span> 
+            de <span th:text="${page.totalPages}"></span>
+            (<span th:text="${page.totalElements}"></span> total)
+        </small>
+    </div>
+
+    <!-- Fragmento alternativo: Paginação com tamanho de página customizável -->
+    <div th:fragment="pagination-with-size(page, pageLink)" class="d-flex justify-content-between align-items-center">
+        <div>
+            <label for="pageSize" class="me-2">Itens por página:</label>
+            <select id="pageSize" class="form-select form-select-sm d-inline-block w-auto" 
+                    onchange="window.location.href = this.value">
+                <option th:value="${pageLink + '?size=10'}" th:selected="${page.size == 10}">10</option>
+                <option th:value="${pageLink + '?size=25'}" th:selected="${page.size == 25}">25</option>
+                <option th:value="${pageLink + '?size=50'}" th:selected="${page.size == 50}">50</option>
+                <option th:value="${pageLink + '?size=100'}" th:selected="${page.size == 100}">100</option>
+            </select>
+        </div>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+                <!-- Botão Anterior -->
+                <li th:class="${page.first} ? 'page-item disabled' : 'page-item'">
+                    <a 
+                        class="page-link" 
+                        href="#"
+                        th:href="${not page.first} ? ${pageLink + '?page=' + (page.number - 1) + '&size=' + page.size} : '#'"
+                        aria-label="Página anterior">
+                        <span aria-hidden="true">«</span>
+                    </a>
+                </li>
+
+                <!-- Números de páginas (mostra até 5 próximas) -->
+                <th:block th:if="${page.totalPages <= 5}">
+                    <li th:each="p : ${#numbers.sequence(0, page.totalPages - 1)}" 
+                        th:class="${p == page.number} ? 'page-item active' : 'page-item'">
+                        <a 
+                            class="page-link" 
+                            th:href="${pageLink + '?page=' + p + '&size=' + page.size}"
+                            th:text="${p + 1}">
+                        </a>
+                    </li>
+                </th:block>
+
+                <!-- Números de páginas com reticências (muitas páginas) -->
+                <th:block th:if="${page.totalPages > 5}">
+                    <li th:each="p : ${#numbers.sequence(0, 2)}" 
+                        th:class="${p == page.number} ? 'page-item active' : 'page-item'">
+                        <a 
+                            class="page-link" 
+                            th:href="${pageLink + '?page=' + p + '&size=' + page.size}"
+                            th:text="${p + 1}">
+                        </a>
+                    </li>
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <li th:each="p : ${#numbers.sequence(page.totalPages - 3, page.totalPages - 1)}" 
+                        th:class="${p == page.number} ? 'page-item active' : 'page-item'">
+                        <a 
+                            class="page-link" 
+                            th:href="${pageLink + '?page=' + p + '&size=' + page.size}"
+                            th:text="${p + 1}">
+                        </a>
+                    </li>
+                </th:block>
+
+                <!-- Botão Próximo -->
+                <li th:class="${page.last} ? 'page-item disabled' : 'page-item'">
+                    <a 
+                        class="page-link" 
+                        href="#"
+                        th:href="${not page.last} ? ${pageLink + '?page=' + (page.number + 1) + '&size=' + page.size} : '#'"
+                        aria-label="Próxima página">
+                        <span aria-hidden="true">»</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</body>
+</html>

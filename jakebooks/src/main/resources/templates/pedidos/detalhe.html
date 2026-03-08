@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Detalhes do Pedido</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-bag-check"></i> Pedido #<span th:text="${pedido.getId()}"></span>
+                    </h1>
+                    <p class="text-muted">
+                        Criado em: <span th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy HH:mm')}"></span>
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <a href="/pedidos" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cards de Resumo -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card border-start border-primary border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">Status</h6>
+                            <span class="badge" 
+                                  th:classappend="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO} ? 'bg-warning' : 
+                                                  (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : 
+                                                  (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE} ? 'bg-success' : 'bg-secondary'))"
+                                  th:text="${#strings.replace(pedido.getStatus().toString(), '_', ' ')}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-info border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-info">Cliente</h6>
+                            <p class="mb-0" th:text="${pedido.getCliente().getNome()}"></p>
+                            <small class="text-muted" th:text="${'Código: ' + pedido.getCliente().getCodigo()}"></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-success border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-success">Valor Total</h6>
+                            <p class="mb-0 h5">
+                                R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorTotal(), 1, 2, 'POINT')}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-warning border-5">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">Frete</h6>
+                            <p class="mb-0 h5">
+                                R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorFrete(), 1, 2, 'POINT')}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Coluna Principal: Detalhes -->
+                <div class="col-lg-8">
+                    
+                    <!-- Card 1: Dados do Cliente -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person"></i> Dados do Cliente
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <h6 class="text-muted">Nome</h6>
+                                    <p class="fw-bold" th:text="${pedido.getCliente().getNome()}"></p>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <h6 class="text-muted">Email</h6>
+                                    <p class="fw-bold" th:text="${pedido.getCliente().getEmail()}"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Telefone</h6>
+                                    <p class="fw-bold" th:text="${pedido.getCliente().getTelefone()}"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">CPF</h6>
+                                    <p class="fw-bold" th:text="${pedido.getCliente().getCpf()}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Endereço de Entrega -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-geo-alt"></i> Endereço de Entrega
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${pedido.getEndereco() != null}">
+                                <p class="mb-1">
+                                    <strong th:text="${pedido.getEndereco().getNomeIdentificador()}"></strong>
+                                </p>
+                                <p class="mb-1">
+                                    <span th:text="${pedido.getEndereco().getLogradouro()}"></span>, 
+                                    <span th:text="${pedido.getEndereco().getNumero()}"></span>
+                                </p>
+                                <p class="mb-1">
+                                    <span th:text="${pedido.getEndereco().getBairro()}"></span> - 
+                                    <span th:text="${pedido.getEndereco().getCidade()}"></span>/<span th:text="${pedido.getEndereco().getEstado()}"></span>
+                                </p>
+                                <p class="mb-0">
+                                    <span th:text="${pedido.getEndereco().getCep()}"></span>
+                                </p>
+                            </div>
+                            <div th:unless="${pedido.getEndereco() != null}" class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i> Endereço não informado
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Itens do Pedido -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-list-check"></i> Itens do Pedido
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Livro</th>
+                                        <th>Código</th>
+                                        <th class="text-center">Quantidade</th>
+                                        <th class="text-end">Valor Unit.</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${pedido.getItens()}">
+                                        <td th:text="${item.getLivro().getTitulo()}"></td>
+                                        <td th:text="${item.getLivro().getIsbn()}"></td>
+                                        <td class="text-center" th:text="${item.getQuantidade()}"></td>
+                                        <td class="text-end">
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.getValorUnitario(), 1, 2, 'POINT')}"></span>
+                                        </td>
+                                        <td class="text-end">
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.getValorUnitario().multiply(#numbers.createBigDecimal(item.getQuantidade())), 1, 2, 'POINT')}"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Informações de Pagamento -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-credit-card"></i> Pagamento
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${pedido.getPagamento() != null}">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted">Status do Pagamento</h6>
+                                        <span class="badge" 
+                                              th:classappend="${pedido.getPagamento().getStatus() == T(com.les.jakebooks.model.enums.StatusPagamento).APROVADA} ? 'bg-success' : 
+                                                              (${pedido.getPagamento().getStatus() == T(com.les.jakebooks.model.enums.StatusPagamento).REPROVADA} ? 'bg-danger' : 'bg-warning')"
+                                              th:text="${pedido.getPagamento().getStatus().toString()}">
+                                        </span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-muted">Valor Pago</h6>
+                                        <p class="fw-bold">
+                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getPagamento().getValorTotal(), 1, 2, 'POINT')}"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:unless="${pedido.getPagamento() != null}" class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i> Informações de pagamento não disponíveis
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Lateral: Timeline e Ações -->
+                <div class="col-lg-4">
+                    
+                    <!-- Card: Timeline de Status -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-hourglass-split"></i> Timeline
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <!-- Entrada: Pedido Criado -->
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-primary"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">Pedido Criado</h6>
+                                        <small class="text-muted" th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy HH:mm')}"></small>
+                                    </div>
+                                </div>
+
+                                <!-- Entrada: Em Processamento (Status Inicial) -->
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'active' : ''">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'bg-warning' : 'bg-gray'"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">Em Processamento</h6>
+                                        <small class="text-muted">Aguardando processamento</small>
+                                    </div>
+                                </div>
+
+                                <!-- Entrada: Em Transporte -->
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'active' : ''">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'bg-info' : 'bg-gray'"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">Em Transporte</h6>
+                                        <small class="text-muted">Saiu para entrega</small>
+                                    </div>
+                                </div>
+
+                                <!-- Entrada: Entregue -->
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE.ordinal()} ? 'active' : ''">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE.ordinal()} ? 'bg-success' : 'bg-gray'"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">Entregue</h6>
+                                        <small class="text-muted">Entregue com sucesso</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Ações -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear"></i> Ações
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Botão Despachar (disponível apenas em EM_PROCESSAMENTO) -->
+                            <div class="d-grid gap-2 mb-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                <form method="POST" th:action="@{/pedidos/{id}/despachar(id=${pedido.getId()})}">
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="bi bi-truck"></i> Despachar
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Botão Entregar (disponível apenas em EM_TRANSPORTE) -->
+                            <div class="d-grid gap-2 mb-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                <form method="POST" th:action="@{/pedidos/{id}/entregar(id=${pedido.getId()})}">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-circle"></i> Confirmar Entrega
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Aviso: Pedido Finalizado -->
+                            <div class="alert alert-success mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE}">
+                                <i class="bi bi-check-circle"></i>
+                                <strong>Pedido Entregue</strong>
+                                <p class="mb-0 small">Este pedido foi entregue com sucesso.</p>
+                            </div>
+
+                            <!-- Aviso: Pedido em Troca -->
+                            <div class="alert alert-info mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA}">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Pedido em Troca</strong>
+                                <p class="mb-0 small">Este pedido está em processo de troca.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Resumo Financeiro -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-receipt"></i> Resumo Financeiro
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal (Produtos)</span>
+                                <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorTotal() - pedido.getValorFrete(), 1, 2, 'POINT')}"></span></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                                <span>Frete</span>
+                                <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorFrete(), 1, 2, 'POINT')}"></span></strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <strong>Total</strong>
+                                <strong class="h5 text-success">R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorTotal(), 1, 2, 'POINT')}"></span></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSS para Timeline -->
+        <style>
+            .timeline {
+                position: relative;
+                padding: 0;
+            }
+
+            .timeline-item {
+                display: flex;
+                margin-bottom: 1.5rem;
+                position: relative;
+            }
+
+            .timeline-marker {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                margin-right: 1rem;
+                color: white;
+                border: 3px solid white;
+            }
+
+            .timeline-marker.bg-gray {
+                background-color: #e9ecef !important;
+            }
+
+            .timeline-item:not(:last-child)::before {
+                content: '';
+                position: absolute;
+                left: 14px;
+                top: 40px;
+                width: 2px;
+                height: calc(100% + 10px);
+                background-color: #dee2e6;
+            }
+
+            .timeline-item.active:not(:last-child)::before {
+                background-color: #0dcaf0;
+            }
+
+            .timeline-content {
+                flex: 1;
+            }
+
+            .timeline-content h6 {
+                margin-bottom: 0.25rem;
+            }
+        </style>
+    </div>
+</body>
+</html>

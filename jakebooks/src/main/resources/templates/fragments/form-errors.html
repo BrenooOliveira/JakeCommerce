@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 
+        Fragmento para exibir erros de validação de formulário
+        Uso: <div th:insert="~{fragments/form-errors :: field-error(field='meuCampo', errors=${#fields.errors('meuCampo')})}"></div>
+    -->
+    <div th:fragment="field-error(field, errors)" class="invalid-feedback" th:if="${errors}">
+        <ul class="list-unstyled mb-0">
+            <li th:each="error : ${errors}" th:text="${error}"></li>
+        </ul>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo de formulário com label, input e erros
+        Uso: <div th:insert="~{fragments/form-errors :: text-field(name='titulo', label='Título', required=true)}"></div>
+    -->
+    <div th:fragment="text-field(name, label, required, type='text', placeholder='')">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <input 
+                th:id="${name}"
+                th:name="${name}"
+                type="text"
+                class="form-control"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:placeholder="${placeholder}"
+                th:required="${required}">
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo textarea
+    -->
+    <div th:fragment="textarea-field(name, label, required, rows='4', placeholder='')">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <textarea 
+                th:id="${name}"
+                th:name="${name}"
+                class="form-control"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:rows="${rows}"
+                th:placeholder="${placeholder}"
+                th:required="${required}"></textarea>
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo select
+    -->
+    <div th:fragment="select-field(name, label, required, options)">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <select 
+                th:id="${name}"
+                th:name="${name}"
+                class="form-select"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:required="${required}">
+                <option value="">-- Selecione uma opção --</option>
+            </select>
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo checkbox
+    -->
+    <div th:fragment="checkbox-field(name, label)">
+        <div class="form-check mb-3">
+            <input 
+                type="checkbox"
+                class="form-check-input"
+                th:id="${name}"
+                th:name="${name}">
+            <label class="form-check-label" th:for="${name}">
+                <span th:text="${label}"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo de data
+    -->
+    <div th:fragment="date-field(name, label, required)">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <input 
+                type="date"
+                class="form-control"
+                th:id="${name}"
+                th:name="${name}"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:required="${required}">
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo de número
+    -->
+    <div th:fragment="number-field(name, label, required, min='', max='', step='1')">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <input 
+                type="number"
+                class="form-control"
+                th:id="${name}"
+                th:name="${name}"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:min="${min}"
+                th:max="${max}"
+                th:step="${step}"
+                th:required="${required}">
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo de email
+    -->
+    <div th:fragment="email-field(name, label, required)">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <input 
+                type="email"
+                class="form-control"
+                th:id="${name}"
+                th:name="${name}"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:required="${required}">
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+
+    <!-- 
+        Fragmento para exibir um campo de senha
+    -->
+    <div th:fragment="password-field(name, label, required)">
+        <div class="mb-3">
+            <label th:for="${name}" class="form-label">
+                <span th:text="${label}"></span>
+                <span th:if="${required}" class="text-danger">*</span>
+            </label>
+            <input 
+                type="password"
+                class="form-control"
+                th:id="${name}"
+                th:name="${name}"
+                th:classappend="${#fields.hasErrors(name)} ? 'is-invalid' : ''"
+                th:required="${required}">
+            <small class="form-text text-muted">Mínimo 8 caracteres, incluindo maiúsculas, minúsculas e caracteres especiais.</small>
+            <div th:insert="~{fragments/form-errors :: field-error(field=${name}, errors=${#fields.errors(name)})}"></div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Pedidos</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-bag-check"></i> Pedidos
+                    </h1>
+                    <p class="text-muted">Gerenciamento de todos os pedidos do sistema</p>
+                </div>
+            </div>
+
+            <!-- Card de Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search"></i> Filtros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="/pedidos" class="row g-3">
+                        <!-- Filtro: Status -->
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status do Pedido</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos os status</option>
+                                <option th:each="statusPedido : ${statusPedidos}"
+                                        th:value="${statusPedido}"
+                                        th:selected="${statusSelecionado == statusPedido.toString()}"
+                                        th:text="${#strings.replace(statusPedido.toString(), '_', ' ')}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Filtro: Código Cliente -->
+                        <div class="col-md-6">
+                            <label for="codigoCliente" class="form-label">Código do Cliente</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="codigoCliente" 
+                                name="codigoCliente"
+                                placeholder="Digite o código do cliente...">
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                            <a href="/pedidos" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela de Pedidos -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%">ID Pedido</th>
+                                <th style="width: 20%">Cliente</th>
+                                <th style="width: 15%">Data Criação</th>
+                                <th style="width: 15%">Valor Total</th>
+                                <th style="width: 15%">Status</th>
+                                <th style="width: 25%">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Linha para cada pedido -->
+                            <tr th:each="pedido : ${pedidos}">
+                                <td class="fw-bold" th:text="${pedido.getId()}"></td>
+                                <td>
+                                    <div th:text="${pedido.getCliente().getNome()}"></div>
+                                    <small class="text-muted" th:text="${'Código: ' + pedido.getCliente().getCodigo()}"></small>
+                                </td>
+                                <td th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy HH:mm')}"></td>
+                                <td class="text-end">
+                                    <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorTotal(), 1, 2, 'POINT')}"></span></strong>
+                                </td>
+                                <td>
+                                    <!-- Badge para Status -->
+                                    <span class="badge" 
+                                          th:classappend="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO} ? 'bg-warning' : 
+                                                          (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : 
+                                                          (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE} ? 'bg-success' : 
+                                                          (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA} ? 'bg-secondary' : 'bg-dark')))"
+                                          th:text="${#strings.replace(pedido.getStatus().toString(), '_', ' ')}">
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/pedidos/{id}(id=${pedido.getId()})}"
+                                           class="btn btn-outline-primary"
+                                           title="Visualizar">
+                                            <i class="bi bi-eye"></i> Detalhes
+                                        </a>
+                                        <!-- Botão Despachar (apenas se EM_PROCESSAMENTO) -->
+                                        <th:block th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                            <form method="POST" th:action="@{/pedidos/{id}/despachar(id=${pedido.getId()})}" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-info btn-sm" title="Despachar">
+                                                    <i class="bi bi-truck"></i>
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                        <!-- Botão Entregar (apenas se EM_TRANSPORTE) -->
+                                        <th:block th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                            <form method="POST" th:action="@{/pedidos/{id}/entregar(id=${pedido.getId()})}" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-success btn-sm" title="Entregar">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Mensagem quando não há pedidos -->
+                            <tr th:if="${pedidos.isEmpty()}">
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                        <p class="mt-2">Nenhum pedido encontrado com os critérios informados</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Legenda de Status -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card card-help">
+                        <div class="card-header bg-light">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-circle"></i> Legenda de Status
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <span class="badge bg-warning me-2"></span>
+                                    <strong>EM PROCESSAMENTO</strong> - Pedido aguardando processamento
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-info me-2"></span>
+                                    <strong>EM TRANSPORTE</strong> - Pedido saiu para entrega
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-success me-2"></span>
+                                    <strong>ENTREGUE</strong> - Pedido entregue com sucesso
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-secondary me-2"></span>
+                                    <strong>EM TROCA</strong> - Pedido em processo de troca
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Análise de Vendas</title>
+    <!-- Chart.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+
+<body>
+<div layout:fragment="content" class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <h1 class="h3 mb-1">
+            <i class="bi bi-graph-up text-primary"></i>
+            Análise de Vendas
+        </h1>
+        <p class="text-muted small">Visualize o histórico de vendas por período com gráficos de linhas</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Coluna Filtros -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel"></i>
+                        Filtros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Formulário de Filtros -->
+                    <form id="filtroForm" class="needs-validation">
+                        <!-- Campo: Data Início -->
+                        <div class="mb-3">
+                            <label for="dataInicio" class="form-label">
+                                <i class="bi bi-calendar-event"></i>
+                                Data de Início <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" 
+                                   id="dataInicio" 
+                                   class="form-control"
+                                   th:value="${#temporals.format(dataInicio, 'yyyy-MM-dd')}"
+                                   required>
+                        </div>
+
+                        <!-- Campo: Data Fim -->
+                        <div class="mb-3">
+                            <label for="dataFim" class="form-label">
+                                <i class="bi bi-calendar-event"></i>
+                                Data de Fim <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" 
+                                   id="dataFim" 
+                                   class="form-control"
+                                   th:value="${#temporals.format(dataFim, 'yyyy-MM-dd')}"
+                                   required>
+                        </div>
+
+                        <!-- Campo: Agrupamento -->
+                        <div class="mb-3">
+                            <label for="agrupamento" class="form-label">
+                                <i class="bi bi-list-ul"></i>
+                                Agrupar por <span class="text-danger">*</span>
+                            </label>
+                            <select id="agrupamento" class="form-select" required>
+                                <option value="PRODUTO" selected>Produto</option>
+                                <option value="CATEGORIA">Categoria</option>
+                            </select>
+                        </div>
+
+                        <!-- Botão Gerar -->
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-arrow-repeat"></i> Gerar Gráfico
+                        </button>
+
+                        <!-- Loader (oculto inicialmente) -->
+                        <div id="carregando" class="alert alert-info alert-sm d-none" role="alert">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            Processando...
+                        </div>
+
+                        <!-- Mensagens de Erro -->
+                        <div id="mensagemErro" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span id="textoErro"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </form>
+
+                    <!-- Info do Período -->
+                    <div class="alert alert-info alert-sm mt-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Período:</strong>
+                        <br>
+                        <small id="infoPeriodo">Selecione as datas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Gráfico -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart-line"></i>
+                        Gráfico de Vendas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Canvas para o gráfico -->
+                    <canvas id="graficoVendas" height="80"></canvas>
+
+                    <!-- Mensagem vazia (mostra quando não há dados) -->
+                    <div id="mensagemVazia" class="text-center py-5">
+                        <i class="bi bi-inbox fs-4 text-muted d-block mb-2"></i>
+                        <p class="text-muted">Selecione um período para visualizar o gráfico</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Informações -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Como usar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Passo 1:</strong> Selecione a data de início e fim do período que deseja analisar.
+                    </p>
+                    <p class="mb-2">
+                        <strong>Passo 2:</strong> Escolha como deseja agrupar os dados:
+                    </p>
+                    <ul class="mb-2">
+                        <li><strong>Produto:</strong> Visualiza vendas de cada livro ao longo do período</li>
+                        <li><strong>Categoria:</strong> Visualiza vendas por categoria de livrom ao longo do período</li>
+                    </ul>
+                    <p class="mb-0">
+                        <strong>Passo 3:</strong> Clique em "Gerar Gráfico" para visualizar os dados. O gráfico será exibido em tempo real com as vendas do período selecionado.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let graficoAtual = null;
+
+// Configurações de cores para o gráfico
+const cores = [
+    '#0d6efd', // azul
+    '#198754', // verde
+    '#dc3545', // vermelho
+    '#fd7e14', // laranja
+    '#0dcaf0', // cyan
+    '#6f42c1', // roxo
+    '#d63384', // rosa
+    '#20c997', // teal
+    '#f8f9fa', // cinza claro
+    '#495057'  // cinza escuro
+];
+
+// Função para obter cor baseado no índice
+function obterCor(indice) {
+    return cores[indice % cores.length];
+}
+
+// Event listener do formulário
+document.getElementById('filtroForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const dataInicio = document.getElementById('dataInicio').value;
+    const dataFim = document.getElementById('dataFim').value;
+    const agrupamento = document.getElementById('agrupamento').value;
+
+    // Validações básicas
+    if (!dataInicio || !dataFim) {
+        exibirErro('Preencha ambas as datas');
+        return;
+    }
+
+    if (new Date(dataInicio) > new Date(dataFim)) {
+        exibirErro('A data de início não pode ser posterior à data de fim');
+        return;
+    }
+
+    // Atualizar info do período
+    atualizarInfoPeriodo(dataInicio, dataFim);
+
+    // Mostrar loading
+    exibirCarregando(true);
+
+    try {
+        // Fazer fetch dos dados
+        const response = await fetch(`/analise/dados?dataInicio=${dataInicio}&dataFim=${dataFim}&agrupamento=${agrupamento}`);
+
+        if (!response.ok) {
+            const erro = await response.text();
+            exibirErro(erro || 'Erro ao buscar dados');
+            exibirCarregando(false);
+            return;
+        }
+
+        const dados = await response.json();
+
+        if (!dados || dados.length === 0) {
+            exibirErro('Nenhum dado encontrado para o período selecionado');
+            exibirCarregando(false);
+            return;
+        }
+
+        // Renderizar gráfico
+        renderizarGrafico(dados, agrupamento);
+        esconderErro();
+        document.getElementById('mensagemVazia').classList.add('d-none');
+    } catch (erro) {
+        console.error('Erro:', erro);
+        exibirErro('Erro ao processar a requisição: ' + erro.message);
+    } finally {
+        exibirCarregando(false);
+    }
+});
+
+// Função para renderizar o gráfico usando Chart.js
+function renderizarGrafico(dados, agrupamento) {
+    const ctx = document.getElementById('graficoVendas').getContext('2d');
+
+    // Preparar dados para Chart.js
+    const labels = new Set();
+    const datasets = [];
+
+    // Coletar todos os períodos (labels do gráfico)
+    dados.forEach(item => {
+        item.pontos.forEach(ponto => {
+            labels.add(ponto.periodo);
+        });
+    });
+
+    const labelsArray = Array.from(labels).sort((a, b) => {
+        const [diaA, mesA, anoA] = a.split('/').map(Number);
+        const [diaB, mesB, anoB] = b.split('/').map(Number);
+        const dataA = new Date(anoA, mesA - 1, diaA);
+        const dataB = new Date(anoB, mesB - 1, diaB);
+        return dataA - dataB;
+    });
+
+    // Criar dataset para cada item (produto ou categoria)
+    dados.forEach((item, indice) => {
+        const dadosLabel = labelsArray.map(label => {
+            const ponto = item.pontos.find(p => p.periodo === label);
+            return ponto ? parseFloat(ponto.valor) : 0;
+        });
+
+        datasets.push({
+            label: item.label,
+            data: dadosLabel,
+            borderColor: obterCor(indice),
+            backgroundColor: obterCor(indice) + '20', // adiciona transparência
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: obterCor(indice),
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7
+        });
+    });
+
+    // Destruir gráfico anterior se existir
+    if (graficoAtual) {
+        graficoAtual.destroy();
+    }
+
+    // Criar novo gráfico
+    graficoAtual = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labelsArray,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 12 },
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': R$ ' + 
+                                parseFloat(context.parsed.y).toFixed(2).replace('.', ',');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + parseFloat(value).toFixed(2).replace('.', ',');
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Valor de Vendas (R$)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Data'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Função auxiliar para exibir erro
+function exibirErro(mensagem) {
+    const divErro = document.getElementById('mensagemErro');
+    const textoErro = document.getElementById('textoErro');
+    textoErro.textContent = mensagem;
+    divErro.classList.remove('d-none');
+}
+
+// Função auxiliar para esconder erro
+function esconderErro() {
+    const divErro = document.getElementById('mensagemErro');
+    divErro.classList.add('d-none');
+}
+
+// Função auxiliar para mostrar/esconder loading
+function exibirCarregando(mostra) {
+    const divCarregando = document.getElementById('carregando');
+    if (mostra) {
+        divCarregando.classList.remove('d-none');
+    } else {
+        divCarregando.classList.add('d-none');
+    }
+}
+
+// Função para atualizar info do período
+function atualizarInfoPeriodo(dataInicio, dataFim) {
+    const [anoI, mesI, diaI] = dataInicio.split('-');
+    const [anoF, mesF, diaF] = dataFim.split('-');
+    const periodoFormatado = `${diaI}/${mesI}/${anoI} até ${diaF}/${mesF}/${anoF}`;
+    document.getElementById('infoPeriodo').textContent = periodoFormatado;
+}
+
+// Carregar gráfico automaticamente ao carregar a página com valores padrão
+document.addEventListener('DOMContentLoaded', () => {
+    // Disparar submit do formulário
+    document.getElementById('filtroForm').dispatchEvent(new Event('submit'));
+});
+</script>
+
+</body>
+</html>

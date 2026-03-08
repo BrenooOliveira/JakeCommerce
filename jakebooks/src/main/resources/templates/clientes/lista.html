@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Clientes</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-people"></i> Clientes
+                    </h1>
+                    <p class="text-muted">Gerenciamento de clientes cadastrados</p>
+                </div>
+                <div class="col-auto">
+                    <a href="/clientes/novo" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus"></i> Novo Cliente
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card de Busca -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search"></i> Buscar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/clientes}" method="get" class="row g-3">
+                        <!-- Filtro: Nome -->
+                        <div class="col-md-6">
+                            <label for="nome" class="form-label">Nome</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="nome" 
+                                name="nome"
+                                th:value="${nome}"
+                                placeholder="Digite o nome...">
+                        </div>
+
+                        <!-- Filtro: CPF -->
+                        <div class="col-md-6">
+                            <label for="cpf" class="form-label">CPF</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="cpf" 
+                                name="cpf"
+                                th:value="${cpf}"
+                                placeholder="000.000.000-00"
+                                data-mask="cpf">
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                            <a href="/clientes" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela de Clientes -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Código</th>
+                                <th style="width: 30%">Nome</th>
+                                <th style="width: 20%">CPF</th>
+                                <th style="width: 15%">Status</th>
+                                <th style="width: 15%">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="cliente : ${clientes}">
+                                <td class="fw-bold" th:text="${cliente.codigo()}"></td>
+                                <td th:text="${cliente.nome()}"></td>
+                                <td th:text="${cliente.cpf()}"></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).ATIVO} ? 'bg-success' : (${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).BLOQUEADO} ? 'bg-danger' : 'bg-secondary')"
+                                          th:text="${#strings.replace(cliente.status().toString(), '_', ' ')}"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/clientes/{codigo}(codigo=${cliente.codigo()})}"
+                                           class="btn btn-outline-primary"
+                                           title="Visualizar">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{/clientes/{codigo}/editar(codigo=${cliente.codigo()})}"
+                                           class="btn btn-outline-warning"
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Mensagem quando não há clientes -->
+                            <tr th:if="${clientes.isEmpty()}">
+                                <td colspan="5" class="text-center py-5">
+                                    <div th:insert="~{fragments/components :: empty-table(message='Nenhum cliente encontrado com os critérios informados', icon='inbox')}"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

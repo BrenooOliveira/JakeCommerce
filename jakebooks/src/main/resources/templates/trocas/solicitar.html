@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Solicitar Troca de Produto</title>
+</head>
+
+<body>
+<div layout:fragment="content" class="container py-4">
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <a th:href="@{/pedidos/{id}(id=${pedidoId})}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Voltar ao Pedido
+        </a>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-arrow-repeat text-primary"></i>
+            Solicitar Troca de Produto
+        </h1>
+        <p class="text-muted small">Pedido <strong>#<span th:text="${pedidoId}"></span></strong></p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Card do Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square"></i>
+                        Informações da Troca
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Alertas -->
+                    <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span th:text="${mensagemErro}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Formulário -->
+                    <form method="post" 
+                          th:action="@{/trocas/pedidos/{id}/solicitar(id=${pedidoId})}"
+                          novalidate>
+
+                        <!-- Campo: Motivo -->
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">
+                                <i class="bi bi-chat-left-text"></i>
+                                Motivo da Troca <span class="text-danger">*</span>
+                            </label>
+                            <textarea id="motivo" 
+                                      name="motivo" 
+                                      class="form-control"
+                                      rows="6"
+                                      placeholder="Descreva o motivo pelo qual deseja fazer a troca do produto..."
+                                      required
+                                      minlength="10"
+                                      maxlength="500"></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Mínimo de 10 caracteres
+                            </div>
+                        </div>
+
+                        <!-- Info: Restrições -->
+                        <div class="alert alert-info alert-sm mb-3">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Atenção:</strong>
+                            <ul class="mb-0 ps-3">
+                                <li>Você poderá selecionar quais itens deseja trocar</li>
+                                <li>Será gerado um cupom no valor dos itens retornados</li>
+                                <li>O cupom poderá ser utilizado em próximas compras</li>
+                            </ul>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-check-lg"></i> Solicitar Troca
+                            </button>
+                            <a th:href="@{/pedidos/{id}(id=${pedidoId})}" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card Informativo -->
+            <div class="card shadow-sm mt-3 border-info">
+                <div class="card-header bg-info-light border-info">
+                    <h6 class="mb-0 text-info">
+                        <i class="bi bi-question-circle"></i>
+                        Como funciona a troca?
+                    </h6>
+                </div>
+                <div class="card-body small">
+                    <ol class="mb-0 ps-3">
+                        <li>Envie sua solicitação de troca com o motivo</li>
+                        <li>Nossa equipe analisará e autorizar a troca</li>
+                        <li>Você receberá as instruções de como devolver o produto</li>
+                        <li>Ao recebermos o produto, geraremos um cupom no valor equivalente</li>
+                        <li>Utilize o cupom em suas próximas compras</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

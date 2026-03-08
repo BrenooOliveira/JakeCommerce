@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Detalhes da Troca</title>
+    <style>
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 10px 0 10px 80px;
+            margin: 20px 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 25px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            border: 3px solid #fff;
+        }
+
+        .timeline-item.active::before {
+            background: #0d6efd;
+        }
+
+        .timeline-item.completed::before {
+            background: #198754;
+        }
+
+        .timeline-item strong {
+            display: block;
+            margin: 0 0 5px 0;
+        }
+
+        .timeline-item.completed strong {
+            color: #198754;
+        }
+
+        .timeline-item.active strong {
+            color: #0d6efd;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content" class="container-fluid py-4">
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <a href="/trocas" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <h1 class="h3 mb-1">
+            <i class="bi bi-arrow-repeat text-primary"></i>
+            Detalhes da Troca #<span th:text="${troca.trocaId()}"></span>
+        </h1>
+        <p class="text-muted small">Pedido <strong>#<span th:text="${troca.pedidoId()}"></span></strong></p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Coluna Principal -->
+        <div class="col-lg-8">
+            <!-- Cards de Resumo -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-person-circle text-primary fs-5"></i>
+                                <h6 class="card-title ms-2 mb-0">Cliente</h6>
+                            </div>
+                            <p class="text-muted small mb-1" th:text="${troca.codigoCliente()}"></p>
+                            <p class="mb-0"><strong th:text="${troca.nomeCliente()}"></strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-calendar-event text-info fs-5"></i>
+                                <h6 class="card-title ms-2 mb-0">Data de Solicitação</h6>
+                            </div>
+                            <p class="mb-0"><strong th:text="${#temporals.format(troca.dataSolicitacao(), 'dd/MM/yyyy')}"></strong></p>
+                            <p class="text-muted small" th:text="${#temporals.format(troca.dataSolicitacao(), 'HH:mm')}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motivo da Troca -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="bi bi-chat-left-text"></i>
+                        Motivo da Solicitação
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p th:text="${troca.motivo()}" class="mb-0"></p>
+                </div>
+            </div>
+
+            <!-- Itens Retornados -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="bi bi-box2-heart"></i>
+                        Itens para Troca
+                    </h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50%">Produto</th>
+                                <th width="15%">Quantidade</th>
+                                <th width="20%">Valor Unitário</th>
+                                <th width="15%">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(troca.itensRetornados())}">
+                                <td colspan="4" class="text-center py-3 text-muted">
+                                    Não há itens registrados
+                                </td>
+                            </tr>
+                            <tr th:each="item : ${troca.itensRetornados()}" th:if="${!#lists.isEmpty(troca.itensRetornados())}">
+                                <td>
+                                    <strong th:text="${item.nomeLivro()}"></strong>
+                                    <br>
+                                    <small class="text-muted" th:text="${'ISBN: ' + item.isbn()}"></small>
+                                </td>
+                                <td th:text="${item.quantidade()}"></td>
+                                <td th:text="${'R\$ ' + #numbers.formatDecimal(item.valorUnitario(), 1, 2, 'POINT')}"></td>
+                                <td><strong th:text="${'R\$ ' + #numbers.formatDecimal(item.quantidade() * item.valorUnitario(), 1, 2, 'POINT')}"></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Cupom Gerado -->
+            <th:block th:if="${troca.cupomGerado() != null}">
+                <div class="card shadow-sm mb-4 border-success">
+                    <div class="card-header bg-light border-bottom border-success">
+                        <h6 class="mb-0 text-success">
+                            <i class="bi bi-check-circle"></i>
+                            Cupom de Troca Gerado
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success mb-0">
+                            <strong>Código:</strong> <code th:text="${troca.cupomGerado()}"></code>
+                            <br>
+                            <small>Este cupom pode ser utilizado em futuras compras como forma de pagamento.</small>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Coluna Lateral -->
+        <div class="col-lg-4">
+            <!-- Status e Ações -->
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Status da Troca
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Badge de Status -->
+                    <div class="mb-3">
+                        <th:block th:switch="${troca.status()}">
+                            <span th:case="'SOLICITADA'" class="badge bg-warning text-dark fs-6">
+                                <i class="bi bi-exclamation-circle"></i> Solicitada
+                            </span>
+                            <span th:case="'AUTORIZADA'" class="badge bg-info fs-6">
+                                <i class="bi bi-check-circle"></i> Autorizada
+                            </span>
+                            <span th:case="'CONCLUIDA'" class="badge bg-success fs-6">
+                                <i class="bi bi-star"></i> Concluída
+                            </span>
+                            <span th:case="'DESCARTADA'" class="badge bg-secondary fs-6">
+                                <i class="bi bi-x-circle"></i> Descartada
+                            </span>
+                            <span th:case="*" class="badge bg-dark fs-6" th:text="${troca.status()}"></span>
+                        </th:block>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="timeline mt-4">
+                        <div class="timeline-item" th:classappend="${troca.status().toString() != 'SOLICITADA' ? 'completed' : 'active'}">
+                            <strong>Solicitada</strong>
+                            <small class="text-muted" th:text="${#temporals.format(troca.dataSolicitacao(), 'dd/MM/yyyy HH:mm')}"></small>
+                        </div>
+                        <div class="timeline-item" th:classappend="${troca.status().toString() == 'AUTORIZADA' || troca.status().toString() == 'CONCLUIDA' ? (troca.status().toString() == 'AUTORIZADA' ? 'active' : 'completed') : ''}">
+                            <strong>Autorizada</strong>
+                            <small class="text-muted">Processar solicitação</small>
+                        </div>
+                        <div class="timeline-item" th:classappend="${troca.status().toString() == 'CONCLUIDA' ? 'active' : ''}">
+                            <strong>Concluída</strong>
+                            <small class="text-muted">Cupom gerado</small>
+                        </div>
+                    </div>
+
+                    <!-- Ações -->
+                    <div class="mt-4 pt-3 border-top">
+                        <!-- Autorizar (SOLICITADA → AUTORIZADA) -->
+                        <th:block th:if="${troca.status().toString() == 'SOLICITADA'}">
+                            <form method="post" 
+                                  th:action="@{/trocas/{id}/autorizar(id=${troca.trocaId()})}"
+                                  onsubmit="return confirm('Tem certeza que deseja autorizar esta troca?');">
+                                <button type="submit" class="btn btn-success w-100 mb-2">
+                                    <i class="bi bi-check-lg"></i> Autorizar Troca
+                                </button>
+                            </form>
+                        </th:block>
+
+                        <!-- Receber (AUTORIZADA → CONCLUIDA) -->
+                        <th:block th:if="${troca.status().toString() == 'AUTORIZADA'}">
+                            <form method="post" 
+                                  th:action="@{/trocas/{id}/receber(id=${troca.trocaId()})}"
+                                  onsubmit="return confirm('Tem certeza que deseja confirmar o recebimento desta troca?');">
+                                <button type="submit" class="btn btn-info w-100 mb-2">
+                                    <i class="bi bi-box-seam"></i> Confirmar Recebimento
+                                </button>
+                            </form>
+                        </th:block>
+
+                        <!-- Link ao Pedido -->
+                        <a th:href="@{/pedidos/{id}(id=${troca.pedidoId()})}"
+                           class="btn btn-outline-primary w-100">
+                            <i class="bi bi-eye"></i> Ver Pedido
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Informações
+                    </h6>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-1">
+                        <strong>ID da Troca:</strong><br>
+                        <code th:text="${troca.trocaId()}"></code>
+                    </p>
+                    <p class="mb-1">
+                        <strong>ID do Pedido:</strong><br>
+                        <code th:text="${troca.pedidoId()}"></code>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Código do Cliente:</strong><br>
+                        <code th:text="${troca.codigoCliente()}"></code>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
