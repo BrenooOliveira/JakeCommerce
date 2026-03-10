@@ -2,7 +2,7 @@ package com.les.jakebooks.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.les.jakebooks.exception.SenhaInseguraException;
+import com.les.jakebooks.exception.SenhaFracaException;
 
 /**
  * Validador de senhas.
@@ -14,6 +14,7 @@ import com.les.jakebooks.exception.SenhaInseguraException;
  * - Pelo menos um caractere especial
  * 
  * Regra de negócio: Senha forte obrigatória para clientes
+ * Lança: SenhaFracaException (NegocioException child)
  */
 @Component
 public class SenhaValidator {
@@ -25,30 +26,42 @@ public class SenhaValidator {
      * Valida se a senha atende aos requisitos de segurança.
      * 
      * @param senha a senha a validar
-     * @throws SenhaInseguraException se a senha não atender aos requisitos
+     * @throws SenhaFracaException se a senha não atender aos requisitos
      */
     public void validarSenha(String senha) {
         if (senha == null || senha.isEmpty()) {
-            throw new SenhaInseguraException("Senha não pode estar vazia");
+            throw new SenhaFracaException("Senha não pode estar vazia");
         }
 
         if (senha.length() < TAMANHO_MINIMO) {
-            throw new SenhaInseguraException(
+            String motivo = String.format("Mínimo %d caracteres. Tamanho atual: %d", 
+                TAMANHO_MINIMO, senha.length());
+            throw new SenhaFracaException(
                 String.format("Senha deve ter no mínimo %d caracteres. Tamanho atual: %d", 
-                    TAMANHO_MINIMO, senha.length())
+                    TAMANHO_MINIMO, senha.length()),
+                motivo
             );
         }
 
         if (!temLetraMaiuscula(senha)) {
-            throw new SenhaInseguraException("Senha deve conter pelo menos uma letra maiúscula (A-Z)");
+            throw new SenhaFracaException(
+                "Senha deve conter pelo menos uma letra maiúscula (A-Z)",
+                "Falta letra maiúscula"
+            );
         }
 
         if (!temLetraMinuscula(senha)) {
-            throw new SenhaInseguraException("Senha deve conter pelo menos uma letra minúscula (a-z)");
+            throw new SenhaFracaException(
+                "Senha deve conter pelo menos uma letra minúscula (a-z)",
+                "Falta letra minúscula"
+            );
         }
 
         if (!temCaractereEspecial(senha)) {
-            throw new SenhaInseguraException("Senha deve conter pelo menos um caractere especial (!@#$%^&*)");
+            throw new SenhaFracaException(
+                "Senha deve conter pelo menos um caractere especial (!@#$%^&*)",
+                "Falta caractere especial"
+            );
         }
     }
 

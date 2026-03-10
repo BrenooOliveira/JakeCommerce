@@ -112,13 +112,31 @@ public class AnaliseService {
                 Number valorNum = (Number) mapa.get("valor");
                 BigDecimal valor = BigDecimal.valueOf(valorNum.doubleValue());
 
-                // Adicionar ao mapa agrupado
-                dadosAgrupados.computeIfAbsent(label, k -> new TreeMap<>())
+                // Adicionar ao mapa agrupado com comparador de datas cronológicas
+                dadosAgrupados.computeIfAbsent(label, k -> new TreeMap<>(this::compararDatas))
                         .put(periodoStr, valor);
             }
         }
 
         return dadosAgrupados;
+    }
+
+    /**
+     * Comparador para ordenar datas em formato dd/MM/yyyy cronologicamente.
+     *
+     * @param data1 primeira data em formato dd/MM/yyyy
+     * @param data2 segunda data em formato dd/MM/yyyy
+     * @return valor negativo, zero ou positivo conforme ordenação
+     */
+    private int compararDatas(String data1, String data2) {
+        try {
+            LocalDate d1 = LocalDate.parse(data1, FORMATTER);
+            LocalDate d2 = LocalDate.parse(data2, FORMATTER);
+            return d1.compareTo(d2);
+        } catch (Exception e) {
+            // Fallback para comparação alfanumérica se houver erro
+            return data1.compareTo(data2);
+        }
     }
 
     /**

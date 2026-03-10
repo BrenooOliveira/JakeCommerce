@@ -78,6 +78,9 @@ public class PedidoService {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private ClienteService clienteService;
+
+    @Autowired
     private EnderecoRepository enderecoRepository;
 
     @Autowired
@@ -409,6 +412,7 @@ public class PedidoService {
     /**
      * Confirma a entrega de um pedido alterando seu status para ENTREGUE.
      * RN0040: Status entrega: ENTREGUE.
+     * RN0027: Cliente possui ranking numérico (recalculado automaticamente).
      *
      * @param pedidoId ID do pedido
      * @throws RecursoNaoEncontradoException se pedido não existe
@@ -427,6 +431,9 @@ public class PedidoService {
         // Alterar status para ENTREGUE
         pedido.setStatus(StatusPedido.ENTREGUE);
         pedidoRepository.save(pedido);
+
+        // RN0027: Recalcular ranking do cliente após entrega confirmada
+        clienteService.recalcularRanking(pedido.getCliente().getCodigo());
     }
 
     /**

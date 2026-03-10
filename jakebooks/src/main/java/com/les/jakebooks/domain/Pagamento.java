@@ -7,9 +7,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +32,16 @@ public class Pagamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    private LocalDate dataCriacao;
+    
     @Enumerated(EnumType.STRING)
     private StatusPagamento status;
     
     private BigDecimal valorTotal;
+    
+    @ManyToOne
+    @JoinColumn(name = "pedido_id")
+    private Pedido pedido;
     
     @OneToMany(mappedBy = "pagamento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PagamentoCartao> pagamentosCartao = new ArrayList<>();
@@ -47,6 +56,7 @@ public class Pagamento {
     public Pagamento(StatusPagamento status, BigDecimal valorTotal) {
         this.status = status;
         this.valorTotal = valorTotal;
+        this.dataCriacao = LocalDate.now();
     }
 
     // Getters e Setters
@@ -56,6 +66,14 @@ public class Pagamento {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public LocalDate getDataCriacao() {
+        return dataCriacao;
+    }
+
+    public void setDataCriacao(LocalDate dataCriacao) {
+        this.dataCriacao = dataCriacao;
     }
 
     public StatusPagamento getStatus() {
@@ -72,6 +90,14 @@ public class Pagamento {
 
     public void setValorTotal(BigDecimal valorTotal) {
         this.valorTotal = valorTotal;
+    }
+
+    public Pedido getPedido() {
+        return pedido;
+    }
+
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
     }
 
     public List<PagamentoCartao> getPagamentosCartao() {

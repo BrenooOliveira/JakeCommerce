@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html 
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{fragments/layout}"
+    lang="pt-BR">
+<head>
+    <title>Login</title>
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-top: -28px; /* Compensar navbar */
+        }
+        
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            background: white;
+        }
+        
+        .login-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            border-bottom: 4px solid #667eea;
+        }
+        
+        .login-card-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .login-card-header p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .login-card-body {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-control {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-control::placeholder {
+            color: #999;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 11px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .alert {
+            margin-bottom: 20px;
+            border-radius: 5px;
+            padding: 12px 15px;
+            font-size: 14px;
+            border: none;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #f5c6cb;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffeeba;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+        
+        .login-footer p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .login-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .form-check {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-check-input {
+            cursor: pointer;
+        }
+        
+        .form-check-label {
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content" class="login-container" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-top: -120px;">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-card-header">
+                <h2>
+                    <i class="bi bi-book"></i> JakeCommerce
+                </h2>
+                <p>Sistema de E-commerce de Livros</p>
+            </div>
+
+            <!-- Body -->
+            <div class="login-card-body">
+                
+                <!-- Mensagens de erro -->
+                <div th:if="${param.erro}" class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <strong>Erro ao fazer login!</strong>
+                    <p class="mt-2 mb-0">Email ou senha inválidos. Por favor, tente novamente.</p>
+                </div>
+
+                <div th:if="${param.sessao}" class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Sessão Expirada!</strong>
+                    <p class="mt-2 mb-0">Sua sessão expirou. Faça login novamente para continuar.</p>
+                </div>
+
+                <!-- Formulário de Login -->
+                <form th:action="@{/login}" method="POST" id="loginForm">
+                    
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="email" 
+                            name="email"
+                            placeholder="Digite seu email"
+                            required
+                            autofocus>
+                    </div>
+
+                    <!-- Senha -->
+                    <div class="form-group">
+                        <label for="senha" class="form-label">
+                            <i class="bi bi-lock"></i> Senha
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="senha" 
+                            name="senha"
+                            placeholder="Digite sua senha"
+                            required>
+                    </div>
+
+                    <!-- Lembrar-se -->
+                    <div class="form-check">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="lembrar" 
+                            name="remember-me">
+                        <label class="form-check-label" for="lembrar">
+                            Lembrar-se de mim
+                        </label>
+                    </div>
+
+                    <!-- Botão Login -->
+                    <button type="submit" class="btn btn-login">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </button>
+
+                </form>
+
+                <!-- Links úteis -->
+                <div class="login-footer">
+                    <p>
+                        Não possui conta?
+                        <a th:href="@{/clientes/novo}">Cadastre-se aqui</a>
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <a th:href="@{/}">Voltar para página inicial</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simples validação no client-side
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            
+            if (!email || !senha) {
+                e.preventDefault();
+                alert('Por favor, preencha todos os campos.');
+                return false;
+            }
+            
+            if (!email.includes('@')) {
+                e.preventDefault();
+                alert('Por favor, digite um email válido.');
+                return false;
+            }
+        });
+    </script>
+
+</body>
+</html>
