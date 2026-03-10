@@ -29,7 +29,8 @@ public interface TrocaRepository extends JpaRepository<Troca, Long> {
      * Busca trocas de um cliente.
      * RF0025: Consultar transações do cliente.
      */
-    List<Troca> findByPedidoClienteIdOrderByDataSolicitacaoDesc(Long clienteId);
+    @Query("SELECT t FROM Troca t WHERE t.pedido.cliente.id = :clienteId ORDER BY t.dataSolicitacao DESC")
+    List<Troca> findByPedidoClienteIdOrderByDataSolicitacaoDesc(@Param("clienteId") Long clienteId);
 
     /**
      * Busca trocas por status.
@@ -40,7 +41,8 @@ public interface TrocaRepository extends JpaRepository<Troca, Long> {
     /**
      * Busca trocas de um cliente por status.
      */
-    List<Troca> findByPedidoClienteIdAndStatusOrderByDataSolicitacaoDesc(Long clienteId, StatusTroca status);
+    @Query("SELECT t FROM Troca t WHERE t.pedido.cliente.id = :clienteId AND t.status = :status ORDER BY t.dataSolicitacao DESC")
+    List<Troca> findByPedidoClienteIdAndStatusOrderByDataSolicitacaoDesc(@Param("clienteId") Long clienteId, @Param("status") StatusTroca status);
 
     /**
      * Busca trocas por período.

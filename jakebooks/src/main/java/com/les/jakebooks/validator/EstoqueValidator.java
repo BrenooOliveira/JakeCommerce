@@ -3,6 +3,7 @@ package com.les.jakebooks.validator;
 import org.springframework.stereotype.Component;
 
 import com.les.jakebooks.exception.EstoqueInsuficienteException;
+import com.les.jakebooks.exception.LimitePedidoException;
 
 /**
  * Validador de estoque.
@@ -12,13 +13,19 @@ import com.les.jakebooks.exception.EstoqueInsuficienteException;
  * - RN0032: Validar estoque antes da finalização
  * - RN0061: Não permitir quantidade zero
  * - RN0062: Todo item deve possuir custo
+ * - RN0063: Máximo 10 unidades do mesmo livro por pedido
  * - RNF0064: Não permitir registro sem data
+ * 
+ * Lança: EstoqueInsuficienteException, LimitePedidoException
  */
 @Component
 public class EstoqueValidator {
 
+    private static final int LIMITE_UNIDADES_POR_PEDIDO = 10;
+
     /**
      * Valida se há quantidade suficiente no estoque.
+     * RN0031/RN0032: Validar estoque
      * 
      * @param codigoLivro código do livro
      * @param quantidadeSolicitada quantidade solicitada
@@ -54,15 +61,15 @@ public class EstoqueValidator {
     }
 
     /**
-     * Valida se o custo foi informado.
+     * Valida se o custo foi informado e é válido.
      * RN0062: Todo item deve possuir custo
      * 
      * @param custoAtual custo a validar
-     * @throws IllegalArgumentException se o custo não for informado ou for negativo
+     * @throws IllegalArgumentException se o custo for inválido
      */
     public void validarCusto(Double custoAtual) {
-        if (custoAtual == null || custoAtual < 0) {
-            throw new IllegalArgumentException("Custo deve ser informado e não pode ser negativo");
+        if (custoAtual == null || custoAtual <= 0) {
+            throw new IllegalArgumentException("Custo deve ser informado e maior que zero");
         }
     }
 
@@ -83,12 +90,17 @@ public class EstoqueValidator {
      * Valida limite máximo de unidades por pedido.
      * RN0063: Máximo 10 unidades do mesmo livro por pedido
      * 
+     * @param codigoLivro código do livro
      * @param quantidade quantidade solicitada
-     * @throws IllegalArgumentException se exceder o limite
+     * @throws LimitePedidoException se exceder o limite
      */
-    public void validarLimiteUnidadesPerPedido(Integer quantidade) {
-        if (quantidade > 10) {
-            throw new IllegalArgumentException("Máximo 10 unidades do mesmo livro por pedido. Solicitado: " + quantidade);
+    public void validarLimiteUnidadesPerPedido(String codigoLivro, Integer quantidade) {
+        if (quantidade > LIMITE_UNIDADES_POR_PEDIDO) {
+            String mensagem = String.format(
+                "Máximo %d unidades do mesmo livro por pedido. Livro: %s | Solicitado: %d",
+                LIMITE_UNIDADES_POR_PEDIDO, codigoLivro, quantidade
+            );
+            throw new LimitePedidoException(mensagem);
         }
     }
 }

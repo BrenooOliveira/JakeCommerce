@@ -26,7 +26,7 @@ public interface CartaoRepository extends JpaRepository<Cartao, Long> {
     /**
      * Busca cartão preferencial de um cliente.
      */
-    Optional<Cartao> findByClienteIdAndPrefencial(Long clienteId, Boolean prefencial);
+    Optional<Cartao> findByClienteIdAndPreferencial(Long clienteId, Boolean preferencial);
 
     /**
      * Busca cartão pela combinação cliente e número.
@@ -37,9 +37,5 @@ public interface CartaoRepository extends JpaRepository<Cartao, Long> {
      * Busca cartões por bandeira.
      */
     List<Cartao> findByBandeira(BandeiraCartao bandeira);
-
-    /**
-     * Busca cartões ativos de um cliente.
-     */
-    List<Cartao> findByClienteIdAndAtivoTrue(Long clienteId);
 }
+

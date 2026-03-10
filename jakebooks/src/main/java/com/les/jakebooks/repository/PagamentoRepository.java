@@ -3,6 +3,8 @@ package com.les.jakebooks.repository;
 import com.les.jakebooks.domain.Pagamento;
 import com.les.jakebooks.model.enums.StatusPagamento;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,5 +32,6 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
      * Busca pagamentos reprovados de um cliente para validar bloqueio.
      * RN0065: 3 pagamentos REPROVADOS consecutivos bloqueiam cliente.
      */
-    List<Pagamento> findByPedidoClienteIdAndStatusOrderByDataCriacaoDesc(Long clienteId, StatusPagamento status);
+    @Query("SELECT p FROM Pagamento p WHERE p.pedido.cliente.id = :clienteId AND p.status = :status ORDER BY p.dataCriacao DESC")
+    List<Pagamento> findByPedidoClienteIdAndStatusOrderByDataCriacaoDesc(@Param("clienteId") Long clienteId, @Param("status") StatusPagamento status);
 }

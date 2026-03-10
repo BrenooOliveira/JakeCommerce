@@ -503,4 +503,54 @@ public class ClienteService {
     private String maskCVV(String cvv) {
         return "***";
     }
+
+    /**
+     * Recalcula o ranking do cliente baseado no número de pedidos entregues/trocados.
+     * RN0027: Cliente possui ranking numérico.
+     * 
+     * Regra de Ranking:
+     * - 1-3 pedidos: ranking 1.0
+     * - 4-7 pedidos: ranking 2.0
+     * - 8+ pedidos: ranking 3.0
+     * 
+     * Chamado automaticamente após confirmarEntrega() no PedidoService.
+     * 
+     * @param codigoCliente código do cliente
+     * @throws RecursoNaoEncontradoException se cliente não existe
+     */
+    @Transactional
+    public void recalcularRanking(String codigoCliente) {
+        // Buscar cliente
+        Cliente cliente = buscarClientePorCodigo(codigoCliente);
+
+        // Contar pedidos com status ENTREGUE ou TROCADO
+        List<Pedido> pedidosEntregues = pedidoRepository.findByClienteIdAndStatus(
+                cliente.getId(), 
+                com.les.jakebooks.model.enums.StatusPedido.ENTREGUE
+        );
+
+        List<Pedido> pedidosTrocados = pedidoRepository.findByClienteIdAndStatus(
+                cliente.getId(),
+                com.les.jakebooks.model.enums.StatusPedido.TROCADO
+        );
+
+        // Total de pedidos completados
+        int totalPedidos = pedidosEntregues.size() + pedidosTrocados.size();
+
+        // Calcular novo ranking
+        Double novoRanking;
+        if (totalPedidos >= 8) {
+            novoRanking = 3.0;
+        } else if (totalPedidos >= 4) {
+            novoRanking = 2.0;
+        } else if (totalPedidos >= 1) {
+            novoRanking = 1.0;
+        } else {
+            novoRanking = 0.0; // Sem pedidos completados, ranking 0
+        }
+
+        // Atualizar ranking do cliente
+        cliente.setRanking(novoRanking);
+        clienteRepository.save(cliente);
+    }
 }
