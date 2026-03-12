@@ -87,6 +87,7 @@ public class SecurityConfig {
                     "/livros",
                     "/login",
                     "/clientes/novo",
+                    "/clientes",
                     "/css/**",
                     "/js/**",
                     "/images/**",

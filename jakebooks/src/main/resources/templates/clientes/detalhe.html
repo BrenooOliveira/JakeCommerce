@@ -42,7 +42,8 @@
                         <div class="card-body">
                             <h6 class="card-title text-primary">Status</h6>
                             <span class="badge" 
-                                  th:classappend="${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).ATIVO} ? 'bg-success' : (${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).BLOQUEADO} ? 'bg-danger' : 'bg-secondary')"
+                                  th:classappend="${cliente.status().name() == 'ATIVO'} ? 'bg-success' : 
+                                    (${cliente.status().name() == 'BLOQUEADO'} ? 'bg-danger' : 'bg-secondary')"
                                   th:text="${#strings.replace(cliente.status().toString(), '_', ' ')}"></span>
                         </div>
                     </div>

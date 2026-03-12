@@ -69,7 +69,8 @@ INSERT INTO livro_autor (livro_id, autor_id) VALUES
 INSERT INTO cliente (codigo, nome, genero, data_nascimento, cpf, telefone, email, senha_criptografada, ranking, status) VALUES
 ('CLI001', 'Ana Silva', 'F', '1990-05-15', '12345678901', '11987654321', 'ana@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.5, 'ATIVO'),
 ('CLI002', 'Bruno Costa', 'M', '1985-08-22', '12345678902', '11987654322', 'bruno@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 3.8, 'ATIVO'),
-('CLI003', 'Carla Oliveira', 'F', '1992-12-10', '12345678903', '11987654323', 'carla@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.2, 'ATIVO');
+('CLI003', 'Carla Oliveira', 'F', '1992-12-10', '12345678903', '11987654323', 'carla@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.2, 'ATIVO'),
+('CLI004', 'Breno Aves', '2', '1992-12-10', '12345678903', '11987654323', 'breno@teste.com', '$2a$12$MYli6cvDraEkUJZcChaVXu.zLDJYB0vUe2gcyierqZ6ZvaLn0pa7a', 4.4, 'ATIVO');
 
 -- Inserir Endereços
 INSERT INTO endereco (nome_identificador, tipo_residencia, logradouro, numero, bairro, cep, cidade, estado, pais, tipo_endereco, cliente_id) VALUES

@@ -108,7 +108,7 @@ public class ClienteController {
         return "clientes/form-cadastro";
     }
 
-    /**
+/**
      * Cria novo cliente.
      * POST /clientes
      * RF0021: Cadastrar cliente
@@ -122,29 +122,28 @@ public class ClienteController {
     public String criar(
             @Valid @ModelAttribute("clienteForm") ClienteCadastroDTO dto,
             BindingResult result,
-            RedirectAttributes attrs) {
+            RedirectAttributes attrs,
+            Model model) {
 
-        if (result.hasErrors()) {
-            attrs.addFlashAttribute("mensagemErro", "Verifique os erros abaixo");
-            return "redirect:/clientes/novo";
+        // Validar senhas antes de tudo
+        if (!dto.senha().equals(dto.confirmacaoSenha())) {
+            result.rejectValue("confirmacaoSenha", "senhas.diferentes", "Senhas não conferem");
         }
 
-        // Validar confirmação de senha
-        if (!dto.senha().equals(dto.confirmacaoSenha())) {
-            attrs.addFlashAttribute("mensagemErro", "Senhas não conferem");
-            return "redirect:/clientes/novo";
+        if (result.hasErrors()) {
+            // Retorna a view direto — mantém BindingResult e objeto preenchido
+            return "clientes/form-cadastro";
         }
 
         try {
             ClienteDetalheDTO cliente = clienteService.cadastrar(dto);
-            attrs.addFlashAttribute("mensagemSucesso", "Cliente cadastrado com sucesso! Código: " + cliente.codigo());
+            attrs.addFlashAttribute("mensagemSucesso", "Cliente cadastrado! Código: " + cliente.codigo());
             return "redirect:/clientes/" + cliente.codigo();
         } catch (ValidacaoNegocioException e) {
-            attrs.addFlashAttribute("mensagemErro", e.getMessage());
-            return "redirect:/clientes/novo";
+            model.addAttribute("mensagemErro", e.getMessage());
+            return "clientes/form-cadastro"; // retorna a view com a mensagem de erro
         }
-    }
-
+    }     
     /**
      * Exibe detalhes de um cliente.
      * GET /clientes/{codigo}
