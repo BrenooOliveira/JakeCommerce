@@ -30,12 +30,12 @@
         <div class="row">
             <!-- Sidebar (visível apenas em telas maiores quando isAdmin=true) -->
             <div 
-                th:class="${isAdmin} ? 'col-md-3 col-lg-2 d-md-block bg-light sidebar py-4' : 'd-none'">
+                th:class="${isAdmin == true} ? 'col-md-3 col-lg-2 d-md-block bg-light sidebar py-4' : 'd-none'">
                 <div th:insert="~{fragments/sidebar :: sidebar}"></div>
             </div>
 
             <!-- Conteúdo Principal -->
-            <main th:class="${isAdmin} ? 'col-md-9 col-lg-10' : 'col-12'">
+            <main th:class="${isAdmin == true} ? 'col-md-9 col-lg-10' : 'col-12'">
                 <!-- Mensagens Flash -->
                 <div th:insert="~{fragments/messages :: messages}"></div>
 

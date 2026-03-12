@@ -90,9 +90,12 @@
                                 <td th:text="${cliente.nome()}"></td>
                                 <td th:text="${cliente.cpf()}"></td>
                                 <td>
-                                    <span class="badge" 
-                                          th:classappend="${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).ATIVO} ? 'bg-success' : (${cliente.status() == T(com.les.jakebooks.model.enums.StatusCliente).BLOQUEADO} ? 'bg-danger' : 'bg-secondary')"
-                                          th:text="${#strings.replace(cliente.status().toString(), '_', ' ')}"></span>
+                                    <span class="badge"
+                                        th:with="st=${cliente.status()}"
+                                        th:classappend="${st.name() == 'ATIVO'} ? 'bg-success' : 
+                                                        (${st.name() == 'BLOQUEADO'} ? 'bg-danger' : 'bg-secondary')"
+                                        th:text="${#strings.replace(st.name(), '_', ' ')}">
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">

@@ -138,7 +138,7 @@
                             <tr th:each="livro : ${page.content}">
                                 <td class="fw-bold" th:text="${livro.codigo()}"></td>
                                 <td th:text="${livro.titulo()}"></td>
-                                <td th:text="${livro.editora()}"></td>
+                                <td th:text="${livro.nomeEditora()}"></td>
                                 <td>
                                     <span class="badge bg-info">
                                         R$ <span th:text="${#numbers.formatDecimal(livro.valorVenda(), 1, 2)}"></span>
@@ -146,8 +146,11 @@
                                 </td>
                                 <td>
                                     <span class="badge" 
-                                          th:classappend="${livro.status() == T(com.les.jakebooks.model.enums.StatusLivro).ATIVO} ? 'bg-success' : 'bg-danger'"
-                                          th:text="${#strings.replace(livro.status().toString(), '_', ' ')}"></span>
+                                        th:with="st=${livro.status()}"
+                                        th:classappend="${st.name() == 'ATIVO'} ? 'bg-success' : 
+                                                        (${st.name() == 'INATIVO'} ? 'bg-danger' : 'bg-secondary')"
+                                        th:text="${#strings.replace(st.name(), '_', ' ')}">
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">

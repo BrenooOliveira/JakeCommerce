@@ -4,7 +4,7 @@
     <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <!-- Logo -->
-            <a class="navbar-brand fw-bold" href="/">
+            <a class="navbar-brand fw-bold" href="/" th:href="@{/}">
                 <i class="bi bi-book"></i> Livraria
             </a>
 
@@ -24,27 +24,27 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/livros">
+                        <a class="nav-link" href="/livros" th:href="@{/livros}">
                             <i class="bi bi-book-half"></i> Livros
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/clientes">
+                        <a class="nav-link" href="/clientes" th:href="@{/clientes}">
                             <i class="bi bi-people"></i> Clientes
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/pedidos">
+                        <a class="nav-link" href="/pedidos" th:href="@{/pedidos}">
                             <i class="bi bi-bag-check"></i> Pedidos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/estoque">
+                        <a class="nav-link" href="/estoque" th:href="@{/estoque}">
                             <i class="bi bi-boxes"></i> Estoque
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/analise">
+                        <a class="nav-link" href="/analise" th:href="@{/analise}">
                             <i class="bi bi-graph-up"></i> Análise
                         </a>
                     </li>
@@ -59,10 +59,10 @@
                             <i class="bi bi-person-circle"></i> Usuário
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="/perfil">Meu Perfil</a></li>
-                            <li><a class="dropdown-item" href="/carrinho">Carrinho</a></li>
+                            <li><a class="dropdown-item" href="/perfil" th:href="@{/perfil}">Meu Perfil</a></li>
+                            <li><a class="dropdown-item" href="/carrinho" th:href="@{/carrinho}">Carrinho</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout">Sair</a></li>
+                            <li><a class="dropdown-item" href="/logout" th:href="@{/logout}">Sair</a></li>
                         </ul>
                     </li>
                 </ul>
