@@ -8,6 +8,7 @@ import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.repository.EstoqueRepository;
 import com.les.jakebooks.repository.LivroRepository;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

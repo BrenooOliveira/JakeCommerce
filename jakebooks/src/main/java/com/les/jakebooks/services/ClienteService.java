@@ -14,6 +14,7 @@ import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.EnderecoRepository;
 import com.les.jakebooks.repository.PedidoRepository;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -157,6 +158,13 @@ public class ClienteService {
      * @throws RecursoNaoEncontradoException se cliente não existe
      */
     public ClienteDetalheDTO inativar(String codigo) {
+        // Validar autorização: apenas admin pode inativar clientes
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem inativar clientes."
+            );
+        }
+
         Cliente cliente = buscarClientePorCodigo(codigo);
 
         if (cliente.getStatus() == StatusCliente.INATIVO) {

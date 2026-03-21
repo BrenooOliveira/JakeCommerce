@@ -48,7 +48,20 @@ public class Cliente {
     private String senhaCriptografada;
     
     private Double ranking;
-    
+
+    /**
+     * Campo técnico para controle de autorização.
+     *
+     * Este campo NÃO faz parte do modelo de domínio original, mas é uma
+     * extensão técnica necessária para implementar requisitos funcionais
+     * que especificam operações exclusivas de administradores:
+     * - RF0038, RF0039, RF0041, RF0042, RF0051, RF0055
+     *
+     * Valor padrão: false (cliente comum)
+     * Valor true: concede privilégios administrativos (ROLE_ADMIN)
+     */
+    private Boolean isAdmin = false;
+
     @Enumerated(EnumType.STRING)
     private StatusCliente status;
     
@@ -61,10 +74,12 @@ public class Cliente {
 
     // Construtores
     public Cliente() {
+        this.isAdmin = false;
     }
 
-    public Cliente(String codigo, String nome, String genero, LocalDate dataNascimento, String cpf, 
-                   String telefone, String email, String senhaCriptografada, Double ranking, StatusCliente status) {
+    public Cliente(String codigo, String nome, String genero, LocalDate dataNascimento, String cpf,
+                   String telefone, String email, String senhaCriptografada, Double ranking, StatusCliente status,
+                   Boolean isAdmin) {
         this.codigo = codigo;
         this.nome = nome;
         this.genero = genero;
@@ -75,6 +90,7 @@ public class Cliente {
         this.senhaCriptografada = senhaCriptografada;
         this.ranking = ranking;
         this.status = status;
+        this.isAdmin = isAdmin != null ? isAdmin : false;
     }
 
     // Getters e Setters
@@ -164,6 +180,14 @@ public class Cliente {
 
     public void setStatus(StatusCliente status) {
         this.status = status;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
     public List<Endereco> getEnderecos() {
