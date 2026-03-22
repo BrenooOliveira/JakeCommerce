@@ -108,16 +108,16 @@
                                            title="Visualizar">
                                             <i class="bi bi-eye"></i> Detalhes
                                         </a>
-                                        <!-- Botão Despachar (apenas se EM_PROCESSAMENTO) -->
-                                        <th:block th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                        <!-- Botão Despachar (apenas se EM_PROCESSAMENTO e ADMIN) -->
+                                        <th:block th:if="${isAdmin == true and pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
                                             <form method="POST" th:action="@{/pedidos/{id}/despachar(id=${pedido.getId()})}" style="display: inline;">
                                                 <button type="submit" class="btn btn-outline-info btn-sm" title="Despachar">
                                                     <i class="bi bi-truck"></i>
                                                 </button>
                                             </form>
                                         </th:block>
-                                        <!-- Botão Entregar (apenas se EM_TRANSPORTE) -->
-                                        <th:block th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                        <!-- Botão Entregar (apenas se EM_TRANSPORTE e ADMIN) -->
+                                        <th:block th:if="${isAdmin == true and pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
                                             <form method="POST" th:action="@{/pedidos/{id}/entregar(id=${pedido.getId()})}" style="display: inline;">
                                                 <button type="submit" class="btn btn-outline-success btn-sm" title="Entregar">
                                                     <i class="bi bi-check-circle"></i>

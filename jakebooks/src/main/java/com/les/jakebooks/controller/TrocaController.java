@@ -5,7 +5,9 @@ import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.model.enums.StatusTroca;
 import com.les.jakebooks.services.TrocaService;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +40,7 @@ public class TrocaController {
      * @param model Model para adicionar atributos à view
      * @return view name "trocas/lista"
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String listar(
             @RequestParam(required = false) String status,
@@ -62,7 +65,7 @@ public class TrocaController {
         model.addAttribute("trocas", trocas);
         model.addAttribute("statusTrocas", StatusTroca.values());
         model.addAttribute("statusSelecionado", status);
-        model.addAttribute("isAdmin", true);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "trocas/lista";
     }
@@ -76,6 +79,7 @@ public class TrocaController {
      * @param attrs RedirectAttributes para mensagens de erro
      * @return view name "trocas/detalhe" ou redirect se não encontrado
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public String detalhe(
             @PathVariable Long id,
@@ -87,7 +91,7 @@ public class TrocaController {
             
             model.addAttribute("troca", troca);
             model.addAttribute("statusTrocas", StatusTroca.values());
-            model.addAttribute("isAdmin", true);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "trocas/detalhe";
         } catch (Exception e) {
@@ -106,6 +110,7 @@ public class TrocaController {
      * @param attrs RedirectAttributes para mensagens
      * @return redirect para /trocas/{id}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/autorizar")
     public String autorizar(
             @PathVariable Long id,
@@ -134,6 +139,7 @@ public class TrocaController {
      * @param attrs RedirectAttributes para mensagens
      * @return redirect para /trocas/{id}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/receber")
     public String receberTroca(
             @PathVariable Long id,
@@ -171,7 +177,7 @@ public class TrocaController {
         try {
             // Validação será feita no service ao criar a negociação
             model.addAttribute("pedidoId", pedidoId);
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "trocas/solicitar";
         } catch (Exception e) {
@@ -207,10 +213,11 @@ public class TrocaController {
             // Criar solicitação de troca
             TrocaDetalheDTO troca = trocaService.solicitar(pedidoId, motivo);
 
-            attrs.addFlashAttribute("mensagemSucesso", 
+            attrs.addFlashAttribute("mensagemSucesso",
                     "Solicitação de troca criada com sucesso! ID da troca: " + troca.trocaId());
-            
-            return "redirect:/trocas/" + troca.trocaId();
+
+            // Redirecionar para o pedido (cliente pode ver) ao invés de /trocas/{id} (admin only)
+            return "redirect:/pedidos/" + pedidoId;
         } catch (ValidacaoNegocioException e) {
             attrs.addFlashAttribute("mensagemErro", "Erro ao solicitar troca: " + e.getMessage());
             return "redirect:/pedidos/" + pedidoId;

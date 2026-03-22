@@ -4,16 +4,16 @@
       layout:decorate="~{fragments/layout}"
       lang="pt-BR">
 <head>
-    <title>Adicionar Cartão</title>
+    <title>Adicionar Cartao</title>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container-fluid">
-            <!-- Cabeçalho -->
+            <!-- Cabecalho -->
             <div class="row mb-4">
                 <div class="col">
                     <h1 class="display-6">
-                        <i class="bi bi-credit-card"></i> Adicionar Cartão
+                        <i class="bi bi-credit-card"></i> Adicionar Cartao
                     </h1>
                     <p class="text-muted">
                         Cliente: <span class="fw-bold" th:text="${clienteNome}"></span>
@@ -21,31 +21,30 @@
                 </div>
             </div>
 
-            <!-- Formulário de Cartão -->
+            <!-- Formulario de Cartao -->
             <div class="row">
                 <div class="col-lg-8">
                     <form th:action="@{/clientes/{codigo}/cartoes(codigo=${clienteCodigo})}" method="post" th:object="${cartao}" class="needs-validation" novalidate>
-                        
-                        <!-- Card 1: Dados do Cartão -->
+
+                        <!-- Card 1: Dados do Cartao -->
                         <div class="card mb-4">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="card-title mb-0">
-                                    <i class="bi bi-credit-card-2-front"></i> Dados do Cartão
+                                    <i class="bi bi-credit-card-2-front"></i> Dados do Cartao
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <!-- Número do Cartão -->
+                                <!-- Numero do Cartao -->
                                 <div class="mb-3">
-                                    <label for="numero" class="form-label">Número do Cartão (16 dígitos) *</label>
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="numero" 
+                                    <label for="numero" class="form-label">Numero do Cartao (16 digitos) *</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="numero"
                                         th:field="*{numero}"
                                         th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid' : ''"
-                                        placeholder="0000 0000 0000 0000"
-                                        maxlength="19"
-                                        data-mask="credit-card"
+                                        placeholder="0000000000000000"
+                                        maxlength="16"
                                         required>
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}">
                                         <span th:errors="*{numero}"></span>
@@ -54,11 +53,11 @@
 
                                 <!-- Nome Impresso -->
                                 <div class="mb-3">
-                                    <label for="nomeImpresso" class="form-label">Nome Impresso no Cartão *</label>
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="nomeImpresso" 
+                                    <label for="nomeImpresso" class="form-label">Nome Impresso no Cartao *</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="nomeImpresso"
                                         th:field="*{nomeImpresso}"
                                         th:classappend="${#fields.hasErrors('nomeImpresso')} ? 'is-invalid' : ''"
                                         placeholder="NOME DO TITULAR"
@@ -69,23 +68,26 @@
                                     </div>
                                 </div>
 
-                                <!-- Bandeira -->
+                                <!-- Bandeira e CVV -->
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="bandeira" class="form-label">Bandeira *</label>
                                         <select class="form-select" id="bandeira" th:field="*{bandeira}" required>
                                             <option value="">Selecione...</option>
-                                            <option th:each="bandeira : ${bandeiras}" th:value="${bandeira}" th:text="${bandeira}"></option>
+                                            <option th:each="b : ${bandeiras}" th:value="${b}" th:text="${b}"></option>
                                         </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('bandeira')}">
+                                            <span th:errors="*{bandeira}"></span>
+                                        </div>
                                     </div>
 
-                                    <!-- Código de Segurança -->
+                                    <!-- Codigo de Seguranca -->
                                     <div class="col-md-6 mb-3">
-                                        <label for="codigoSeguranca" class="form-label">CVV/CVC (3-4 dígitos) *</label>
-                                        <input 
-                                            type="text" 
-                                            class="form-control" 
-                                            id="codigoSeguranca" 
+                                        <label for="codigoSeguranca" class="form-label">CVV/CVC (3-4 digitos) *</label>
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="codigoSeguranca"
                                             th:field="*{codigoSeguranca}"
                                             th:classappend="${#fields.hasErrors('codigoSeguranca')} ? 'is-invalid' : ''"
                                             placeholder="000"
@@ -99,77 +101,31 @@
                             </div>
                         </div>
 
-                        <!-- Card 2: Validade -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-info text-white">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-calendar-check"></i> Validade
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="mesValidade" class="form-label">Mês de Validade (MM) *</label>
-                                        <input 
-                                            type="number" 
-                                            class="form-control" 
-                                            id="mesValidade" 
-                                            th:field="*{mesValidade}"
-                                            th:classappend="${#fields.hasErrors('mesValidade')} ? 'is-invalid' : ''"
-                                            placeholder="01"
-                                            min="1"
-                                            max="12"
-                                            required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('mesValidade')}">
-                                            <span th:errors="*{mesValidade}"></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="anoValidade" class="form-label">Ano de Validade (YYYY) *</label>
-                                        <input 
-                                            type="number" 
-                                            class="form-control" 
-                                            id="anoValidade" 
-                                            th:field="*{anoValidade}"
-                                            th:classappend="${#fields.hasErrors('anoValidade')} ? 'is-invalid' : ''"
-                                            placeholder="2025"
-                                            min="2024"
-                                            max="2099"
-                                            required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('anoValidade')}">
-                                            <span th:errors="*{anoValidade}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Card 3: Preferências -->
+                        <!-- Card 2: Preferencias -->
                         <div class="card mb-4">
                             <div class="card-header bg-success text-white">
                                 <h5 class="card-title mb-0">
-                                    <i class="bi bi-star"></i> Preferências
+                                    <i class="bi bi-star"></i> Preferencias
                                 </h5>
                             </div>
                             <div class="card-body">
                                 <div class="form-check">
-                                    <input 
-                                        type="checkbox" 
-                                        class="form-check-input" 
-                                        id="preferencial" 
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        id="preferencial"
                                         th:field="*{preferencial}">
                                     <label class="form-check-label" for="preferencial">
-                                        Definir como cartão preferencial
+                                        Definir como cartao preferencial
                                     </label>
                                 </div>
                                 <small class="form-text text-muted d-block mt-2">
-                                    <i class="bi bi-info-circle"></i> Apenas um cartão pode ser marcado como preferencial. Se você marcar este, o cartão preferencial anterior será desmarcado.
+                                    <i class="bi bi-info-circle"></i> Apenas um cartao pode ser marcado como preferencial. Se voce marcar este, o cartao preferencial anterior sera desmarcado.
                                 </small>
                             </div>
                         </div>
 
-                        <!-- Botões -->
+                        <!-- Botoes -->
                         <div class="d-flex gap-2 mb-4">
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="bi bi-check-lg"></i> Salvar
@@ -186,36 +142,36 @@
                     <div class="card card-help">
                         <div class="card-header bg-light">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-question-circle"></i> Dúvidas?
+                                <i class="bi bi-question-circle"></i> Duvidas?
                             </h5>
                         </div>
                         <div class="card-body">
                             <h6 class="fw-bold text-primary mb-2">
-                                <i class="bi bi-info-circle"></i> Dados do Cartão
+                                <i class="bi bi-info-circle"></i> Dados do Cartao
                             </h6>
                             <p class="small text-muted mb-3">
-                                Você pode cadastrar múltiplos cartões. É necessário um mínimo de saldo para cada cartão.
+                                Voce pode cadastrar multiplos cartoes. E necessario um minimo de saldo para cada cartao.
                             </p>
 
                             <h6 class="fw-bold text-primary mb-2">
-                                <i class="bi bi-credit-card"></i> Número do Cartão
+                                <i class="bi bi-credit-card"></i> Numero do Cartao
                             </h6>
                             <p class="small text-muted mb-3">
-                                Digite os 16 dígitos do seu cartão de crédito. O número será armazenado de forma segura.
+                                Digite os 16 digitos do seu cartao de credito. O numero sera armazenado de forma segura.
                             </p>
 
                             <h6 class="fw-bold text-primary mb-2">
                                 <i class="bi bi-lock"></i> CVV/CVC
                             </h6>
                             <p class="small text-muted mb-3">
-                                O código de segurança possui 3 dígitos (na traseira) ou 4 dígitos (se American Express).
+                                O codigo de seguranca possui 3 digitos (na traseira) ou 4 digitos (se American Express).
                             </p>
 
                             <h6 class="fw-bold text-primary mb-2">
-                                <i class="bi bi-star-fill"></i> Cartão Preferencial
+                                <i class="bi bi-star-fill"></i> Cartao Preferencial
                             </h6>
                             <p class="small text-muted mb-0">
-                                Marque este cartão como preferencial para que seja selecionado automaticamente nas compras.
+                                Marque este cartao como preferencial para que seja selecionado automaticamente nas compras.
                             </p>
                         </div>
                     </div>
@@ -224,12 +180,12 @@
                     <div class="card card-warning mt-3">
                         <div class="card-header bg-warning text-dark">
                             <h6 class="card-title mb-0">
-                                <i class="bi bi-shield-check"></i> Segurança
+                                <i class="bi bi-shield-check"></i> Seguranca
                             </h6>
                         </div>
                         <div class="card-body">
                             <p class="small text-muted mb-0">
-                                Seus dados de cartão são protegidos por criptografia. Nunca compartilhe sua senha de acesso.
+                                Seus dados de cartao sao protegidos por criptografia. Nunca compartilhe sua senha de acesso.
                             </p>
                         </div>
                     </div>
@@ -237,32 +193,24 @@
             </div>
         </div>
 
-        <!-- Script para formatar número do cartão -->
-        <script>
-            // Máscara para número do cartão
-            const numeroInput = document.getElementById('numero');
-            
-            numeroInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\s/g, '');
-                let formattedValue = value.replace(/(\d{4})/g, '$1 ').trim();
-                e.target.value = formattedValue;
-            });
-
-            // Validação de mês
-            const mesInput = document.getElementById('mesValidade');
-            mesInput.addEventListener('change', function() {
-                const mes = parseInt(this.value);
-                if (mes < 1 || mes > 12) {
-                    this.classList.add('is-invalid');
-                } else {
-                    this.classList.remove('is-invalid');
+        <!-- Script para formatar numero do cartao -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Validacao de numero do cartao (apenas digitos)
+                const numeroInput = document.getElementById('numero');
+                if (numeroInput) {
+                    numeroInput.addEventListener('input', function(e) {
+                        e.target.value = e.target.value.replace(/\D/g, '');
+                    });
                 }
-            });
 
-            // Validação de CVV
-            const cvvInput = document.getElementById('codigoSeguranca');
-            cvvInput.addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/\D/g, '');
+                // Validacao de CVV (apenas digitos)
+                const cvvInput = document.getElementById('codigoSeguranca');
+                if (cvvInput) {
+                    cvvInput.addEventListener('input', function(e) {
+                        e.target.value = e.target.value.replace(/\D/g, '');
+                    });
+                }
             });
         </script>
     </div>

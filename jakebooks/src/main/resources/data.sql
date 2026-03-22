@@ -65,27 +65,34 @@ INSERT INTO livro_categoria (livro_id, categoria_id) VALUES
 INSERT INTO livro_autor (livro_id, autor_id) VALUES
 (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 1), (7, 4), (8, 1);
 
--- Inserir Clientes (com senha: ClienteTeste@123)
-INSERT INTO cliente (codigo, nome, genero, data_nascimento, cpf, telefone, email, senha_criptografada, ranking, status) VALUES
-('CLI001', 'Ana Silva', 'F', '1990-05-15', '12345678901', '11987654321', 'ana@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.5, 'ATIVO'),
-('CLI002', 'Bruno Costa', 'M', '1985-08-22', '12345678902', '11987654322', 'bruno@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 3.8, 'ATIVO'),
-('CLI003', 'Carla Oliveira', 'F', '1992-12-10', '12345678903', '11987654323', 'carla@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.2, 'ATIVO'),
-('CLI004', 'Breno Aves', '2', '1992-12-10', '12345678903', '11987654323', 'breno@teste.com', '$2a$12$MYli6cvDraEkUJZcChaVXu.zLDJYB0vUe2gcyierqZ6ZvaLn0pa7a', 4.4, 'ATIVO');
+-- Inserir Clientes
+-- ADMIN: email=admin@jakebooks.com | senha=Admin123@
+-- CLIENTES: email=*@teste.com | senha=ClienteTeste@123
+INSERT INTO cliente (codigo, nome, genero, data_nascimento, cpf, telefone, email, senha_criptografada, ranking, status, is_admin) VALUES
+('ADMIN001', 'Administrador', 'OUTRO', '1990-01-01', '00000000000', '11999999999', 'admin@jakebooks.com', '$2a$12$i06IiML1RKTrMr7pkgmZ.eDy0eK/mKuaSaPGeM3hoTOGvRFFiDUyS', 0.0, 'ATIVO', true),
+('CLI001', 'Ana Silva', 'F', '1990-05-15', '12345678901', '11987654321', 'ana@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.5, 'ATIVO', false),
+('CLI002', 'Bruno Costa', 'M', '1985-08-22', '12345678902', '11987654322', 'bruno@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 3.8, 'ATIVO', false),
+('CLI003', 'Carla Oliveira', 'F', '1992-12-10', '12345678903', '11987654323', 'carla@teste.com', '$2a$12$qKUpEwOLNQGJLZ4PNW3sluMYm/GhqvT5XfYqSLhCx6X.HZHPdAoaS', 4.2, 'ATIVO', false),
+('CLI004', 'Breno Aves', '2', '1992-12-10', '12345678904', '11987654324', 'breno@teste.com', '$2a$12$MYli6cvDraEkUJZcChaVXu.zLDJYB0vUe2gcyierqZ6ZvaLn0pa7a', 4.4, 'ATIVO', false);
 
 -- Inserir Endereços
+-- Endereços do Admin (RN0021: cobrança obrigatório | RN0022: entrega obrigatório)
 INSERT INTO endereco (nome_identificador, tipo_residencia, logradouro, numero, bairro, cep, cidade, estado, pais, tipo_endereco, cliente_id) VALUES
-('Casa', 'APARTAMENTO', 'Rua A', 100, 'Centro', '01000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 1),
-('Casa', 'APARTAMENTO', 'Rua A', 100, 'Centro', '01000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 1),
-('Apto', 'APARTAMENTO', 'Rua B', 200, 'Zona Norte', '02000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 2),
-('Apto', 'APARTAMENTO', 'Rua B', 200, 'Zona Norte', '02000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 2),
-('Residência', 'CASA', 'Rua C', 300, 'Vila Nova', '03000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 3),
-('Residência', 'CASA', 'Rua C', 300, 'Vila Nova', '03000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 3);
+('Administração', 'COMERCIAL', 'Rua Admin', '1', 'Centro', '01000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 1),
+('Administração', 'COMERCIAL', 'Rua Admin', '1', 'Centro', '01000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 1),
+-- Endereços dos clientes
+('Casa', 'APARTAMENTO', 'Rua A', 100, 'Centro', '01000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 2),
+('Casa', 'APARTAMENTO', 'Rua A', 100, 'Centro', '01000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 2),
+('Apto', 'APARTAMENTO', 'Rua B', 200, 'Zona Norte', '02000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 3),
+('Apto', 'APARTAMENTO', 'Rua B', 200, 'Zona Norte', '02000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 3),
+('Residência', 'CASA', 'Rua C', 300, 'Vila Nova', '03000-000', 'São Paulo', 'SP', 'Brasil', 'COBRANCA', 4),
+('Residência', 'CASA', 'Rua C', 300, 'Vila Nova', '03000-000', 'São Paulo', 'SP', 'Brasil', 'ENTREGA', 4);
 
 -- Inserir Cartões
 INSERT INTO cartao (numero, nome_impresso, bandeira, codigo_seguranca, preferencial, cliente_id) VALUES
-('4111111111111111', 'ANA SILVA', 'VISA', '123', true, 1),
-('5555555555554444', 'BRUNO COSTA', 'MASTERCARD', '456', true, 2),
-('378282246310005', 'CARLA OLIVEIRA', 'AMEX', '789', true, 3);
+('4111111111111111', 'ANA SILVA', 'VISA', '123', true, 2),
+('5555555555554444', 'BRUNO COSTA', 'MASTERCARD', '456', true, 3),
+('378282246310005', 'CARLA OLIVEIRA', 'AMEX', '789', true, 4);
 
 -- Inserir Pagamentos (APROVADOS para vendas válidas)
 INSERT INTO pagamento (status, valor_total) VALUES
@@ -102,16 +109,16 @@ INSERT INTO pagamento (status, valor_total) VALUES
 
 -- Inserir Pedidos (com datas variadas para teste de período)
 INSERT INTO pedido (data_criacao, status, valor_total, valor_frete, cliente_id, endereco_id, pagamento_id) VALUES
-('2024-01-10', 'ENTREGUE', 168.50, 15.00, 1, 2, 1),
-('2024-01-15', 'ENTREGUE', 203.40, 15.00, 2, 4, 2),
-('2024-02-05', 'ENTREGUE', 312.75, 20.00, 3, 6, 3),
-('2024-02-20', 'ENTREGUE', 157.60, 15.00, 1, 2, 4),
-('2024-03-10', 'ENTREGUE', 245.90, 20.00, 2, 4, 5),
-('2024-03-18', 'ENTREGUE', 189.70, 15.00, 3, 6, 6),
-('2024-04-05', 'ENTREGUE', 428.40, 25.00, 1, 2, 7),
-('2024-04-22', 'ENTREGUE', 296.30, 15.00, 2, 4, 8),
-('2024-05-08', 'ENTREGUE', 521.00, 30.00, 3, 6, 9),
-('2024-05-25', 'ENTREGUE', 384.20, 20.00, 1, 2, 10);
+('2024-01-10', 'ENTREGUE', 168.50, 15.00, 2, 4, 1),
+('2024-01-15', 'ENTREGUE', 203.40, 15.00, 3, 6, 2),
+('2024-02-05', 'ENTREGUE', 312.75, 20.00, 4, 8, 3),
+('2024-02-20', 'ENTREGUE', 157.60, 15.00, 2, 4, 4),
+('2024-03-10', 'ENTREGUE', 245.90, 20.00, 3, 6, 5),
+('2024-03-18', 'ENTREGUE', 189.70, 15.00, 4, 8, 6),
+('2024-04-05', 'ENTREGUE', 428.40, 25.00, 2, 4, 7),
+('2024-04-22', 'ENTREGUE', 296.30, 15.00, 3, 6, 8),
+('2024-05-08', 'ENTREGUE', 521.00, 30.00, 4, 8, 9),
+('2024-05-25', 'ENTREGUE', 384.20, 20.00, 2, 4, 10);
 
 -- Inserir ItemPedidos (com produtos variados)
 INSERT INTO item_pedido (quantidade, valor_unitario, pedido_id, livro_id) VALUES

@@ -127,9 +127,9 @@
                                 <i class="bi bi-eye"></i> Detalhes
                             </a>
 
-                            <!-- Botão Autorizar (se SOLICITADA) -->
-                            <th:block th:if="${troca.status().toString() == 'SOLICITADA'}">
-                                <form method="post" 
+                            <!-- Botão Autorizar (se SOLICITADA e ADMIN) -->
+                            <th:block th:if="${isAdmin == true and troca.status().toString() == 'SOLICITADA'}">
+                                <form method="post"
                                       th:action="@{/trocas/{id}/autorizar(id=${troca.trocaId()})}"
                                       style="display: inline;"
                                       onsubmit="return confirm('Tem certeza que deseja autorizar esta troca?');">
@@ -140,9 +140,9 @@
                                 </form>
                             </th:block>
 
-                            <!-- Botão Receber (se AUTORIZADA) -->
-                            <th:block th:if="${troca.status().toString() == 'AUTORIZADA'}">
-                                <form method="post" 
+                            <!-- Botão Receber (se AUTORIZADA e ADMIN) -->
+                            <th:block th:if="${isAdmin == true and troca.status().toString() == 'AUTORIZADA'}">
+                                <form method="post"
                                       th:action="@{/trocas/{id}/receber(id=${troca.trocaId()})}"
                                       style="display: inline;"
                                       onsubmit="return confirm('Tem certeza que deseja confirmar o recebimento desta troca?');">

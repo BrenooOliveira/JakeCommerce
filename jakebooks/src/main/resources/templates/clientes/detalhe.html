@@ -41,9 +41,8 @@
                     <div class="card border-start border-primary border-5">
                         <div class="card-body">
                             <h6 class="card-title text-primary">Status</h6>
-                            <span class="badge" 
-                                  th:classappend="${cliente.status().name() == 'ATIVO'} ? 'bg-success' : 
-                                    (${cliente.status().name() == 'BLOQUEADO'} ? 'bg-danger' : 'bg-secondary')"
+                            <span class="badge"
+                                  th:classappend="${cliente.status().name() == 'ATIVO' ? 'bg-success' : (cliente.status().name() == 'BLOQUEADO' ? 'bg-danger' : 'bg-secondary')}"
                                   th:text="${#strings.replace(cliente.status().toString(), '_', ' ')}"></span>
                         </div>
                     </div>
@@ -146,15 +145,15 @@
                     </div>
 
                     <!-- Lista de Endereços -->
-                    <div class="row">
+                    <div class="row" th:if="${cliente.enderecos() != null and not cliente.enderecos().isEmpty()}">
                         <div class="col-md-6 mb-3" th:each="endereco : ${cliente.enderecos()}">
                             <div class="card h-100">
                                 <div class="card-header">
                                     <h6 class="card-title mb-0">
                                         <span th:text="${endereco.nomeIdentificador()}"></span>
-                                        <span class="badge" 
-                                              th:classappend="${endereco.tipoEndereco().toString() == 'COBRANCA'} ? 'bg-info' : 'bg-success'"
-                                              th:text="${endereco.tipoEndereco() == T(com.les.jakebooks.model.enums.TipoEndereco).COBRANCA ? 'Cobrança' : 'Entrega'}"></span>
+                                        <span class="badge"
+                                              th:classappend="${endereco.tipoEndereco().name() == 'COBRANCA' ? 'bg-info' : 'bg-success'}"
+                                              th:text="${endereco.tipoEndereco().name() == 'COBRANCA' ? 'Cobranca' : 'Entrega'}"></span>
                                     </h6>
                                 </div>
                                 <div class="card-body">
@@ -175,8 +174,8 @@
                     </div>
 
                     <!-- Mensagem quando não há endereços -->
-                    <div th:if="${cliente.enderecos().isEmpty()}" class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> Nenhum endereço cadastrado. 
+                    <div th:if="${cliente.enderecos() == null or cliente.enderecos().isEmpty()}" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Nenhum endereco cadastrado.
                         <a th:href="@{/clientes/{codigo}/enderecos/novo(codigo=${cliente.codigo()})}" class="alert-link">Clique aqui para adicionar</a>
                     </div>
                 </div>
@@ -192,7 +191,7 @@
                     </div>
 
                     <!-- Lista de Cartões -->
-                    <div class="row">
+                    <div class="row" th:if="${cliente.cartoes() != null and not cliente.cartoes().isEmpty()}">
                         <div class="col-md-6 mb-3" th:each="cartao : ${cliente.cartoes()}">
                             <div class="card h-100">
                                 <div class="card-header">
@@ -205,13 +204,8 @@
                                 </div>
                                 <div class="card-body">
                                     <p class="mb-2 font-monospace">
-                                        <i class="bi bi-credit-card"></i> 
-                                        <span>XXXX XXXX XXXX </span>
-                                        <span th:text="${#strings.substring(cartao.numero(), cartao.numero().length() - 4)}"></span>
-                                    </p>
-                                    <p class="mb-2">
-                                        <small class="text-muted">Válido até: </small>
-                                        <span th:text="${cartao.mesValidade() + '/' + cartao.anoValidade()}"></span>
+                                        <i class="bi bi-credit-card"></i>
+                                        <span th:text="${cartao.numero()}"></span>
                                     </p>
                                     <div th:if="${cartao.preferencial()}">
                                         <span class="badge bg-success">
@@ -224,8 +218,8 @@
                     </div>
 
                     <!-- Mensagem quando não há cartões -->
-                    <div th:if="${cliente.cartoes().isEmpty()}" class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> Nenhum cartão cadastrado. 
+                    <div th:if="${cliente.cartoes() == null or cliente.cartoes().isEmpty()}" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Nenhum cartao cadastrado.
                         <a th:href="@{/clientes/{codigo}/cartoes/novo(codigo=${cliente.codigo()})}" class="alert-link">Clique aqui para adicionar</a>
                     </div>
                 </div>
@@ -248,8 +242,8 @@
                                     <td class="fw-bold" th:text="${pedido.id()}"></td>
                                     <td th:text="${#temporals.format(pedido.dataCriacao(), 'dd/MM/yyyy HH:mm')}"></td>
                                     <td>
-                                        <span class="badge" 
-                                              th:classappend="${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE} ? 'bg-success' : (${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : (${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA} ? 'bg-warning' : 'bg-primary'))"
+                                        <span class="badge"
+                                              th:classappend="${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE ? 'bg-success' : (pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE ? 'bg-info' : (pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA ? 'bg-warning' : 'bg-primary'))}"
                                               th:text="${#strings.replace(pedido.status().toString(), '_', ' ')}"></span>
                                     </td>
                                     <td>
@@ -262,7 +256,7 @@
                                     </td>
                                 </tr>
                                 <!-- Mensagem quando não há pedidos -->
-                                <tr th:if="${pedidos.isEmpty()}">
+                                <tr th:if="${pedidos == null or pedidos.isEmpty()}">
                                     <td colspan="5" class="text-center py-5">
                                         <div class="text-muted">
                                             <i class="bi bi-inbox" style="font-size: 3rem;"></i>

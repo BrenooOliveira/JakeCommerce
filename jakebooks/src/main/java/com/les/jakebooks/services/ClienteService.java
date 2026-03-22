@@ -14,6 +14,7 @@ import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.EnderecoRepository;
 import com.les.jakebooks.repository.PedidoRepository;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -125,9 +126,18 @@ public class ClienteService {
      * @param dto novos dados do cliente
      * @return DTO do cliente alterado
      * @throws RecursoNaoEncontradoException se cliente não existe
+     * @throws ValidacaoNegocioException se cliente tentar alterar dados de outro cliente
      */
     public ClienteDetalheDTO alterar(String codigo, ClienteAlteracaoDTO dto) {
         Cliente cliente = buscarClientePorCodigo(codigo);
+
+        // Validar autorização: cliente só pode alterar próprios dados (exceto admin)
+        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
+        if (!SecurityUtil.isAdmin() && !cliente.getEmail().equals(emailLogado)) {
+            throw new ValidacaoNegocioException(
+                "Você não tem permissão para alterar dados de outro cliente"
+            );
+        }
 
         // Validar se email já está em uso por outro cliente
         Optional<Cliente> clienteComEmail = clienteRepository.findByEmail(dto.email());
@@ -157,6 +167,13 @@ public class ClienteService {
      * @throws RecursoNaoEncontradoException se cliente não existe
      */
     public ClienteDetalheDTO inativar(String codigo) {
+        // Validar autorização: apenas admin pode inativar clientes
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem inativar clientes."
+            );
+        }
+
         Cliente cliente = buscarClientePorCodigo(codigo);
 
         if (cliente.getStatus() == StatusCliente.INATIVO) {
@@ -182,6 +199,14 @@ public class ClienteService {
      */
     public ClienteDetalheDTO alterarSenha(String codigo, AlteraSenhaDTO dto) {
         Cliente cliente = buscarClientePorCodigo(codigo);
+
+        // Validar autorização: cliente só pode alterar própria senha (exceto admin)
+        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
+        if (!SecurityUtil.isAdmin() && !cliente.getEmail().equals(emailLogado)) {
+            throw new ValidacaoNegocioException(
+                "Você não tem permissão para alterar senha de outro cliente"
+            );
+        }
 
         // Validar senha atual
         if (!passwordEncoder.matches(dto.senhaAtual(), cliente.getSenhaCriptografada())) {
@@ -221,18 +246,28 @@ public class ClienteService {
      * @param dto dados do endereço
      * @return DTO do cliente atualizado
      * @throws RecursoNaoEncontradoException se cliente não existe
+     * @throws ValidacaoNegocioException se cliente tentar adicionar endereço em outra conta
      */
     public ClienteDetalheDTO adicionarEndereco(String codigo, EnderecoDTO dto) {
+        // Buscar cliente SEM relacionamentos para validação (evita lazy loading desnecessário)
         Cliente cliente = buscarClientePorCodigo(codigo);
 
-        // Validar se já existe endereço com mesmo nome identificador
+        // Validar autorização: cliente só pode adicionar endereço em própria conta (exceto admin)
+        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
+        if (!SecurityUtil.isAdmin() && !cliente.getEmail().equals(emailLogado)) {
+            throw new ValidacaoNegocioException(
+                "Você não tem permissão para adicionar endereço para outro cliente"
+            );
+        }
+
+        // Validar se já existe endereço com mesmo nome identificador e tipo
         Endereco enderecoExistente = enderecoRepository.findByClienteIdAndNomeIdentificadorAndTipoEndereco(
                 cliente.getId(), dto.nomeIdentificador(), dto.tipoEndereco());
         if (enderecoExistente != null) {
             throw new ValidacaoNegocioException("Já existe um endereço com este identificador: " + dto.nomeIdentificador());
         }
 
-        // Criar endereco
+        // Criar e salvar novo endereço
         Endereco endereco = new Endereco();
         endereco.setNomeIdentificador(dto.nomeIdentificador());
         endereco.setTipoResidencia(dto.tipoResidencia());
@@ -247,9 +282,10 @@ public class ClienteService {
         endereco.setCliente(cliente);
 
         enderecoRepository.save(endereco);
-        cliente.getEnderecos().add(endereco);
 
-        return converterParaDetalheDTO(cliente);
+        // Buscar cliente COM relacionamentos para retorno (uma única query otimizada)
+        Cliente clienteAtualizado = buscarClienteComRelacionamentos(codigo);
+        return converterParaDetalheDTO(clienteAtualizado);
     }
 
     /**
@@ -263,10 +299,19 @@ public class ClienteService {
      * @param dto dados do cartão
      * @return DTO do cliente atualizado
      * @throws RecursoNaoEncontradoException se cliente não existe
-     * @throws ValidacaoNegocioException se bandeira não existir ou número duplicado
+     * @throws ValidacaoNegocioException se bandeira não existir ou número duplicado ou sem permissão
      */
     public ClienteDetalheDTO adicionarCartao(String codigo, CartaoDTO dto) {
+        // Buscar cliente SEM relacionamentos para validação (evita lazy loading desnecessário)
         Cliente cliente = buscarClientePorCodigo(codigo);
+
+        // Validar autorização: cliente só pode adicionar cartão em própria conta (exceto admin)
+        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
+        if (!SecurityUtil.isAdmin() && !cliente.getEmail().equals(emailLogado)) {
+            throw new ValidacaoNegocioException(
+                "Você não tem permissão para adicionar cartão para outro cliente"
+            );
+        }
 
         // Validar se bandeira está cadastrada (RN0025)
         try {
@@ -292,7 +337,7 @@ public class ClienteService {
             }
         }
 
-        // Criar cartão
+        // Criar e salvar novo cartão
         Cartao cartao = new Cartao();
         cartao.setNumero(dto.numero());
         cartao.setNomeImpresso(dto.nomeImpresso());
@@ -302,9 +347,10 @@ public class ClienteService {
         cartao.setCliente(cliente);
 
         cartaoRepository.save(cartao);
-        cliente.getCartoes().add(cartao);
 
-        return converterParaDetalheDTO(cliente);
+        // Buscar cliente COM relacionamentos para retorno (uma única query otimizada)
+        Cliente clienteAtualizado = buscarClienteComRelacionamentos(codigo);
+        return converterParaDetalheDTO(clienteAtualizado);
     }
 
     /**
@@ -316,7 +362,21 @@ public class ClienteService {
      * @throws RecursoNaoEncontradoException se cliente não existe
      */
     public ClienteDetalheDTO buscarPorCodigo(String codigo) {
-        Cliente cliente = buscarClientePorCodigo(codigo);
+        Cliente cliente = buscarClienteComRelacionamentos(codigo);
+        return converterParaDetalheDTO(cliente);
+    }
+
+    /**
+     * Busca um cliente pelo email e retorna dados completos.
+     * RF0024: Consultar cliente
+     *
+     * @param email email único do cliente
+     * @return DTO com detalhes completos do cliente
+     * @throws RecursoNaoEncontradoException se cliente não existe
+     */
+    public ClienteDetalheDTO buscarPorEmail(String email) {
+        Cliente cliente = clienteRepository.findByEmailComRelacionamentos(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente com email " + email + " não encontrado"));
         return converterParaDetalheDTO(cliente);
     }
 
@@ -365,7 +425,8 @@ public class ClienteService {
     }
 
     /**
-     * Busca cliente pelo código (helper).
+     * Busca cliente pelo código (helper) - versão básica sem relacionamentos.
+     * Use buscarClienteComRelacionamentos() quando precisar de endereços/cartões.
      *
      * @param codigo código do cliente
      * @return cliente encontrado
@@ -373,6 +434,19 @@ public class ClienteService {
      */
     private Cliente buscarClientePorCodigo(String codigo) {
         return clienteRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente com código " + codigo + " não encontrado"));
+    }
+
+    /**
+     * Busca cliente pelo código COM relacionamentos carregados (endereços e cartões).
+     * Usa JOIN FETCH para evitar N+1 queries e problemas de lazy loading.
+     *
+     * @param codigo código do cliente
+     * @return cliente com relacionamentos carregados
+     * @throws RecursoNaoEncontradoException se cliente não existe
+     */
+    private Cliente buscarClienteComRelacionamentos(String codigo) {
+        return clienteRepository.findByCodigoComRelacionamentos(codigo)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente com código " + codigo + " não encontrado"));
     }
 
@@ -403,7 +477,8 @@ public class ClienteService {
                 cliente.getRanking(),
                 cliente.getStatus(),
                 enderecosDTO,
-                cartoesDTO
+                cartoesDTO,
+                cliente.getIsAdmin()
         );
     }
 

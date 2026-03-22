@@ -51,35 +51,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Tratamento genérico para NegocioException (classe base de todas as RN).
      * Captura: LivroNaoEncontradoException, EstoqueInsuficienteException, etc.
-     * 
+     *
      * Estratégia:
      * - Se aceita JSON: retorna ResponseEntity com HTTP 422
      * - Se não aceita JSON: redireciona com flash attributes (para Thymeleaf)
-     */
-    @ExceptionHandler(NegocioException.class)
-    public Object handleNegocioException(NegocioException ex, 
-                                        HttpServletRequest request,
-                                        RedirectAttributes redirectAttributes) {
-        
-        if (aceitaJson(request)) {
-            // Para APIs REST que retornam JSON
-            ErrorResponse erro = construirErrorResponse(
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                obterMensagemPorTipo(ex),
-                ex.getMessage(),
-                ex.getCodigoRN()
-            );
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(erro);
-        } else {
-            // Para requisições HTML (Thymeleaf)
-            redirectAttributes.addFlashAttribute("erro", ex.getMessage());
-            redirectAttributes.addFlashAttribute("codigoRN", ex.getCodigoRN());
-            return "redirect:" + obterUrlRedirecionamento(ex);
-        }
-    }
-
-    /**
-     * Tratamento específico para NegocioException com suporte a dual-mode.
      */
     @ExceptionHandler(NegocioException.class)
     public Object handleNegocioException(NegocioException ex,

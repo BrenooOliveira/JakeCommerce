@@ -10,8 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.les.jakebooks.model.enums.StatusCliente;
 
@@ -48,23 +48,38 @@ public class Cliente {
     private String senhaCriptografada;
     
     private Double ranking;
-    
+
+    /**
+     * Campo técnico para controle de autorização.
+     *
+     * Este campo NÃO faz parte do modelo de domínio original, mas é uma
+     * extensão técnica necessária para implementar requisitos funcionais
+     * que especificam operações exclusivas de administradores:
+     * - RF0038, RF0039, RF0041, RF0042, RF0051, RF0055
+     *
+     * Valor padrão: false (cliente comum)
+     * Valor true: concede privilégios administrativos (ROLE_ADMIN)
+     */
+    private Boolean isAdmin = false;
+
     @Enumerated(EnumType.STRING)
     private StatusCliente status;
     
     // Relacionamentos
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Endereco> enderecos = new ArrayList<>();
-    
+    private Set<Endereco> enderecos = new HashSet<>();
+
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cartao> cartoes = new ArrayList<>();
+    private Set<Cartao> cartoes = new HashSet<>();
 
     // Construtores
     public Cliente() {
+        this.isAdmin = false;
     }
 
-    public Cliente(String codigo, String nome, String genero, LocalDate dataNascimento, String cpf, 
-                   String telefone, String email, String senhaCriptografada, Double ranking, StatusCliente status) {
+    public Cliente(String codigo, String nome, String genero, LocalDate dataNascimento, String cpf,
+                   String telefone, String email, String senhaCriptografada, Double ranking, StatusCliente status,
+                   Boolean isAdmin) {
         this.codigo = codigo;
         this.nome = nome;
         this.genero = genero;
@@ -75,6 +90,7 @@ public class Cliente {
         this.senhaCriptografada = senhaCriptografada;
         this.ranking = ranking;
         this.status = status;
+        this.isAdmin = isAdmin != null ? isAdmin : false;
     }
 
     // Getters e Setters
@@ -166,19 +182,27 @@ public class Cliente {
         this.status = status;
     }
 
-    public List<Endereco> getEnderecos() {
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public Set<Endereco> getEnderecos() {
         return enderecos;
     }
 
-    public void setEnderecos(List<Endereco> enderecos) {
+    public void setEnderecos(Set<Endereco> enderecos) {
         this.enderecos = enderecos;
     }
 
-    public List<Cartao> getCartoes() {
+    public Set<Cartao> getCartoes() {
         return cartoes;
     }
 
-    public void setCartoes(List<Cartao> cartoes) {
+    public void setCartoes(Set<Cartao> cartoes) {
         this.cartoes = cartoes;
     }
 }

@@ -31,6 +31,7 @@ import com.les.jakebooks.repository.EnderecoRepository;
 import com.les.jakebooks.repository.EstoqueRepository;
 import com.les.jakebooks.repository.PagamentoRepository;
 import com.les.jakebooks.repository.PedidoRepository;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -395,6 +396,13 @@ public class PedidoService {
      * @throws ValidacaoNegocioException se pedido não pode ser despachado
      */
     public void despachar(Long pedidoId) {
+        // Validar autorização: apenas admin pode despachar pedidos (RF0038)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem despachar pedidos."
+            );
+        }
+
         // Buscar pedido
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido com ID " + pedidoId + " não encontrado"));
@@ -419,6 +427,13 @@ public class PedidoService {
      * @throws ValidacaoNegocioException se pedido não pode ser entregue
      */
     public void confirmarEntrega(Long pedidoId) {
+        // Validar autorização: apenas admin pode confirmar entrega (RF0039)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem confirmar entrega de pedidos."
+            );
+        }
+
         // Buscar pedido
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido com ID " + pedidoId + " não encontrado"));

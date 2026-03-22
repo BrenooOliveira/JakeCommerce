@@ -7,7 +7,9 @@ import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.services.EstoqueService;
 import com.les.jakebooks.services.LivroService;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +45,7 @@ public class EstoqueController {
      * @param model Model para adicionar atributos à view
      * @return view name "estoque/lista"
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String listar(Model model) {
         // Buscar todos os estoques
@@ -50,7 +53,7 @@ public class EstoqueController {
 
         // Adicionar atributos ao modelo
         model.addAttribute("estoques", estoques);
-        model.addAttribute("isAdmin", true);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         // Calcular totalizadores
         int totalItens = estoques.stream()
@@ -74,6 +77,7 @@ public class EstoqueController {
      * @param model Model para adicionar atributos à view
      * @return view name "estoque/form-entrada"
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/entrada")
     public String formularioEntrada(Model model) {
         // Buscar todos os livros para popular o select
@@ -81,7 +85,7 @@ public class EstoqueController {
 
         model.addAttribute("livros", livros);
         model.addAttribute("dataEntrada", LocalDate.now());
-        model.addAttribute("isAdmin", true);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "estoque/form-entrada";
     }
@@ -103,6 +107,7 @@ public class EstoqueController {
      * @param attrs        RedirectAttributes para mensagens
      * @return redirect para /estoque com mensagem de sucesso ou erro
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/entrada")
     public String registrarEntrada(
             @RequestParam Long livroId,

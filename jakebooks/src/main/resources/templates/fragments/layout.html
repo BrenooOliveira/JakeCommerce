@@ -28,16 +28,15 @@
     <!-- Container principal com sidebar (se estiver em admin) -->
     <div class="container-fluid mt-4">
         <div class="row">
-            <!-- Sidebar (visível apenas em telas maiores quando isAdmin=true) -->
-            <div 
-                th:class="${isAdmin == true} ? 'col-md-3 col-lg-2 d-md-block bg-light sidebar py-4' : 'd-none'">
-                <div th:insert="~{fragments/sidebar :: sidebar}"></div>
+            <!-- Sidebar (APENAS para admin) -->
+            <div th:if="${isAdmin == true}" class="col-md-3 col-lg-2 d-md-block bg-light sidebar py-4">
+                <div th:replace="~{fragments/sidebar :: sidebar}"></div>
             </div>
 
             <!-- Conteúdo Principal -->
-            <main th:class="${isAdmin == true} ? 'col-md-9 col-lg-10' : 'col-12'">
+            <main th:class="${isAdmin == true} ? 'col-md-9 ms-sm-auto col-lg-10' : 'col-12'">
                 <!-- Mensagens Flash -->
-                <div th:insert="~{fragments/messages :: messages}"></div>
+                <div th:replace="~{fragments/messages :: messages}"></div>
 
                 <!-- Conteúdo específico de cada página -->
                 <div layout:fragment="content"></div>

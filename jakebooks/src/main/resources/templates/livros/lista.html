@@ -17,8 +17,9 @@
                     </h1>
                     <p class="text-muted">Gerenciamento de catálogo de livros</p>
                 </div>
-                <div class="col-auto">
-                    <a href="/livros/novo" class="btn btn-primary btn-lg">
+                <!-- Botão "Novo Livro" APENAS para admin -->
+                <div class="col-auto" th:if="${isAdmin == true}">
+                    <a th:href="@{/livros/novo}" class="btn btn-primary btn-lg">
                         <i class="bi bi-plus-circle"></i> Novo Livro
                     </a>
                 </div>
@@ -154,17 +155,40 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
+                                        <!-- Botão Ver - visível para todos -->
                                         <a th:href="@{/livros/{codigo}(codigo=${livro.codigo()})}"
                                            class="btn btn-outline-primary"
                                            title="Visualizar">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a th:href="@{/livros/{codigo}/editar(codigo=${livro.codigo()})}"
+
+                                        <!-- Botões admin APENAS para admin -->
+                                        <a th:if="${isAdmin == true}"
+                                           th:href="@{/livros/{codigo}/editar(codigo=${livro.codigo()})}"
                                            class="btn btn-outline-warning"
                                            title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     </div>
+
+                                    <!-- Botões Inativar/Ativar - APENAS para admin -->
+                                    <form th:if="${isAdmin == true and livro.status().name() == 'ATIVO'}"
+                                          th:action="@{/livros/{codigo}/inativar(codigo=${livro.codigo()})}"
+                                          method="post" class="d-inline ms-1">
+                                        <input type="hidden" name="motivo" value="Inativação manual via listagem" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Inativar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+
+                                    <form th:if="${isAdmin == true and livro.status().name() == 'INATIVO'}"
+                                          th:action="@{/livros/{codigo}/ativar(codigo=${livro.codigo()})}"
+                                          method="post" class="d-inline ms-1">
+                                        <input type="hidden" name="justificativa" value="Ativação manual via listagem" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Ativar">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             <!-- Mensagem quando não há livros -->

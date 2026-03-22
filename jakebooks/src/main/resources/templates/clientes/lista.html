@@ -77,11 +77,12 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th style="width: 20%">Código</th>
-                                <th style="width: 30%">Nome</th>
-                                <th style="width: 20%">CPF</th>
-                                <th style="width: 15%">Status</th>
-                                <th style="width: 15%">Ações</th>
+                                <th style="width: 15%">Código</th>
+                                <th style="width: 25%">Nome</th>
+                                <th style="width: 15%">CPF</th>
+                                <th style="width: 10%">Status</th>
+                                <th style="width: 10%">Perfil</th>
+                                <th style="width: 25%">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,9 +93,18 @@
                                 <td>
                                     <span class="badge"
                                         th:with="st=${cliente.status()}"
-                                        th:classappend="${st.name() == 'ATIVO'} ? 'bg-success' : 
+                                        th:classappend="${st.name() == 'ATIVO'} ? 'bg-success' :
                                                         (${st.name() == 'BLOQUEADO'} ? 'bg-danger' : 'bg-secondary')"
                                         th:text="${#strings.replace(st.name(), '_', ' ')}">
+                                    </span>
+                                </td>
+                                <!-- Coluna Perfil: exibe badge Admin -->
+                                <td>
+                                    <span th:if="${cliente.isAdmin() == true}" class="badge bg-warning text-dark">
+                                        <i class="bi bi-shield-check"></i> Admin
+                                    </span>
+                                    <span th:if="${cliente.isAdmin() != true}" class="badge bg-light text-muted">
+                                        Cliente
                                     </span>
                                 </td>
                                 <td>
@@ -110,11 +120,20 @@
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     </div>
+
+                                    <!-- Botão Inativar - apenas para clientes ativos -->
+                                    <form th:if="${cliente.status().name() == 'ATIVO'}"
+                                          th:action="@{/clientes/{codigo}/inativar(codigo=${cliente.codigo()})}"
+                                          method="post" class="d-inline ms-1">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Inativar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             <!-- Mensagem quando não há clientes -->
                             <tr th:if="${clientes.isEmpty()}">
-                                <td colspan="5" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <div th:insert="~{fragments/components :: empty-table(message='Nenhum cliente encontrado com os critérios informados', icon='inbox')}"></div>
                                 </td>
                             </tr>

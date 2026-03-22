@@ -1,69 +1,117 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
     <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <!-- Logo -->
-            <a class="navbar-brand fw-bold" href="/" th:href="@{/}">
-                <i class="bi bi-book"></i> Livraria
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="bi bi-book"></i> JakeBooks
             </a>
 
             <!-- Toggle button for mobile -->
-            <button 
-                class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
                 data-bs-target="#navbarNav"
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
+                aria-controls="navbarNav"
+                aria-expanded="false"
                 aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <!-- Menu items -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
+                    <!-- Links públicos -->
                     <li class="nav-item">
-                        <a class="nav-link" href="/livros" th:href="@{/livros}">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/livros}">
                             <i class="bi bi-book-half"></i> Livros
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/clientes" th:href="@{/clientes}">
+
+                    <!-- Links autenticados (cliente e admin) -->
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/carrinho}">
+                            <i class="bi bi-cart"></i> Carrinho
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/pedidos}">
+                            <i class="bi bi-bag-check"></i> Meus Pedidos
+                        </a>
+                    </li>
+
+                    <!-- Links admin (APENAS para admin) -->
+                    <li class="nav-item" th:if="${isAdmin == true}">
+                        <a class="nav-link" th:href="@{/clientes}">
                             <i class="bi bi-people"></i> Clientes
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pedidos" th:href="@{/pedidos}">
-                            <i class="bi bi-bag-check"></i> Pedidos
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/estoque" th:href="@{/estoque}">
+                    <li class="nav-item" th:if="${isAdmin == true}">
+                        <a class="nav-link" th:href="@{/estoque}">
                             <i class="bi bi-boxes"></i> Estoque
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/analise" th:href="@{/analise}">
-                            <i class="bi bi-graph-up"></i> Análise
+                    <li class="nav-item" th:if="${isAdmin == true}">
+                        <a class="nav-link" th:href="@{/trocas}">
+                            <i class="bi bi-arrow-left-right"></i> Trocas
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a 
-                            class="nav-link dropdown-toggle" 
-                            href="#" 
-                            id="navbarDropdown" 
-                            role="button" 
+                    <li class="nav-item" th:if="${isAdmin == true}">
+                        <a class="nav-link" th:href="@{/analise}">
+                            <i class="bi bi-graph-up"></i> Análises
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Menu do usuário -->
+                <ul class="navbar-nav">
+                    <!-- Dropdown para usuário autenticado -->
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a
+                            class="nav-link dropdown-toggle"
+                            href="#"
+                            role="button"
                             data-bs-toggle="dropdown"
                             aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> Usuário
+                            <i class="bi bi-person-circle"></i>
+                            <span sec:authentication="name">Usuário</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="/perfil" th:href="@{/perfil}">Meu Perfil</a></li>
-                            <li><a class="dropdown-item" href="/carrinho" th:href="@{/carrinho}">Carrinho</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/clientes/perfil}">
+                                <i class="bi bi-person"></i> Meu Perfil
+                            </a></li>
+                            <li><a class="dropdown-item" th:href="@{/clientes/alterar-senha}">
+                                <i class="bi bi-key"></i> Alterar Senha
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout" th:href="@{/logout}">Sair</a></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right"></i> Sair
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
+                    </li>
+
+                    <!-- Links para usuário não autenticado -->
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" th:href="@{/login}">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item" sec:authorize="!isAuthenticated()">
+                        <a class="nav-link" th:href="@{/clientes/novo}">
+                            <i class="bi bi-person-plus"></i> Cadastre-se
+                        </a>
                     </li>
                 </ul>
             </div>

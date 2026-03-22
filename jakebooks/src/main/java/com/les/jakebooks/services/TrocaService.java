@@ -16,6 +16,7 @@ import com.les.jakebooks.repository.CupomRepository;
 import com.les.jakebooks.repository.EstoqueRepository;
 import com.les.jakebooks.repository.PedidoRepository;
 import com.les.jakebooks.repository.TrocaRepository;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,12 +63,20 @@ public class TrocaService {
      * @param motivo   motivo da troca
      * @return DTO da troca criada
      * @throws RecursoNaoEncontradoException se pedido não existe
-     * @throws ValidacaoNegocioException     se pedido não está entregue
+     * @throws ValidacaoNegocioException     se pedido não está entregue ou não pertence ao cliente
      */
     public TrocaDetalheDTO solicitar(Long pedidoId, String motivo) {
         // Buscar pedido
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido com ID " + pedidoId + " não encontrado"));
+
+        // Validar autorização: cliente só pode solicitar troca do próprio pedido (exceto admin)
+        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
+        if (!SecurityUtil.isAdmin() && !pedido.getCliente().getEmail().equals(emailLogado)) {
+            throw new ValidacaoNegocioException(
+                "Você não tem permissão para solicitar troca deste pedido"
+            );
+        }
 
         // RN0043: Validar se pedido está ENTREGUE
         if (!pedido.getStatus().equals(StatusPedido.ENTREGUE)) {
@@ -106,6 +115,13 @@ public class TrocaService {
      * @throws ValidacaoNegocioException     se troca não está solicitada
      */
     public void autorizar(Long trocaId) {
+        // Validar autorização: apenas admin pode autorizar trocas (RF0041)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem autorizar trocas."
+            );
+        }
+
         // Buscar troca
         Troca troca = trocaRepository.findById(trocaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Troca com ID " + trocaId + " não encontrada"));
@@ -132,6 +148,13 @@ public class TrocaService {
      * @throws ValidacaoNegocioException     se troca não está autorizada
      */
     public void confirmarRecebimento(Long trocaId) {
+        // Validar autorização: apenas admin pode confirmar recebimento de trocas (RF0043)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem confirmar recebimento de trocas."
+            );
+        }
+
         // Buscar troca
         Troca troca = trocaRepository.findById(trocaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Troca com ID " + trocaId + " não encontrada"));
@@ -199,6 +222,13 @@ public class TrocaService {
      * @return lista de DTOs de todas as trocas
      */
     public List<TrocaDetalheDTO> listarTodas() {
+        // Validar autorização: apenas admin pode visualizar todas as trocas (RF0042)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem visualizar todas as trocas."
+            );
+        }
+
         // Buscar todas as trocas ordenadas por data
         List<Troca> trocas = trocaRepository.findAllOrderByDataSolicitacaoDesc();
 

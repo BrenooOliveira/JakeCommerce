@@ -10,9 +10,11 @@ import com.les.jakebooks.model.enums.TipoResidencia;
 import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.services.ClienteService;
 import com.les.jakebooks.services.PedidoService;
+import com.les.jakebooks.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -50,6 +52,7 @@ public class ClienteController {
      * @param model Model para adicionar atributos à view
      * @return view name "clientes/lista"
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String listar(
             @RequestParam(required = false) String nome,
@@ -86,7 +89,7 @@ public class ClienteController {
         model.addAttribute("clientes", clientes);
         model.addAttribute("nome", nome);
         model.addAttribute("cpf", cpf);
-        model.addAttribute("isAdmin", false);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "clientes/lista";
     }
@@ -104,7 +107,7 @@ public class ClienteController {
         model.addAttribute("clienteForm", new ClienteCadastroDTO(
                 null, null, null, null, null, null, null, null
         ));
-        model.addAttribute("isAdmin", false);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
         return "clientes/form-cadastro";
     }
 
@@ -154,6 +157,7 @@ public class ClienteController {
      * @param attrs RedirectAttributes para mensagens de erro
      * @return view name "clientes/detalhe" ou redirect se não encontrado
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{codigo}")
     public String detalhe(
             @PathVariable String codigo,
@@ -166,7 +170,7 @@ public class ClienteController {
             
             model.addAttribute("cliente", cliente);
             model.addAttribute("pedidos", pedidos);
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
             return "clientes/detalhe";
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Cliente não encontrado");
@@ -206,7 +210,7 @@ public class ClienteController {
             model.addAttribute("clienteForm", clienteForm);
             model.addAttribute("clienteExistente", clienteExistente);
             model.addAttribute("statusClientes", StatusCliente.values());
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "clientes/form-edicao";
         } catch (RecursoNaoEncontradoException e) {
@@ -296,6 +300,7 @@ public class ClienteController {
      * @param attrs RedirectAttributes para mensagens flash
      * @return redirect para /clientes
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{codigo}/inativar")
     public String inativar(
             @PathVariable String codigo,
@@ -308,6 +313,154 @@ public class ClienteController {
         } catch (ValidacaoNegocioException | RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", e.getMessage());
             return "redirect:/clientes/" + codigo;
+        }
+    }
+
+    /**
+     * Exibe perfil do próprio cliente autenticado.
+     * GET /clientes/perfil
+     * RF0024: Consultar cliente (próprio perfil)
+     *
+     * @param model Model para adicionar atributos à view
+     * @param attrs RedirectAttributes para mensagens de erro
+     * @return view name "clientes/perfil" ou redirect se não encontrado
+     */
+    @GetMapping("/perfil")
+    public String perfil(Model model, RedirectAttributes attrs) {
+        try {
+            String email = SecurityUtil.getEmailUsuarioLogado();
+            ClienteDetalheDTO cliente = clienteService.buscarPorEmail(email);
+            List<PedidoResumoDTO> pedidos = clienteService.buscarTransacoes(cliente.codigo());
+
+            model.addAttribute("cliente", cliente);
+            model.addAttribute("pedidos", pedidos);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
+            return "clientes/perfil";
+        } catch (RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", "Perfil não encontrado");
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * Exibe formulário para editar próprio perfil.
+     * GET /clientes/perfil/editar
+     * RF0022: Alterar cliente (próprio perfil)
+     *
+     * @param model Model para adicionar atributos à view
+     * @param attrs RedirectAttributes para mensagens de erro
+     * @return view name "clientes/form-perfil" ou redirect se não encontrado
+     */
+    @GetMapping("/perfil/editar")
+    public String editarPerfil(Model model, RedirectAttributes attrs) {
+        try {
+            String email = SecurityUtil.getEmailUsuarioLogado();
+            ClienteDetalheDTO clienteExistente = clienteService.buscarPorEmail(email);
+
+            ClienteAlteracaoDTO clienteForm = new ClienteAlteracaoDTO(
+                    clienteExistente.nome(),
+                    clienteExistente.genero(),
+                    clienteExistente.dataNascimento(),
+                    clienteExistente.telefone(),
+                    clienteExistente.email(),
+                    clienteExistente.status()
+            );
+
+            model.addAttribute("clienteForm", clienteForm);
+            model.addAttribute("clienteExistente", clienteExistente);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
+
+            return "clientes/form-perfil";
+        } catch (RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", "Perfil não encontrado");
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * Atualiza próprio perfil.
+     * POST /clientes/perfil/editar
+     * RF0022: Alterar cliente (próprio perfil)
+     *
+     * @param dto DTO com novos dados
+     * @param result resultado da validação
+     * @param attrs RedirectAttributes para mensagens flash
+     * @return redirect para /clientes/perfil
+     */
+    @PostMapping("/perfil/editar")
+    public String salvarEdicaoPerfil(
+            @Valid @ModelAttribute("clienteForm") ClienteAlteracaoDTO dto,
+            BindingResult result,
+            RedirectAttributes attrs) {
+
+        if (result.hasErrors()) {
+            attrs.addFlashAttribute("mensagemErro", "Verifique os erros abaixo");
+            return "redirect:/clientes/perfil/editar";
+        }
+
+        try {
+            String email = SecurityUtil.getEmailUsuarioLogado();
+            ClienteDetalheDTO cliente = clienteService.buscarPorEmail(email);
+            clienteService.alterar(cliente.codigo(), dto);
+            attrs.addFlashAttribute("mensagemSucesso", "Perfil atualizado com sucesso!");
+            return "redirect:/clientes/perfil";
+        } catch (ValidacaoNegocioException | RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", e.getMessage());
+            return "redirect:/clientes/perfil/editar";
+        }
+    }
+
+    /**
+     * Exibe formulário para alterar própria senha.
+     * GET /clientes/alterar-senha
+     * RF0028: Alterar apenas senha
+     *
+     * @param model Model para adicionar atributos à view
+     * @return view name "clientes/form-alterar-senha"
+     */
+    @GetMapping("/alterar-senha")
+    public String exibirFormularioAlterarSenha(Model model) {
+        model.addAttribute("alteraSenhaForm", new AlteraSenhaDTO(null, null, null));
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
+        return "clientes/form-alterar-senha";
+    }
+
+    /**
+     * Altera própria senha.
+     * POST /clientes/alterar-senha
+     * RF0028: Alterar apenas senha
+     *
+     * @param dto DTO com senhas
+     * @param result resultado da validação
+     * @param attrs RedirectAttributes para mensagens flash
+     * @return redirect para /clientes/perfil
+     */
+    @PostMapping("/alterar-senha")
+    public String alterarSenhaPropria(
+            @Valid @ModelAttribute("alteraSenhaForm") AlteraSenhaDTO dto,
+            BindingResult result,
+            RedirectAttributes attrs) {
+
+        if (result.hasErrors()) {
+            attrs.addFlashAttribute("mensagemErro", "Verifique os erros abaixo");
+            return "redirect:/clientes/alterar-senha";
+        }
+
+        // Validar confirmação de senha
+        if (!dto.novaSenha().equals(dto.confirmacaoNovaSenha())) {
+            attrs.addFlashAttribute("mensagemErro", "Novas senhas não conferem");
+            return "redirect:/clientes/alterar-senha";
+        }
+
+        try {
+            String email = SecurityUtil.getEmailUsuarioLogado();
+            ClienteDetalheDTO cliente = clienteService.buscarPorEmail(email);
+            clienteService.alterarSenha(cliente.codigo(), dto);
+            attrs.addFlashAttribute("mensagemSucesso", "Senha alterada com sucesso!");
+            return "redirect:/clientes/perfil";
+        } catch (ValidacaoNegocioException | RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", e.getMessage());
+            return "redirect:/clientes/alterar-senha";
         }
     }
 
@@ -335,7 +488,7 @@ public class ClienteController {
             model.addAttribute("clienteNome", cliente.nome());
             model.addAttribute("tiposResidencia", TipoResidencia.values());
             model.addAttribute("tiposEndereco", TipoEndereco.values());
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "clientes/form-endereco";
         } catch (RecursoNaoEncontradoException e) {
@@ -398,8 +551,10 @@ public class ClienteController {
 
             model.addAttribute("cartao", new CartaoDTO(null, null, null, null, null, false));
             model.addAttribute("cliente", cliente);
+            model.addAttribute("clienteCodigo", cliente.codigo());
+            model.addAttribute("clienteNome", cliente.nome());
             model.addAttribute("bandeiras", BandeiraCartao.values());
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "clientes/form-cartao";
         } catch (RecursoNaoEncontradoException e) {
