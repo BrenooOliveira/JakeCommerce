@@ -1,32 +1,33 @@
 <!DOCTYPE html>
-<html 
-    xmlns:th="http://www.thymeleaf.org"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{fragments/layout}"
-    lang="pt-BR">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
 <head>
     <title>Acesso Negado - 403</title>
 </head>
 <body>
     <div layout:fragment="content" class="container-fluid">
         <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <div class="alert alert-danger border-start border-danger border-5" role="alert">
-                    <h1 class="display-1 text-danger">
-                        <i class="bi bi-exclamation-triangle"></i> 403
-                    </h1>
-                    <h2 class="h3">Acesso Negado</h2>
-                    <p class="lead text-muted">
-                        Desculpe, você não tem permissão para acessar este recurso.
-                    </p>
-                    <hr>
-                    <p class="text-muted">
-                        Se acredita que isto é um erro, contacte o administrador do sistema.
-                    </p>
-                    <a href="/" class="btn btn-danger mt-3">
-                        <i class="bi bi-house-door"></i> Voltar à página inicial
+            <div class="col-md-6 text-center">
+                <i class="bi bi-shield-exclamation text-danger" style="font-size: 5rem;"></i>
+                <h1 class="display-4 mt-3">403 - Acesso Negado</h1>
+                <p class="lead">Você não tem permissão para acessar esta página.</p>
+                <p class="text-muted">Esta área é restrita a administradores do sistema.</p>
+
+                <div class="mt-4">
+                    <a th:href="@{/}" class="btn btn-primary">
+                        <i class="bi bi-house"></i> Voltar para Home
+                    </a>
+                    <a th:href="@{/livros}" class="btn btn-secondary">
+                        <i class="bi bi-book"></i> Ver Livros
                     </a>
                 </div>
+
+                <hr class="my-4">
+                <p class="text-muted small">
+                    Se você acredita que isto é um erro, entre em contato com o administrador do sistema.
+                </p>
             </div>
         </div>
     </div>

@@ -74,6 +74,11 @@ public record ClienteDetalheDTO(
          * Lista de cartões cadastrados
          * RF0027: Cadastrar múltiplos cartões (um preferencial)
          */
-        List<CartaoDTO> cartoes
+        List<CartaoDTO> cartoes,
+
+        /**
+         * Indica se cliente possui privilégios administrativos
+         */
+        Boolean isAdmin
 ) {
 }

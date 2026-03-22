@@ -25,6 +25,8 @@
             <div class="row">
                 <div class="col-lg-8">
                     <form th:action="@{/clientes/{codigo}/enderecos(codigo=${clienteCodigo})}" method="post" th:object="${endereco}" class="needs-validation" novalidate>
+                        <!-- Campo hidden para o ID (necessario para binding do record) -->
+                        <input type="hidden" th:field="*{id}"/>
                         
                         <!-- Card 1: Identificação -->
                         <div class="card mb-4">
@@ -117,18 +119,21 @@
                                 </div>
 
                                 <!-- Número -->
-                                <div class="mb-3">
-                                    <label for="numero" class="form-label">Número *</label>
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="numero" 
-                                        th:field="*{numero}"
-                                        th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid' : ''"
-                                        placeholder="123"
-                                        required>
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}">
-                                        <span th:errors="*{numero}"></span>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="numero" class="form-label">Numero *</label>
+                                        <input
+                                            type="number"
+                                            class="form-control"
+                                            id="numero"
+                                            th:field="*{numero}"
+                                            th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid' : ''"
+                                            placeholder="123"
+                                            min="1"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}">
+                                            <span th:errors="*{numero}"></span>
+                                        </div>
                                     </div>
                                 </div>
 

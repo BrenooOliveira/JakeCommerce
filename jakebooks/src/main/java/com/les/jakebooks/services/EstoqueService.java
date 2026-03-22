@@ -8,6 +8,7 @@ import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.repository.EstoqueRepository;
 import com.les.jakebooks.repository.LivroRepository;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +54,13 @@ public class EstoqueService {
      * @throws ValidacaoNegocioException     se validações falham
      */
     public void registrarEntrada(EntradaEstoqueDTO dto) {
+        // Validar autorização: apenas admin pode registrar entrada em estoque (RF0051)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem registrar entrada em estoque."
+            );
+        }
+
         // Validar se livro existe
         Livro livro = livroRepository.findById(dto.livroId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Livro com ID " + dto.livroId() + " não encontrado"));

@@ -13,6 +13,7 @@ import com.les.jakebooks.repository.EnderecoRepository;
 import com.les.jakebooks.services.CarrinhoService;
 import com.les.jakebooks.services.ClienteService;
 import com.les.jakebooks.services.PedidoService;
+import com.les.jakebooks.util.SecurityUtil;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -79,7 +80,7 @@ public class CarrinhoController {
             CarrinhoDTO carrinho = carrinhoService.obterOuCriar(codigoCliente);
             
             model.addAttribute("carrinho", carrinho);
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
             
             return "carrinho/view";
         } catch (RecursoNaoEncontradoException e) {
@@ -240,7 +241,7 @@ public class CarrinhoController {
             model.addAttribute("enderecos", cliente.enderecos());
             model.addAttribute("cartoes", cliente.cartoes());
             model.addAttribute("bandeiras", BandeiraCartao.values());
-            model.addAttribute("isAdmin", false);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "carrinho/checkout";
         } catch (RecursoNaoEncontradoException e) {

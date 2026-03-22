@@ -6,6 +6,7 @@ import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.model.enums.StatusLivro;
 import com.les.jakebooks.repository.*;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,6 +120,13 @@ public class LivroService {
      * @throws ValidacaoNegocioException se regra de negócio é violada
      */
     public LivroDetalheDTO alterar(String codigo, LivroFormDTO dto, boolean autorizacaoReducao) {
+        // Validar autorização: apenas admin pode autorizar redução de preço (RN0014)
+        if (autorizacaoReducao && !SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem autorizar redução de margem."
+            );
+        }
+
         Livro livro = livroRepository.findByIsbn(codigo);
         if (livro == null) {
             throw new RecursoNaoEncontradoException("Livro com código " + codigo + " não encontrado");
@@ -181,6 +189,13 @@ public class LivroService {
      * @throws ValidacaoNegocioException se motivo não for fornecido
      */
     public LivroDetalheDTO inativarManual(String codigo, String motivo) {
+        // Validar autorização: apenas admin pode inativar livros (RN0015)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem inativar livros."
+            );
+        }
+
         if (motivo == null || motivo.trim().isEmpty()) {
             throw new ValidacaoNegocioException("Motivo da inativação é obrigatório");
         }
@@ -243,6 +258,13 @@ public class LivroService {
      * @throws ValidacaoNegocioException se justificativa não for fornecida ou livro já está ativo
      */
     public LivroDetalheDTO ativar(String codigo, String justificativa) {
+        // Validar autorização: apenas admin pode ativar livros (RN0017)
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException(
+                "Acesso negado. Apenas administradores podem ativar livros."
+            );
+        }
+
         if (justificativa == null || justificativa.trim().isEmpty()) {
             throw new ValidacaoNegocioException("Justificativa da ativação é obrigatória");
         }

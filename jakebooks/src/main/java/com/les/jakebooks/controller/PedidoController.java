@@ -8,7 +8,9 @@ import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.model.enums.StatusPedido;
 import com.les.jakebooks.repository.PedidoRepository;
 import com.les.jakebooks.services.PedidoService;
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,10 +23,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 /**
- * Controller responsável pelo gerenciamento de pedidos (administrativo).
+ * Controller responsável pelo gerenciamento de pedidos.
  * Segue padrão Frontend: sem lógica de negócio, apenas chamadas a Services.
- * RF0038-RF0039: Operações com pedidos
- * RF0042: Visualizar trocas
+ * RF0025: Consultar transações do cliente
+ * RF0038-RF0039: Operações administrativas com pedidos
+ *
+ * Autorização:
+ * - Listagem: Admin vê todos, Cliente vê próprios pedidos
+ * - Detalhe: Admin vê todos, Cliente vê próprios pedidos
+ * - Despachar/Entregar: Apenas Admin
  */
 @Controller
 @RequestMapping("/pedidos")
@@ -37,13 +44,16 @@ public class PedidoController {
     private PedidoRepository pedidoRepository;
 
     /**
-     * Lista todos os pedidos com filtros opcionais.
+     * Lista pedidos com filtros opcionais.
      * GET /pedidos
-     * RF0038: Despachar produtos
-     * RF0039: Confirmar entrega
+     * Admin: vê todos os pedidos
+     * Cliente: vê apenas próprios pedidos
+     * RF0025: Consultar transações do cliente
+     * RF0038: Despachar produtos (admin)
+     * RF0039: Confirmar entrega (admin)
      *
      * @param status status do pedido para filtrar (opcional)
-     * @param codigoCliente código do cliente para filtrar (opcional)
+     * @param codigoCliente código do cliente para filtrar (opcional, apenas admin)
      * @param model Model para adicionar atributos à view
      * @return view name "pedidos/lista"
      */
@@ -54,26 +64,41 @@ public class PedidoController {
             Model model) {
 
         List<Pedido> pedidos;
+        boolean isAdmin = SecurityUtil.isAdmin();
+        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
 
-        // Aplicar filtros
-        if (status != null && !status.isEmpty()) {
-            try {
-                StatusPedido statusEnum = StatusPedido.valueOf(status);
-                pedidos = pedidoRepository.findByStatusOrderByDataCriacaoDesc(statusEnum);
-            } catch (IllegalArgumentException e) {
-                // Status inválido, listar todos
+        // Aplicar filtros baseado no perfil
+        if (isAdmin) {
+            // Admin vê todos os pedidos
+            if (status != null && !status.isEmpty()) {
+                try {
+                    StatusPedido statusEnum = StatusPedido.valueOf(status);
+                    pedidos = pedidoRepository.findByStatusOrderByDataCriacaoDesc(statusEnum);
+                } catch (IllegalArgumentException e) {
+                    pedidos = pedidoRepository.findAll();
+                }
+            } else {
                 pedidos = pedidoRepository.findAll();
             }
         } else {
-            // Listar todos os pedidos
-            pedidos = pedidoRepository.findAll();
+            // Cliente vê apenas próprios pedidos
+            if (status != null && !status.isEmpty()) {
+                try {
+                    StatusPedido statusEnum = StatusPedido.valueOf(status);
+                    pedidos = pedidoRepository.findByClienteEmailAndStatusOrderByDataCriacaoDesc(emailLogado, statusEnum);
+                } catch (IllegalArgumentException e) {
+                    pedidos = pedidoRepository.findByClienteEmailOrderByDataCriacaoDesc(emailLogado);
+                }
+            } else {
+                pedidos = pedidoRepository.findByClienteEmailOrderByDataCriacaoDesc(emailLogado);
+            }
         }
 
         // Adicionar atributos ao modelo
         model.addAttribute("pedidos", pedidos);
         model.addAttribute("statusPedidos", StatusPedido.values());
         model.addAttribute("statusSelecionado", status);
-        model.addAttribute("isAdmin", true);
+        model.addAttribute("isAdmin", isAdmin);
 
         return "pedidos/lista";
     }
@@ -81,6 +106,7 @@ public class PedidoController {
     /**
      * Exibe detalhes de um pedido específico.
      * GET /pedidos/{id}
+     * Cliente só pode ver próprios pedidos, admin pode ver todos.
      *
      * @param id ID do pedido
      * @param model Model para adicionar atributos à view
@@ -98,10 +124,17 @@ public class PedidoController {
             Pedido pedido = pedidoRepository.findById(id)
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido com ID " + id + " não encontrado"));
 
+            // Validar acesso: admin pode ver todos, cliente só próprios pedidos
+            String emailLogado = SecurityUtil.getEmailUsuarioLogado();
+            if (!SecurityUtil.isAdmin() && !pedido.getCliente().getEmail().equals(emailLogado)) {
+                attrs.addFlashAttribute("mensagemErro", "Você não tem permissão para visualizar este pedido");
+                return "redirect:/";
+            }
+
             // Adicionar atributos
             model.addAttribute("pedido", pedido);
             model.addAttribute("statusPedidos", StatusPedido.values());
-            model.addAttribute("isAdmin", true);
+            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "pedidos/detalhe";
         } catch (RecursoNaoEncontradoException e) {
@@ -120,6 +153,7 @@ public class PedidoController {
      * @param attrs RedirectAttributes para mensagens
      * @return redirect para /pedidos/{id}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/despachar")
     public String despachar(
             @PathVariable Long id,
@@ -148,6 +182,7 @@ public class PedidoController {
      * @param attrs RedirectAttributes para mensagens
      * @return redirect para /pedidos/{id}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/entregar")
     public String entregar(
             @PathVariable Long id,

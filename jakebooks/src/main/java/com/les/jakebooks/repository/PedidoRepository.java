@@ -27,6 +27,17 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByClienteCodigoOrderByDataCriacaoDesc(String clienteCodigo);
 
     /**
+     * Busca pedidos de um cliente pelo email ordenados por data de criação decrescente.
+     * RF0025: Consultar transações do cliente.
+     */
+    List<Pedido> findByClienteEmailOrderByDataCriacaoDesc(String email);
+
+    /**
+     * Busca pedidos de um cliente pelo email e status.
+     */
+    List<Pedido> findByClienteEmailAndStatusOrderByDataCriacaoDesc(String email, StatusPedido status);
+
+    /**
      * Busca pedidos de um cliente por status.
      */
     List<Pedido> findByClienteIdAndStatusOrderByDataCriacaoDesc(Long clienteId, StatusPedido status);

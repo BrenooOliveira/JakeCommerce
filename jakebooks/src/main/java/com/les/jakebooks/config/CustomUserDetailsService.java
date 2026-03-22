@@ -68,8 +68,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_CLIENTE"));
 
-        // TODO: Implementar lógica para detectar admin (pode ser um campo na entidade)
-        // Por exemplo: if (cliente.isAdmin()) { authorities.add(...); }
+        // Atribui ROLE_ADMIN se campo isAdmin for true
+        if (cliente.getIsAdmin() != null && cliente.getIsAdmin()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
 
         // Retorna UserDetails do Spring Security
         return User.builder()
@@ -98,6 +100,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_CLIENTE"));
+
+        if (cliente.getIsAdmin() != null && cliente.getIsAdmin()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
 
         return User.builder()
             .username(cliente.getEmail())

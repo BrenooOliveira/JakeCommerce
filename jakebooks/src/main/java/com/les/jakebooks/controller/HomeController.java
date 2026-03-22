@@ -1,5 +1,6 @@
 package com.les.jakebooks.controller;
 
+import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         // Adiciona flag para exibir/ocultar sidebar admin
-        model.addAttribute("isAdmin", false);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
         return "index";
     }
 
@@ -32,7 +33,7 @@ public class HomeController {
      */
     @GetMapping("/error/404")
     public String notFound(Model model) {
-        model.addAttribute("isAdmin", false);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
         return "error/404";
     }
 
@@ -44,7 +45,7 @@ public class HomeController {
      */
     @GetMapping("/error/500")
     public String internalError(Model model) {
-        model.addAttribute("isAdmin", false);
+        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
         return "error/500";
     }
 }

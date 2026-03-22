@@ -36,6 +36,45 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findByCodigo(String codigo);
 
     /**
+     * Busca cliente pelo código com relacionamentos carregados (endereços e cartões).
+     * Usa LEFT JOIN FETCH para evitar N+1 queries e problemas de lazy loading.
+     * IMPORTANTE: Duas queries separadas para evitar produto cartesiano.
+     */
+    @Query("SELECT DISTINCT c FROM Cliente c " +
+           "LEFT JOIN FETCH c.enderecos " +
+           "WHERE c.codigo = :codigo")
+    Optional<Cliente> findByCodigoComEnderecos(@Param("codigo") String codigo);
+
+    /**
+     * Busca cliente pelo código com cartões carregados.
+     * Segunda query para evitar produto cartesiano entre endereços e cartões.
+     */
+    @Query("SELECT DISTINCT c FROM Cliente c " +
+           "LEFT JOIN FETCH c.cartoes " +
+           "WHERE c.codigo = :codigo")
+    Optional<Cliente> findByCodigoComCartoes(@Param("codigo") String codigo);
+
+    /**
+     * Busca cliente pelo código com TODOS os relacionamentos.
+     * Usa duas queries em batch para evitar produto cartesiano.
+     */
+    @Query("SELECT DISTINCT c FROM Cliente c " +
+           "LEFT JOIN FETCH c.enderecos " +
+           "LEFT JOIN FETCH c.cartoes " +
+           "WHERE c.codigo = :codigo")
+    Optional<Cliente> findByCodigoComRelacionamentos(@Param("codigo") String codigo);
+
+    /**
+     * Busca cliente pelo email com relacionamentos carregados.
+     * Usa JOIN FETCH para evitar N+1 queries.
+     */
+    @Query("SELECT DISTINCT c FROM Cliente c " +
+           "LEFT JOIN FETCH c.enderecos " +
+           "LEFT JOIN FETCH c.cartoes " +
+           "WHERE c.email = :email")
+    Optional<Cliente> findByEmailComRelacionamentos(@Param("email") String email);
+
+    /**
      * Busca todos os clientes ativos.
      */
     List<Cliente> findByStatus(StatusCliente status);
