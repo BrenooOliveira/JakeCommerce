@@ -95,6 +95,12 @@ public record EnderecoDTO(
          * RN0022: Pelo menos um endereço de entrega
          */
         @NotNull(message = "Tipo de endereço é obrigatório")
-        TipoEndereco tipoEndereco
+        TipoEndereco tipoEndereco,
+
+        /**
+         * Endereço formatado para exibição
+         * Gerado automaticamente a partir dos outros campos
+         */
+        String enderecoFormatado
 ) {
 }
