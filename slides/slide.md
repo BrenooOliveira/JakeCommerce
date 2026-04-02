@@ -73,6 +73,100 @@ transition: fade-out
 > Detalhe do Pedido
 
 ![alt text](image-6.png)
+
 ---
 
+# Entrega 02 – 23/03/2026
+## CRUD de Clientes
 
+**Escopo da entrega:**
+- Cadastro, consulta, alteração e inativação de clientes
+- Gestão de endereços e cartões
+- Alteração de senha com validação
+---
+# Kanban de Tarefas
+![alt text](image-9.png)
+
+---
+
+# Requisitos Funcionais Implementados
+
+| RF | Descrição |
+|---|---|
+| RF0021 | Cadastrar cliente |
+| RF0022 | Alterar cliente |
+| RF0023 | Inativar cliente |
+| RF0024 | Consultar cliente |
+| RF0025 | Consultar transações do cliente |
+| RF0026 | Cadastrar múltiplos endereços |
+| RF0027 | Cadastrar múltiplos cartões (preferencial) |
+| RF0028 | Alterar apenas senha |
+
+---
+
+# Regras de Negócio Contempladas
+
+| RN | Descrição |
+|---|---|
+| RN0023 | Campos obrigatórios do endereço |
+| RN0024 | Campos obrigatórios do cartão |
+| RN0025 | Bandeira deve estar cadastrada |
+| RN0026 | Dados obrigatórios do cliente |
+| RN0027 | Cliente possui ranking numérico |
+
+**Segurança:** Senha forte (8+ chars, maiúsc., minúsc., especiais) + BCrypt
+
+
+---
+
+# Demonstração
+> Lista de Clientes
+
+
+![bg right 95% fit](image-10.png)
+
+---
+
+# Demonstração
+> Detalhe do Cliente
+
+
+![bg right 95% fit](image-11.png)
+
+---
+
+# Demonstração
+> Cadastro de Cliente
+
+
+![bg right 95% fit](image-13.png)
+
+
+---
+# Demonstração
+> Cadastro de Endereço do Cliente
+
+
+![bg right 95% fit](image-17.png)
+![alt text](image-14.png)
+
+---
+
+# Demonstração
+> Cadastro de Cartão do Cliente
+
+![bg right 95% fit](image-15.png)
+![alt text](image-16.png)
+
+---
+
+# Entrega 03 – 30/03/2026
+## Documento de Visão de Projeto
+
+**Escopo da entrega:**
+- Formalização do DVP do sistema JakeBooks
+- Autor: Breno Oliveira | Revisor: Rodrigo Rocha
+
+---
+# Kanban de Tarefas
+![alt text](image-18.png)

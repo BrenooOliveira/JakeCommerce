@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository para a entidade Endereco.
@@ -31,4 +32,9 @@ public interface EnderecoRepository extends JpaRepository<Endereco, Long> {
      * Busca um endereço principal (cobrança) de um cliente.
      */
     Endereco findByClienteIdAndNomeIdentificadorAndTipoEndereco(Long clienteId, String nomeIdentificador, TipoEndereco tipoEndereco);
+
+    /**
+     * Busca um endereço específico de um cliente.
+     */
+    Optional<Endereco> findByIdAndClienteId(Long id, Long clienteId);
 }
