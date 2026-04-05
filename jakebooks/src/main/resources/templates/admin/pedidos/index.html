@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Gestão de Pedidos - Administração</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-kanban"></i> Gestão de Pedidos
+                    </h1>
+                    <p class="text-muted">Dashboard administrativo e controle de todos os pedidos do sistema</p>
+                </div>
+            </div>
+
+            <!-- Mensagens de Sucesso/Erro -->
+            <div th:fragment="messages" th:if="${sucesso != null or erro != null}">
+                <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span th:text="${sucesso}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span th:text="${erro}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark position-relative">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Em Processamento</h5>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO] ?: 0}">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                            <a th:href="@{/admin/pedidos(status='EM_PROCESSAMENTO')}"
+                               class="stretched-link text-decoration-none"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card bg-info text-white position-relative">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Em Transporte</h5>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE] ?: 0}">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-truck" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                            <a th:href="@{/admin/pedidos(status='EM_TRANSPORTE')}"
+                               class="stretched-link text-decoration-none"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card bg-success text-white position-relative">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Entregues</h5>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE] ?: 0}">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                            <a th:href="@{/admin/pedidos(status='ENTREGUE')}"
+                               class="stretched-link text-decoration-none"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card bg-secondary text-white position-relative">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Em Troca</h5>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA] ?: 0}">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-arrow-left-right" style="font-size: 2rem;"></i>
+                                </div>
+                            </div>
+                            <a th:href="@{/admin/pedidos(status='EM_TROCA')}"
+                               class="stretched-link text-decoration-none"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Busca e Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search"></i> Busca e Filtros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/pedidos}" method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="busca" class="form-label">Código do Pedido</label>
+                            <input type="text"
+                                   name="busca"
+                                   id="busca"
+                                   class="form-control"
+                                   placeholder="Ex: PED-000001"
+                                   th:value="${param.busca}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Todos os status</option>
+                                <option th:each="s : ${statusPedidos}"
+                                        th:value="${s}"
+                                        th:text="${s.descricao}"
+                                        th:selected="${s == statusFiltro}"></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <a href="/admin/pedidos" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-arrow-clockwise"></i> Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resultado da Busca por Código -->
+            <div th:if="${pedidoBusca}" class="card mb-4 border-success">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search-heart-fill text-success"></i> Resultado da Busca
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Pedido <span th:text="${pedidoBusca.codigoPedido}" class="fw-bold"></span></h6>
+                            <p class="mb-1">
+                                <strong>Cliente:</strong> <span th:text="${pedidoBusca.nomeCliente}"></span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Data:</strong> <span th:text="${#temporals.format(pedidoBusca.dataCriacao, 'dd/MM/yyyy HH:mm')}"></span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Total:</strong> R$ <span th:text="${#numbers.formatDecimal(pedidoBusca.valorTotal, 1, 2, 'POINT')}"></span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge fs-6"
+                                  th:classappend="${pedidoBusca.status.corBadge}"
+                                  th:text="${pedidoBusca.status.descricao}"></span>
+                            <br><br>
+                            <a th:href="@{/admin/pedidos/{id}(id=${pedidoBusca.id})}"
+                               class="btn btn-primary btn-sm">
+                                <i class="bi bi-eye"></i> Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Pedidos -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        <span th:if="${statusFiltro == null}">Todos os Pedidos</span>
+                        <span th:unless="${statusFiltro == null}" th:text="'Pedidos ' + ${statusFiltro.descricao}"></span>
+                    </h5>
+                    <span class="badge bg-primary" th:text="${pedidos.totalElements} + ' pedido(s)'"></span>
+                </div>
+
+                <div th:if="${pedidos.empty}" class="card-body text-center py-5">
+                    <div class="text-muted">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <h4 class="mt-3">Nenhum pedido encontrado</h4>
+                        <p>
+                            <span th:if="${statusFiltro != null}">Não há pedidos com status </span>
+                            <span th:if="${statusFiltro == null}">Nenhum pedido foi encontrado</span>
+                            <span th:if="${param.busca}"> para o código informado</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div th:unless="${pedidos.empty}" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 12%">Código</th>
+                                <th style="width: 15%">Data Criação</th>
+                                <th style="width: 20%">Cliente</th>
+                                <th style="width: 12%">Total</th>
+                                <th style="width: 15%">Status</th>
+                                <th style="width: 26%">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="pedido : ${pedidos.content}">
+                                <td>
+                                    <span class="badge bg-dark fw-bold" th:text="${pedido.codigoPedido}"></span>
+                                </td>
+                                <td th:text="${#temporals.format(pedido.dataCriacao, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${pedido.nomeCliente}"></td>
+                                <td class="text-end">
+                                    <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.valorTotal, 1, 2, 'POINT')}"></span></strong>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${pedido.status.corBadge}"
+                                          th:text="${pedido.status.descricao}"></span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/admin/pedidos/{id}(id=${pedido.id})}"
+                                           class="btn btn-outline-primary"
+                                           title="Ver detalhes">
+                                            <i class="bi bi-eye"></i> Detalhes
+                                        </a>
+
+                                        <!-- Botão Despachar (apenas se EM_PROCESSAMENTO) -->
+                                        <th:block th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                            <form method="POST"
+                                                  th:action="@{/admin/pedidos/{id}/despachar(id=${pedido.id})}"
+                                                  style="display: inline;"
+                                                  th:onsubmit="'return confirm(\'Confirma despacho do pedido ' + ${pedido.codigoPedido} + '?\')'">
+                                                <button type="submit" class="btn btn-info" title="Despachar pedido">
+                                                    <i class="bi bi-truck"></i>
+                                                </button>
+                                            </form>
+                                        </th:block>
+
+                                        <!-- Botão Entregar (apenas se EM_TRANSPORTE) -->
+                                        <th:block th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                            <form method="POST"
+                                                  th:action="@{/admin/pedidos/{id}/confirmar-entrega(id=${pedido.id})}"
+                                                  style="display: inline;"
+                                                  th:onsubmit="'return confirm(\'Confirma entrega do pedido ' + ${pedido.codigoPedido} + '?\')'">
+                                                <button type="submit" class="btn btn-success" title="Confirmar entrega">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        </th:block>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Paginação -->
+            <nav th:if="${pedidos.totalPages > 1}" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${pedidos.first ? 'disabled' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/pedidos(page=${pedidos.number - 1}, status=${statusFiltro}, busca=${param.busca})}">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+
+                    <th:block th:each="i : ${#numbers.sequence(0, pedidos.totalPages - 1)}">
+                        <li class="page-item" th:classappend="${i == pedidos.number ? 'active' : ''}">
+                            <a class="page-link"
+                               th:href="@{/admin/pedidos(page=${i}, status=${statusFiltro}, busca=${param.busca})}"
+                               th:text="${i + 1}"></a>
+                        </li>
+                    </th:block>
+
+                    <li class="page-item" th:classappend="${pedidos.last ? 'disabled' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/pedidos(page=${pedidos.number + 1}, status=${statusFiltro}, busca=${param.busca})}">
+                            Próximo <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Navegação Secundária -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <a href="/admin/pedidos/despacho" class="btn btn-warning me-2">
+                        <i class="bi bi-truck"></i> Área de Despacho
+                    </a>
+                    <a href="/admin/pedidos/transporte" class="btn btn-info">
+                        <i class="bi bi-geo-alt"></i> Área de Transporte
+                    </a>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="/admin/pedidos" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-clockwise"></i> Atualizar Dados
+                    </a>
+                </div>
+            </div>
+
+            <!-- Legenda de Status -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-light">
+                        <div class="card-header bg-light">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-square"></i> Legenda de Status
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <span class="badge bg-warning text-dark me-2"></span>
+                                    <strong>EM PROCESSAMENTO</strong> - Pedido aguardando despacho
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-info me-2"></span>
+                                    <strong>EM TRANSPORTE</strong> - Pedido saiu para entrega
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-success me-2"></span>
+                                    <strong>ENTREGUE</strong> - Pedido entregue com sucesso
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge bg-secondary me-2"></span>
+                                    <strong>EM TROCA</strong> - Pedido em processo de troca
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

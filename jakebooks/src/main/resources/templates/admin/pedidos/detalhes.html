@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Detalhes do Pedido - Administração</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-receipt"></i> Detalhes do Pedido
+                        <span th:text="${pedido.codigoPedido}" class="text-primary"></span>
+                    </h1>
+                    <p class="text-muted">Informações completas do pedido</p>
+                </div>
+                <div class="col-auto">
+                    <a href="/admin/pedidos" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar à Lista
+                    </a>
+                </div>
+            </div>
+
+            <!-- Status e Informações Básicas -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle"></i> Informações do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Data de Criação:</strong><br>
+                                        <span th:text="${#temporals.format(pedido.dataCriacao, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </p>
+                                    <p class="mb-2" th:if="${pedido.dataDespacho}">
+                                        <strong>Data de Despacho:</strong><br>
+                                        <span th:text="${#temporals.format(pedido.dataDespacho, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </p>
+                                    <p class="mb-2" th:if="${pedido.dataEntrega}">
+                                        <strong>Data de Entrega:</strong><br>
+                                        <span th:text="${#temporals.format(pedido.dataEntrega, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Valor Total:</strong><br>
+                                        <span class="fs-4 text-success fw-bold">
+                                            R$ <span th:text="${#numbers.formatDecimal(pedido.valorTotal, 1, 2, 'POINT')}"></span>
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Valor do Frete:</strong><br>
+                                        R$ <span th:text="${#numbers.formatDecimal(pedido.valorFrete, 1, 2, 'POINT')}"></span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Troca Habilitada:</strong><br>
+                                        <span th:if="${pedido.trocaHabilitada}" class="text-success">
+                                            <i class="bi bi-check-circle"></i> Sim
+                                        </span>
+                                        <span th:unless="${pedido.trocaHabilitada}" class="text-muted">
+                                            <i class="bi bi-x-circle"></i> Não
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-flag"></i> Status Atual
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <span class="badge fs-4 p-3"
+                                      th:classappend="${pedido.status.corBadge}"
+                                      th:text="${pedido.status.descricao}"></span>
+                            </div>
+
+                            <!-- Ações disponíveis baseadas no status -->
+                            <div th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                <form method="POST"
+                                      th:action="@{/admin/pedidos/{id}/despachar(id=${pedido.id})}"
+                                      th:onsubmit="'return confirm(\'Confirma despacho do pedido ' + ${pedido.codigoPedido} + '?\')'"
+                                      class="d-inline">
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="bi bi-truck"></i> Despachar Pedido
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                <form method="POST"
+                                      th:action="@{/admin/pedidos/{id}/confirmar-entrega(id=${pedido.id})}"
+                                      th:onsubmit="'return confirm(\'Confirma entrega do pedido ' + ${pedido.codigoPedido} + '?\')'"
+                                      class="d-inline">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Confirmar Entrega
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE}">
+                                <span class="text-success">
+                                    <i class="bi bi-check-circle-fill"></i> Pedido Entregue
+                                </span>
+                                <br>
+                                <small class="text-muted">Troca disponível para o cliente</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Cliente -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person"></i> Cliente
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong>Nome:</strong><br>
+                                <span th:text="${pedido.nomeCliente}"></span>
+                            </p>
+                            <p class="mb-0">
+                                <strong>E-mail:</strong><br>
+                                <span th:text="${pedido.emailCliente}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-geo-alt"></i> Endereço de Entrega
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0" th:text="${pedido.enderecoCompleto}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itens do Pedido -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-check"></i> Itens do Pedido
+                        <span class="badge bg-primary ms-2" th:text="${pedido.itens.size()} + ' item(ns)'"></span>
+                    </h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50%">Produto</th>
+                                <th style="width: 15%" class="text-center">Quantidade</th>
+                                <th style="width: 17.5%" class="text-end">Preço Unitário</th>
+                                <th style="width: 17.5%" class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${pedido.itens}">
+                                <td>
+                                    <strong th:text="${item.nomeProduto}"></strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary" th:text="${item.quantidade}"></span>
+                                </td>
+                                <td class="text-end">
+                                    R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.precoUnitario, 1, 2, 'POINT')}"></span>
+                                </td>
+                                <td class="text-end">
+                                    <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.subtotal, 1, 2, 'POINT')}"></span></strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Subtotal dos Produtos:</strong></td>
+                                <td class="text-end">
+                                    <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.valorTotal.subtract(pedido.valorFrete), 1, 2, 'POINT')}"></span></strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Frete:</strong></td>
+                                <td class="text-end">
+                                    <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.valorFrete, 1, 2, 'POINT')}"></span></strong>
+                                </td>
+                            </tr>
+                            <tr class="table-success">
+                                <td colspan="3" class="text-end"><strong>TOTAL GERAL:</strong></td>
+                                <td class="text-end">
+                                    <strong class="fs-5">R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.valorTotal, 1, 2, 'POINT')}"></span></strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Timeline de Status (se houver datas) -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i> Histórico do Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon bg-primary">
+                                <i class="bi bi-plus-circle text-white"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Pedido Criado</h6>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-calendar"></i>
+                                    <span th:text="${#temporals.format(pedido.dataCriacao, 'dd/MM/yyyy HH:mm')}"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div th:if="${pedido.dataDespacho}" class="timeline-item">
+                            <div class="timeline-icon bg-info">
+                                <i class="bi bi-truck text-white"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Pedido Despachado</h6>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-calendar"></i>
+                                    <span th:text="${#temporals.format(pedido.dataDespacho, 'dd/MM/yyyy HH:mm')}"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div th:if="${pedido.dataEntrega}" class="timeline-item">
+                            <div class="timeline-icon bg-success">
+                                <i class="bi bi-check-circle text-white"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Pedido Entregue</h6>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-calendar"></i>
+                                    <span th:text="${#temporals.format(pedido.dataEntrega, 'dd/MM/yyyy HH:mm')}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegação -->
+            <div class="row mt-4">
+                <div class="col text-start">
+                    <a href="/admin/pedidos" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Voltar à Lista
+                    </a>
+                </div>
+                <div class="col text-end">
+                    <div class="btn-group">
+                        <a th:href="@{/admin/pedidos/{id}(id=${pedido.id})}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i> Atualizar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSS customizado para timeline -->
+    <style>
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            height: calc(100% + 10px);
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+        }
+
+        .timeline-content h6 {
+            margin-bottom: 8px;
+            color: #495057;
+        }
+    </style>
+</body>
+</html>

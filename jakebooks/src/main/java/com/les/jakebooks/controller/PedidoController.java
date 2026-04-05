@@ -1,8 +1,10 @@
 package com.les.jakebooks.controller;
 
 import com.les.jakebooks.domain.Pedido;
+import com.les.jakebooks.dto.PedidoAdminResumoDTO;
 import com.les.jakebooks.dto.PedidoConfirmadoDTO;
 import com.les.jakebooks.dto.PedidoResumoDTO;
+import com.les.jakebooks.dto.PedidoTransporteDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.model.enums.StatusPedido;
@@ -160,7 +162,7 @@ public class PedidoController {
             RedirectAttributes attrs) {
 
         try {
-            pedidoService.despachar(id);
+            pedidoService.despacharPedido(id);
             attrs.addFlashAttribute("mensagemSucesso", "Pedido despachado com sucesso! Status: EM_TRANSPORTE");
             return "redirect:/pedidos/" + id;
         } catch (ValidacaoNegocioException e) {

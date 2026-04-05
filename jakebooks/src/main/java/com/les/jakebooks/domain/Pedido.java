@@ -14,6 +14,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +37,13 @@ public class Pedido {
     private Long id;
     
     private LocalDate dataCriacao;
-    
+
+    private LocalDateTime dataDespacho;
+
+    private LocalDateTime dataEntrega;
+
+    private Boolean trocaHabilitada = false;
+
     @Enumerated(EnumType.STRING)
     private StatusPedido status;
     
@@ -91,6 +98,30 @@ public class Pedido {
 
     public void setDataCriacao(LocalDate dataCriacao) {
         this.dataCriacao = dataCriacao;
+    }
+
+    public LocalDateTime getDataDespacho() {
+        return dataDespacho;
+    }
+
+    public void setDataDespacho(LocalDateTime dataDespacho) {
+        this.dataDespacho = dataDespacho;
+    }
+
+    public LocalDateTime getDataEntrega() {
+        return dataEntrega;
+    }
+
+    public void setDataEntrega(LocalDateTime dataEntrega) {
+        this.dataEntrega = dataEntrega;
+    }
+
+    public Boolean getTrocaHabilitada() {
+        return trocaHabilitada;
+    }
+
+    public void setTrocaHabilitada(Boolean trocaHabilitada) {
+        this.trocaHabilitada = trocaHabilitada;
     }
 
     public StatusPedido getStatus() {

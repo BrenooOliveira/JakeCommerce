@@ -2,6 +2,8 @@ package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Pedido;
 import com.les.jakebooks.model.enums.StatusPedido;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -50,6 +52,13 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByStatusOrderByDataCriacaoDesc(StatusPedido status);
 
     /**
+     * Busca pedidos por status ordenados por data de despacho ascendente.
+     * TASK-SHP-05: Para listar pedidos em transporte por ordem de despacho.
+     * RF0039: Confirmar entrega (ENTREGUE).
+     */
+    List<Pedido> findByStatusOrderByDataDespachoAsc(StatusPedido status);
+
+    /**
      * Busca pedidos que podem ser trocados (status ENTREGUE).
      * RN0043: Apenas pedidos ENTREGUES podem solicitar troca.
      */
@@ -75,4 +84,23 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
             @Param("dataInicio") LocalDateTime dataInicio,
             @Param("dataFim") LocalDateTime dataFim
     );
+
+    /**
+     * Conta pedidos por status.
+     * TASK-SHP-06: Para dashboard de pedidos.
+     */
+    Long countByStatus(StatusPedido status);
+
+    /**
+     * Busca pedidos por status com paginação.
+     * TASK-SHP-06: Listagem paginada de pedidos.
+     */
+    Page<Pedido> findByStatus(StatusPedido status, Pageable pageable);
+
+    /**
+     * Busca pedido por código gerado.
+     * TASK-SHP-06: Busca rápida por código de pedido (formato PED-000001).
+     */
+    @Query("SELECT p FROM Pedido p WHERE CONCAT('PED-', LPAD(CAST(p.id AS string), 6, '0')) = :codigo")
+    Optional<Pedido> findByCodigo(@Param("codigo") String codigo);
 }

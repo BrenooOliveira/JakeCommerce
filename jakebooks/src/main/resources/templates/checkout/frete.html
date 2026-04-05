@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Frete e Entrega - Checkout</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-truck"></i> Frete e Entrega
+                    </h1>
+                    <p class="text-muted">Confirme o frete e prazo de entrega</p>
+                </div>
+            </div>
+
+            <!-- Alertas de sucesso/erro -->
+            <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${mensagemSucesso}"></span>
+            </div>
+
+            <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${mensagemErro}"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Card: Endereço Selecionado -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-geo-alt-fill"></i> Endereço de Entrega
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-2" th:text="${endereco.nomeIdentificador()}"></h6>
+                                    <p class="mb-1 text-muted" th:text="${endereco.enderecoFormatado()}"></p>
+                                    <small class="text-muted">
+                                        <span class="badge bg-secondary"
+                                              th:text="${endereco.tipoEndereco().getDescricao()}">
+                                        </span>
+                                    </small>
+                                </div>
+                                <div>
+                                    <a th:href="@{/checkout/endereco}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i> Alterar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Frete Calculado -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-box-seam"></i> Opção de Frete
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <div>
+                                    <h5 class="mb-1" th:text="${frete.descricao}"></h5>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i>
+                                        <span th:text="'Entrega em até ' + ${frete.prazoEstimadoDias} + ' dias úteis'"></span>
+                                    </small>
+                                </div>
+                                <div>
+                                    <span th:if="${frete.gratis}" class="badge bg-success fs-4 px-3 py-2">
+                                        <i class="bi bi-gift"></i> GRÁTIS
+                                    </span>
+                                    <span th:unless="${frete.gratis}" class="fs-4 fw-bold text-primary">
+                                        R$ <span th:text="${#numbers.formatDecimal(frete.valor, 1, 2, 'POINT')}"></span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Informação adicional sobre frete grátis -->
+                            <div th:if="${frete.gratis}" class="alert alert-success mt-3 mb-0" role="alert">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <strong>Parabéns!</strong> Seu pedido atingiu o valor mínimo de R$ 20,00 e ganhou frete grátis!
+                            </div>
+
+                            <div th:unless="${frete.gratis}" class="alert alert-info mt-3 mb-0" role="alert">
+                                <i class="bi bi-info-circle"></i>
+                                Adicione mais <strong>R$ <span th:text="${#numbers.formatDecimal(20.00 - valorCarrinho, 1, 2, 'POINT')}"></span></strong>
+                                ao seu pedido e ganhe <strong>frete grátis</strong>!
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Resumo do Pedido -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-receipt"></i> Resumo do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal (itens):</span>
+                                <span class="font-monospace">
+                                    R$ <span th:text="${#numbers.formatDecimal(valorCarrinho, 1, 2, 'POINT')}"></span>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                                <span>Frete:</span>
+                                <span th:if="${frete.gratis}" class="text-success fw-bold">
+                                    <i class="bi bi-gift"></i> Grátis
+                                </span>
+                                <span th:unless="${frete.gratis}" class="font-monospace">
+                                    R$ <span th:text="${#numbers.formatDecimal(frete.valor, 1, 2, 'POINT')}"></span>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <strong class="fs-5">Total:</strong>
+                                <strong class="fs-5 text-primary font-monospace">
+                                    R$ <span th:text="${#numbers.formatDecimal(valorTotal, 1, 2, 'POINT')}"></span>
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ações -->
+                    <form th:action="@{/checkout/frete}" method="post">
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/checkout/endereco}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Continuar para Pagamento <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sidebar: Informações -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle"></i> Informações
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">Próximos Passos:</h6>
+                            <ol class="ps-3 text-muted small">
+                                <li class="mb-2 text-success"><strong>✓ Endereço selecionado</strong></li>
+                                <li class="mb-2 text-success"><strong>✓ Frete calculado</strong></li>
+                                <li class="mb-2">Escolha a <strong>forma de pagamento</strong></li>
+                                <li class="mb-2">Revise e <strong>finalize</strong> seu pedido</li>
+                            </ol>
+
+                            <hr>
+
+                            <h6 class="mb-3">Prazos de Entrega:</h6>
+                            <ul class="list-unstyled small text-muted">
+                                <li class="mb-2">
+                                    <i class="bi bi-building"></i>
+                                    <strong>Mesma cidade:</strong> 2-3 dias úteis
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-map"></i>
+                                    <strong>Mesmo estado:</strong> 5-7 dias úteis
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-globe-americas"></i>
+                                    <strong>Outro estado:</strong> 10-15 dias úteis
+                                </li>
+                            </ul>
+
+                            <hr>
+
+                            <div class="alert alert-info mb-0" role="alert">
+                                <i class="bi bi-shield-check"></i>
+                                <small>
+                                    <strong>Compra Segura</strong><br>
+                                    Seus dados estão protegidos e seu pedido será rastreado.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
