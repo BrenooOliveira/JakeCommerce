@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Seleção de Endereço - Checkout</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-geo-alt"></i> Seleção de Endereço de Entrega
+                    </h1>
+                    <p class="text-muted">Escolha o endereço para entrega do seu pedido</p>
+                </div>
+            </div>
+
+            <!-- Alertas de sucesso/erro -->
+            <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${mensagemSucesso}"></span>
+            </div>
+
+            <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${mensagemErro}"></span>
+            </div>
+
+            <!-- Alerta de erro se cliente não possui endereços -->
+            <div th:if="${erro}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Atenção!</strong>
+                <p class="mb-2" th:text="${erro}"></p>
+                <a th:href="@{/clientes/enderecos/novo}" class="btn btn-primary btn-sm mt-2">
+                    <i class="bi bi-plus-circle"></i> Cadastrar Endereço de Entrega
+                </a>
+            </div>
+
+            <!-- Lista de Endereços -->
+            <div th:unless="${erro}">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <form method="POST" th:action="@{/checkout/endereco}">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-house-door"></i> Endereços Disponíveis
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Iteração sobre os endereços -->
+                                    <div th:each="endereco, iterStat : ${enderecos}" class="mb-3">
+                                        <div class="card"
+                                             th:classappend="${iterStat.first} ? 'border-primary' : ''">
+                                            <div class="card-body">
+                                                <div class="form-check">
+                                                    <input
+                                                        class="form-check-input"
+                                                        type="radio"
+                                                        name="enderecoId"
+                                                        th:id="'end-' + ${endereco.id()}"
+                                                        th:value="${endereco.id()}"
+                                                        th:checked="${iterStat.first}"
+                                                        required>
+                                                    <label
+                                                        class="form-check-label flex-grow-1"
+                                                        th:for="'end-' + ${endereco.id()}"
+                                                        style="cursor: pointer;">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div>
+                                                                <h6 class="mb-2">
+                                                                    <i class="bi bi-house-fill text-primary"></i>
+                                                                    <span th:text="${endereco.nomeIdentificador()}"></span>
+                                                                </h6>
+                                                                <p class="mb-1 text-muted" th:text="${endereco.enderecoFormatado()}"></p>
+                                                                <small class="text-muted">
+                                                                    <span class="badge bg-secondary"
+                                                                          th:text="${endereco.tipoEndereco().getDescricao()}">
+                                                                    </span>
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mensagem quando não há endereços (não deve acontecer devido à validação) -->
+                                    <div th:if="${enderecos.isEmpty()}" class="text-center py-4">
+                                        <i class="bi bi-house-x" style="font-size: 3rem; color: #ccc;"></i>
+                                        <p class="text-muted mt-3">Nenhum endereço de entrega encontrado</p>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-light" th:unless="${enderecos.isEmpty()}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a th:href="@{/clientes/enderecos/novo}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
+                                        </a>
+                                        <div>
+                                            <a href="/carrinho/view" class="btn btn-outline-secondary me-2">
+                                                <i class="bi bi-arrow-left"></i> Voltar ao Carrinho
+                                            </a>
+                                            <button type="submit" class="btn btn-primary">
+                                                Continuar <i class="bi bi-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Resumo do Pedido (sidebar) -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-info-circle"></i> Informações
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="mb-3">Próximos Passos:</h6>
+                                <ol class="ps-3 text-muted small">
+                                    <li class="mb-2"><strong>Selecione o endereço</strong> onde deseja receber seu pedido</li>
+                                    <li class="mb-2">Calcularemos o <strong>frete</strong> automaticamente</li>
+                                    <li class="mb-2">Escolha a <strong>forma de pagamento</strong></li>
+                                    <li class="mb-2">Revise e <strong>finalize</strong> seu pedido</li>
+                                </ol>
+
+                                <hr>
+
+                                <div class="alert alert-info mb-0" role="alert">
+                                    <i class="bi bi-truck"></i>
+                                    <small>
+                                        <strong>Frete Grátis</strong> para pedidos acima de R$ 20,00!
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

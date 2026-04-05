@@ -483,7 +483,7 @@ public class ClienteController {
         try {
             ClienteDetalheDTO cliente = clienteService.buscarPorCodigo(codigo);
 
-            model.addAttribute("endereco", new EnderecoDTO(null, null, null, null, null, null, null, null, null, null, null));
+            model.addAttribute("endereco", new EnderecoDTO(null, null, null, null, null, null, null, null, null, null, null, null));
             model.addAttribute("clienteCodigo", codigo);
             model.addAttribute("clienteNome", cliente.nome());
             model.addAttribute("tiposResidencia", TipoResidencia.values());

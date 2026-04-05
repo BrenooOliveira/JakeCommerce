@@ -9,19 +9,25 @@ package com.les.jakebooks.model.enums;
  * RF0042: Alterado para TROCADO quando troca é concluída.
  */
 public enum StatusPedido {
-    EM_PROCESSAMENTO("Em Processamento"),
-    EM_TRANSPORTE("Em Transporte"),
-    ENTREGUE("Entregue"),
-    EM_TROCA("Em Troca"),
-    TROCADO("Trocado");
+    EM_PROCESSAMENTO("Em Processamento", "bg-warning text-dark"),
+    EM_TRANSPORTE("Em Transporte", "bg-info"),
+    ENTREGUE("Entregue", "bg-success"),
+    EM_TROCA("Em Troca", "bg-secondary"),
+    TROCADO("Trocado", "bg-primary");
 
     private final String descricao;
+    private final String corBadge;
 
-    StatusPedido(String descricao) {
+    StatusPedido(String descricao, String corBadge) {
         this.descricao = descricao;
+        this.corBadge = corBadge;
     }
 
     public String getDescricao() {
         return descricao;
+    }
+
+    public String getCorBadge() {
+        return corBadge;
     }
 }

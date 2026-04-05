@@ -489,6 +489,8 @@ public class ClienteService {
      * @return DTO do endereço
      */
     private EnderecoDTO converterEnderecoParaDTO(Endereco endereco) {
+        String enderecoFormatado = formatarEndereco(endereco);
+
         return new EnderecoDTO(
                 endereco.getId(),
                 endereco.getNomeIdentificador(),
@@ -500,8 +502,35 @@ public class ClienteService {
                 endereco.getCidade(),
                 endereco.getEstado(),
                 endereco.getPais(),
-                endereco.getTipoEndereco()
+                endereco.getTipoEndereco(),
+                enderecoFormatado
         );
+    }
+
+    /**
+     * Formata o endereço para exibição.
+     * Formato: Logradouro, Número - Bairro, Cidade - Estado, CEP
+     * Exemplo: Rua das Flores, 123 - Centro, São Paulo - SP, 01234-567
+     *
+     * @param endereco endereço a formatar
+     * @return endereço formatado
+     */
+    private String formatarEndereco(Endereco endereco) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(endereco.getLogradouro())
+                .append(", ")
+                .append(endereco.getNumero())
+                .append(" - ")
+                .append(endereco.getBairro())
+                .append(", ")
+                .append(endereco.getCidade())
+                .append(" - ")
+                .append(endereco.getEstado())
+                .append(", ")
+                .append(endereco.getCep());
+
+        return sb.toString();
     }
 
     /**
