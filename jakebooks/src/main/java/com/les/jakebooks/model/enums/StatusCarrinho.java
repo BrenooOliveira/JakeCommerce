@@ -7,7 +7,8 @@ package com.les.jakebooks.model.enums;
 public enum StatusCarrinho {
     ABERTO("Aberto"),
     EXPIRADO("Expirado"),
-    FINALIZADO("Finalizado");
+    FINALIZADO("Finalizado"),
+    BLOQUEADO("Bloqueado");
 
     private final String descricao;
 

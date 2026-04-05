@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Forma de Pagamento - Checkout</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-credit-card"></i> Forma de Pagamento
+                    </h1>
+                    <p class="text-muted">Selecione como deseja pagar seu pedido</p>
+                </div>
+            </div>
+
+            <!-- Alertas de sucesso/erro -->
+            <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${mensagemSucesso}"></span>
+            </div>
+
+            <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${mensagemErro}"></span>
+            </div>
+
+            <!-- Alertas de tentativas reprovadas - PAY-06 -->
+            <div th:if="${tentativasRestantes != null and tentativasRestantes > 1}" class="alert alert-warning alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Atenção!</strong>
+                Você tem <strong th:text="${tentativasRestantes}"></strong> tentativa(s) restante(s)
+                antes do carrinho ser bloqueado.
+            </div>
+
+            <div th:if="${tentativasRestantes == 1}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-shield-exclamation"></i>
+                <strong>Última tentativa!</strong>
+                Se este pagamento for reprovado, seu carrinho será bloqueado.
+                Verifique os dados com atenção.
+            </div>
+
+            <form th:action="@{/checkout/pagamento}" method="post" id="formPagamento">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Card: Resumo do Valor -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-receipt"></i> Resumo do Pedido
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Produtos:</span>
+                                    <span class="font-monospace">
+                                        R$ <span th:text="${#numbers.formatDecimal(valorProdutos, 1, 2, 'POINT')}"></span>
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Frete:</span>
+                                    <span th:if="${frete.gratis}" class="text-success">
+                                        <i class="bi bi-gift"></i> Gratis
+                                    </span>
+                                    <span th:unless="${frete.gratis}" class="font-monospace">
+                                        R$ <span th:text="${#numbers.formatDecimal(valorFrete, 1, 2, 'POINT')}"></span>
+                                    </span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Total:</span>
+                                    <span id="valorTotal" class="fs-5 text-primary font-monospace">
+                                        R$ <span th:text="${#numbers.formatDecimal(valorTotal, 1, 2, 'POINT')}"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Cupons de Troca Disponiveis -->
+                        <div class="card mb-3" th:if="${not #lists.isEmpty(opcoes.cuponsTroca())}">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-ticket-perforated"></i> Cupons de Troca Disponiveis
+                                    <span class="badge bg-success ms-2">
+                                        Saldo: R$ <span th:text="${#numbers.formatDecimal(opcoes.saldoCuponsTroca(), 1, 2, 'POINT')}"></span>
+                                    </span>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    Selecione os cupons de troca que deseja utilizar.
+                                    Eles serao consumidos antes dos cartoes (RN0035).
+                                </p>
+                                <div th:each="cupom : ${opcoes.cuponsTroca()}" class="form-check mb-2">
+                                    <input type="checkbox"
+                                           class="form-check-input cupom-troca"
+                                           name="cuponsIds"
+                                           th:id="'cupom_' + ${cupom.id()}"
+                                           th:value="${cupom.id()}"
+                                           th:data-valor="${cupom.valor()}"
+                                           onchange="atualizarValorRestante()">
+                                    <label class="form-check-label" th:for="'cupom_' + ${cupom.id()}">
+                                        <span class="badge bg-secondary" th:text="${cupom.codigo()}"></span>
+                                        <strong class="text-success ms-2">
+                                            R$ <span th:text="${#numbers.formatDecimal(cupom.valor(), 1, 2, 'POINT')}"></span>
+                                        </strong>
+                                        <small class="text-muted" th:if="${cupom.dataValidade() != null}">
+                                            (Valido ate <span th:text="${#temporals.format(cupom.dataValidade(), 'dd/MM/yyyy')}"></span>)
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Cupom Promocional -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-percent"></i> Cupom Promocional
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    Apenas um cupom promocional por compra (RN0033).
+                                </p>
+                                <div class="input-group">
+                                    <input type="text"
+                                           name="codigoCupomPromocional"
+                                           id="codigoCupomPromocional"
+                                           class="form-control"
+                                           placeholder="Digite o codigo do cupom"
+                                           maxlength="50">
+                                    <button type="button"
+                                            class="btn btn-outline-secondary"
+                                            onclick="validarCupomPromocional()">
+                                        <i class="bi bi-check-lg"></i> Aplicar
+                                    </button>
+                                </div>
+                                <div id="msgCupom" class="mt-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Valor Restante -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>
+                                        <i class="bi bi-calculator"></i>
+                                        Valor a pagar com cartao:
+                                    </span>
+                                    <span id="valorRestante" class="fs-5 text-primary font-monospace">
+                                        R$ <span th:text="${#numbers.formatDecimal(valorTotal, 1, 2, 'POINT')}"></span>
+                                    </span>
+                                </div>
+                                <div id="msgExcedente" class="alert alert-success mt-3 mb-0" style="display: none;">
+                                    <i class="bi bi-gift"></i>
+                                    <strong>Valor excedente!</strong> Um cupom de troca sera gerado para voce.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Cupom Excedente Gerado (RN0036) -->
+                        <div id="cupomExcedenteCard" class="card mb-3 border-success" style="display: none;">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-gift-fill"></i> Cupom de Troca Gerado!
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-3">
+                                    O valor dos seus cupons excedeu o total da compra.
+                                    Foi gerado um novo cupom de troca para voce:
+                                </p>
+                                <div class="text-center p-3 bg-light rounded">
+                                    <div class="mb-2">
+                                        <strong>Codigo:</strong>
+                                        <span id="cupomExcedenteCodigo" class="badge bg-primary fs-5"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Valor:</strong>
+                                        <span id="cupomExcedenteValor" class="text-success fs-4 fw-bold"></span>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mt-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    Este cupom ficara disponivel em sua conta para uso em compras futuras.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Secao de Cartoes -->
+                        <div id="secaoCartoes" class="card mb-3" th:if="${opcoes.valorRestante > 0}">
+                            <div class="card-header">
+                                Pagamento com Cartao
+                                <span class="float-end">
+                                    Valor a pagar: <strong id="valorCartoes" th:text="${#numbers.formatCurrency(opcoes.valorRestante)}"></strong>
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${opcoes.cartoes.empty}" class="alert alert-warning">
+                                    Voce nao possui cartoes cadastrados.
+                                    <a th:href="@{/cliente/cartoes/novo}" class="btn btn-primary btn-sm">
+                                        Cadastrar Cartao
+                                    </a>
+                                </div>
+
+                                <div th:unless="${opcoes.cartoes.empty}">
+                                    <p class="text-muted">
+                                        Selecione os cartoes e distribua o valor (minimo R$ 10,00 por cartao)
+                                    </p>
+
+                                    <div th:each="cartao : ${opcoes.cartoes}" class="card mb-2 cartao-item">
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <input type="checkbox"
+                                                           class="form-check-input cartao-check"
+                                                           th:id="'cartao-' + ${cartao.id}"
+                                                           th:data-cartao-id="${cartao.id}"
+                                                           onchange="toggleCartao(this)">
+                                                </div>
+                                                <div class="col">
+                                                    <label th:for="'cartao-' + ${cartao.id}">
+                                                        <strong th:text="${cartao.bandeira}"></strong>
+                                                        <span th:text="${cartao.numeroMascarado}"></span>
+                                                        <br>
+                                                        <small class="text-muted" th:text="${cartao.nomeImpresso}"></small>
+                                                    </label>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text">R$</span>
+                                                        <input type="number"
+                                                               class="form-control valor-cartao"
+                                                               th:name="'cartoes[' + ${cartao.id} + ']'"
+                                                               th:id="'valor-' + ${cartao.id}"
+                                                               step="0.01"
+                                                               min="10.00"
+                                                               placeholder="0,00"
+                                                               disabled
+                                                               onchange="validarDistribuicao()">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                onclick="distribuirIgualmente()">
+                                            Distribuir Igualmente
+                                        </button>
+                                    </div>
+
+                                    <!-- Validacao -->
+                                    <div id="validacaoCartoes" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acoes -->
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/checkout/frete}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Confirmar Pagamento <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar: Informacoes -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-info-circle"></i> Informacoes
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="mb-3">Etapas do Checkout:</h6>
+                                <ol class="ps-3 text-muted small">
+                                    <li class="mb-2 text-success"><strong>Endereco selecionado</strong></li>
+                                    <li class="mb-2 text-success"><strong>Frete calculado</strong></li>
+                                    <li class="mb-2 text-primary"><strong>Forma de pagamento</strong></li>
+                                    <li class="mb-2">Revisar e finalizar</li>
+                                </ol>
+
+                                <hr>
+
+                                <h6 class="mb-3">Regras de Pagamento:</h6>
+                                <ul class="list-unstyled small text-muted">
+                                    <li class="mb-2">
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Cupons sao usados primeiro
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Apenas 1 cupom promocional
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Minimo R$ 10,00 por cartao
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Multiplos cartoes permitidos
+                                    </li>
+                                </ul>
+
+                                <hr>
+
+                                <!-- Endereco de Entrega -->
+                                <h6 class="mb-2">
+                                    <i class="bi bi-geo-alt"></i> Entrega em:
+                                </h6>
+                                <p class="text-muted small mb-0" th:text="${endereco.enderecoFormatado()}"></p>
+
+                                <hr>
+
+                                <div class="alert alert-info mb-0" role="alert">
+                                    <i class="bi bi-shield-check"></i>
+                                    <small>
+                                        <strong>Compra Segura</strong><br>
+                                        Pagamento simulado - ambiente de testes.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript para dinamismo -->
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            // Valor total original e valor restante para validação PAY-04
+            var valorTotal = /*[[${valorTotal}]]*/ 0;
+            var valorRestante = /*[[${opcoes.valorRestante}]]*/ 0;
+            var cupomPromocionalValor = 0;
+            var cupomPromocionalValidado = false;
+            var cupomPromocionalCodigo = '';
+
+            // Toggle cartao (habilitar/desabilitar input de valor)
+            function toggleCartao(checkbox) {
+                var cartaoId = checkbox.dataset.cartaoId;
+                var valorInput = document.getElementById('valor-' + cartaoId);
+
+                if (checkbox.checked) {
+                    valorInput.disabled = false;
+                    valorInput.focus();
+                } else {
+                    valorInput.disabled = true;
+                    valorInput.value = '';
+                }
+                validarDistribuicao();
+            }
+
+            // Distribuir valor igualmente entre cartões selecionados
+            function distribuirIgualmente() {
+                var checkboxes = document.querySelectorAll('.cartao-check:checked');
+                if (checkboxes.length === 0) {
+                    alert('Selecione pelo menos um cartao');
+                    return;
+                }
+
+                var valorPorCartao = (valorRestante / checkboxes.length).toFixed(2);
+
+                // Verificar minimo
+                if (parseFloat(valorPorCartao) < 10) {
+                    alert('Valor por cartao seria menor que R$ 10,00. Selecione menos cartoes.');
+                    return;
+                }
+
+                var soma = 0;
+                checkboxes.forEach(function(cb, index) {
+                    var cartaoId = cb.dataset.cartaoId;
+                    var input = document.getElementById('valor-' + cartaoId);
+
+                    if (index === checkboxes.length - 1) {
+                        // Ultimo cartao pega a diferenca (centavos)
+                        input.value = (valorRestante - soma).toFixed(2);
+                    } else {
+                        input.value = valorPorCartao;
+                        soma += parseFloat(valorPorCartao);
+                    }
+                });
+
+                validarDistribuicao();
+            }
+
+            // Validar distribuição de pagamento entre cartões
+            function validarDistribuicao() {
+                var inputs = document.querySelectorAll('.valor-cartao:not([disabled])');
+                var msgDiv = document.getElementById('validacaoCartoes');
+
+                var soma = 0;
+                var temErro = false;
+                var mensagens = [];
+
+                inputs.forEach(function(input) {
+                    var valor = parseFloat(input.value) || 0;
+                    soma += valor;
+
+                    if (valor > 0 && valor < 10) {
+                        temErro = true;
+                        mensagens.push('Valor minimo por cartao e R$ 10,00');
+                    }
+                });
+
+                var diferenca = Math.abs(soma - valorRestante);
+
+                if (soma > 0 && diferenca > 0.01) {
+                    temErro = true;
+                    if (soma < valorRestante) {
+                        mensagens.push('Faltam R$ ' + (valorRestante - soma).toFixed(2));
+                    } else {
+                        mensagens.push('Valor excede em R$ ' + (soma - valorRestante).toFixed(2));
+                    }
+                }
+
+                if (temErro) {
+                    msgDiv.innerHTML = '<div class="alert alert-danger">' +
+                        Array.from(new Set(mensagens)).join('<br>') + '</div>';
+                } else if (soma > 0 && diferenca <= 0.01) {
+                    msgDiv.innerHTML = '<div class="alert alert-success">Distribuicao OK</div>';
+                } else {
+                    msgDiv.innerHTML = '';
+                }
+
+                // Habilitar/desabilitar botao submit
+                var btnSubmit = document.querySelector('button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.disabled = temErro || (valorRestante > 0 && soma === 0);
+                }
+            }
+
+            // Atualizar valor restante ao selecionar cupons
+            function atualizarValorRestante() {
+                var desconto = 0;
+
+                // Somar cupons de troca selecionados
+                document.querySelectorAll('.cupom-troca:checked').forEach(function(cb) {
+                    desconto += parseFloat(cb.dataset.valor);
+                });
+
+                // Adicionar cupom promocional se validado
+                if (cupomPromocionalValidado) {
+                    desconto += cupomPromocionalValor;
+                }
+
+                valorRestante = valorTotal - desconto;
+
+                // Atualizar exibicao
+                var valorRestanteEl = document.getElementById('valorRestante');
+                var secaoCartoes = document.getElementById('secaoCartoes');
+                var msgExcedente = document.getElementById('msgExcedente');
+
+                if (valorRestante > 0) {
+                    valorRestanteEl.innerHTML = 'R$ ' + valorRestante.toFixed(2).replace('.', ',');
+                    valorRestanteEl.classList.remove('text-success');
+                    valorRestanteEl.classList.add('text-primary');
+                    secaoCartoes.style.display = 'block';
+                    msgExcedente.style.display = 'none';
+
+                    // Atualizar valor no cabeçalho da seção de cartões
+                    var valorCartoesEl = document.getElementById('valorCartoes');
+                    if (valorCartoesEl) {
+                        valorCartoesEl.innerHTML = 'R$ ' + valorRestante.toFixed(2).replace('.', ',');
+                    }
+                } else if (valorRestante < 0) {
+                    valorRestanteEl.innerHTML = 'R$ 0,00';
+                    valorRestanteEl.classList.remove('text-primary');
+                    valorRestanteEl.classList.add('text-success');
+                    secaoCartoes.style.display = 'none';
+                    msgExcedente.style.display = 'block';
+                    msgExcedente.querySelector('strong').nextSibling.textContent =
+                        ' Um cupom de troca de R$ ' + Math.abs(valorRestante).toFixed(2).replace('.', ',') + ' sera gerado para voce.';
+                } else {
+                    valorRestanteEl.innerHTML = 'R$ 0,00';
+                    valorRestanteEl.classList.remove('text-primary');
+                    valorRestanteEl.classList.add('text-success');
+                    secaoCartoes.style.display = 'none';
+                    msgExcedente.style.display = 'none';
+                }
+
+                // Atualizar validação de cartões se seção estiver visível
+                if (secaoCartoes.style.display !== 'none') {
+                    validarDistribuicao();
+                }
+            }
+
+            // Validar cupom promocional via AJAX (apenas valida, mostra botao aplicar)
+            function validarCupomPromocional() {
+                var codigo = document.getElementById('codigoCupomPromocional').value.trim();
+                var msgCupom = document.getElementById('msgCupom');
+
+                if (!codigo) {
+                    msgCupom.innerHTML = '<div class="alert alert-warning py-2"><i class="bi bi-exclamation-triangle"></i> Digite o codigo do cupom</div>';
+                    return;
+                }
+
+                // Se ja tem cupom aplicado, nao permitir novo
+                if (cupomPromocionalValidado) {
+                    msgCupom.innerHTML = '<div class="alert alert-warning py-2"><i class="bi bi-exclamation-triangle"></i> Ja existe um cupom promocional aplicado (RN0033)</div>';
+                    return;
+                }
+
+                // Fazer requisicao AJAX para validar
+                fetch('/checkout/validar-cupom?codigo=' + encodeURIComponent(codigo), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        msgCupom.innerHTML = '<div class="alert alert-danger py-2"><i class="bi bi-x-circle"></i> ' + data.erro + '</div>';
+                    } else {
+                        // Cupom valido - mostrar botao para aplicar
+                        var valor = parseFloat(data.valor).toFixed(2).replace('.', ',');
+                        msgCupom.innerHTML = '<div class="alert alert-info py-2">' +
+                            '<i class="bi bi-check-circle"></i> Cupom valido! Desconto de R$ ' + valor +
+                            ' <button type="button" class="btn btn-sm btn-success ms-2" onclick="aplicarCupomPromocional(\'' + codigo + '\', ' + data.valor + ')">' +
+                            '<i class="bi bi-plus-circle"></i> Aplicar</button></div>';
+                    }
+                })
+                .catch(error => {
+                    msgCupom.innerHTML = '<div class="alert alert-danger py-2"><i class="bi bi-x-circle"></i> Erro ao validar cupom</div>';
+                });
+            }
+
+            // Aplicar cupom promocional (persiste na sessao)
+            function aplicarCupomPromocional(codigo, valor) {
+                var msgCupom = document.getElementById('msgCupom');
+
+                // Fazer requisicao AJAX para aplicar na sessao
+                fetch('/checkout/pagamento/aplicar-cupom?codigo=' + encodeURIComponent(codigo), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        msgCupom.innerHTML = '<div class="alert alert-danger py-2"><i class="bi bi-x-circle"></i> ' + data.erro + '</div>';
+                    } else {
+                        // Cupom aplicado com sucesso
+                        cupomPromocionalValidado = true;
+                        cupomPromocionalValor = valor;
+                        cupomPromocionalCodigo = codigo;
+
+                        // Desabilitar campo de codigo
+                        document.getElementById('codigoCupomPromocional').disabled = true;
+
+                        msgCupom.innerHTML = '<div class="alert alert-success py-2">' +
+                            '<i class="bi bi-check-circle-fill"></i> <strong>Cupom ' + codigo + ' aplicado!</strong> Desconto de R$ ' +
+                            valor.toFixed(2).replace('.', ',') +
+                            ' <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removerCupomPromocional()">' +
+                            '<i class="bi bi-x-circle"></i> Remover</button></div>';
+
+                        atualizarValorRestante();
+                    }
+                })
+                .catch(error => {
+                    msgCupom.innerHTML = '<div class="alert alert-danger py-2"><i class="bi bi-x-circle"></i> Erro ao aplicar cupom</div>';
+                });
+            }
+
+            // Remover cupom promocional aplicado
+            function removerCupomPromocional() {
+                cupomPromocionalValidado = false;
+                cupomPromocionalValor = 0;
+                cupomPromocionalCodigo = '';
+
+                // Habilitar campo de codigo
+                document.getElementById('codigoCupomPromocional').disabled = false;
+                document.getElementById('codigoCupomPromocional').value = '';
+                document.getElementById('msgCupom').innerHTML = '';
+
+                atualizarValorRestante();
+            }
+            document.getElementById('formPagamento').addEventListener('submit', function(e) {
+                var valorRestante = calcularValorRestante();
+
+                if (valorRestante > 0) {
+                    // Verificar se ha cartoes selecionados com valor suficiente
+                    var totalCartoes = 0;
+                    var cartaoComValorBaixo = false;
+
+                    document.querySelectorAll('.cartao-check:checked').forEach(function(cb) {
+                        var cartaoId = cb.dataset.cartaoId;
+                        var valor = parseFloat(document.getElementById('cartao_valor_' + cartaoId).value) || 0;
+                        totalCartoes += valor;
+
+                        // Verificar minimo por cartao (RN0034)
+                        if (valor > 0 && valor < 10) {
+                            cartaoComValorBaixo = true;
+                        }
+                    });
+
+                    if (cartaoComValorBaixo) {
+                        alert('Valor minimo por cartao e R$ 10,00 (RN0034)');
+                        e.preventDefault();
+                        return;
+                    }
+
+                    if (totalCartoes < valorRestante) {
+                        alert('Valor total dos cartoes deve ser pelo menos R$ ' + valorRestante.toFixed(2).replace('.', ','));
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            });
+
+            // Calcular valor restante (usado na validacao)
+            function calcularValorRestante() {
+                var desconto = 0;
+                document.querySelectorAll('.cupom-troca:checked').forEach(function(cb) {
+                    desconto += parseFloat(cb.dataset.valor);
+                });
+                if (cupomPromocionalValidado) {
+                    desconto += cupomPromocionalValor;
+                }
+                return Math.max(0, valorTotal - desconto);
+            }
+
+            /**
+             * Calcular pagamento com cupons via AJAX e gerar excedente se necessario (RN0036)
+             */
+            async function calcularPagamento() {
+                // Coletar cupons de troca selecionados
+                var cuponsTrocaIds = Array.from(
+                    document.querySelectorAll('.cupom-troca:checked')
+                ).map(cb => parseInt(cb.value));
+
+                // Obter codigo do cupom promocional se aplicado
+                var codigoCupomPromocional = cupomPromocionalValidado ? cupomPromocionalCodigo : null;
+
+                try {
+                    const response = await fetch('/checkout/pagamento/calcular', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            cuponsTrocaIds: cuponsTrocaIds,
+                            codigoCupomPromocional: codigoCupomPromocional
+                        })
+                    });
+
+                    const resultado = await response.json();
+
+                    if (resultado.erro) {
+                        console.error('Erro ao calcular pagamento:', resultado.erro);
+                        return;
+                    }
+
+                    // Atualizar valor restante
+                    var valorRestanteEl = document.getElementById('valorRestante');
+                    var secaoCartoes = document.getElementById('secaoCartoes');
+                    var msgExcedente = document.getElementById('msgExcedente');
+                    var cupomExcedenteCard = document.getElementById('cupomExcedenteCard');
+
+                    valorRestanteEl.innerHTML = 'R$ ' + resultado.valorRestante.toFixed(2).replace('.', ',');
+
+                    // Mostrar/esconder secao de cartoes
+                    if (resultado.pagamentoCompleto) {
+                        secaoCartoes.style.display = 'none';
+                        valorRestanteEl.classList.remove('text-primary');
+                        valorRestanteEl.classList.add('text-success');
+                    } else {
+                        secaoCartoes.style.display = 'block';
+                        valorRestanteEl.classList.remove('text-success');
+                        valorRestanteEl.classList.add('text-primary');
+                    }
+
+                    // Mostrar cupom excedente se foi gerado
+                    if (resultado.cupomExcedenteGerado) {
+                        exibirCupomExcedente(resultado.cupomExcedenteGerado);
+                        msgExcedente.style.display = 'none';
+                    } else if (resultado.valorRestante < 0) {
+                        // Valor negativo mas cupom ainda nao gerado (preview)
+                        msgExcedente.style.display = 'block';
+                        cupomExcedenteCard.style.display = 'none';
+                    } else {
+                        msgExcedente.style.display = 'none';
+                        cupomExcedenteCard.style.display = 'none';
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao calcular pagamento:', error);
+                }
+            }
+
+            /**
+             * Exibir cupom excedente gerado (RN0036)
+             */
+            function exibirCupomExcedente(cupom) {
+                var card = document.getElementById('cupomExcedenteCard');
+                var codigoEl = document.getElementById('cupomExcedenteCodigo');
+                var valorEl = document.getElementById('cupomExcedenteValor');
+
+                codigoEl.textContent = cupom.codigo;
+                valorEl.textContent = 'R$ ' + cupom.valor.toFixed(2).replace('.', ',');
+
+                card.style.display = 'block';
+
+                // Esconder mensagem de preview
+                document.getElementById('msgExcedente').style.display = 'none';
+            }
+
+            // Inicializar
+            document.addEventListener('DOMContentLoaded', function() {
+                atualizarValorRestante();
+            });
+        </script>
+    </th:block>
+</body>
+</html>

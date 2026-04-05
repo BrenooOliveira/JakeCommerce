@@ -12,6 +12,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,10 @@ public class Carrinho {
     private StatusCarrinho status;
     
     private LocalDate dataExpiracao;
+
+    private Integer tentativasReprovadas = 0;
+
+    private LocalDateTime dataBloqueio;
     
     @OneToOne
     @JoinColumn(name = "cliente_id")
@@ -102,5 +107,21 @@ public class Carrinho {
 
     public void setItens(List<ItemCarrinho> itens) {
         this.itens = itens;
+    }
+
+    public Integer getTentativasReprovadas() {
+        return tentativasReprovadas;
+    }
+
+    public void setTentativasReprovadas(Integer tentativasReprovadas) {
+        this.tentativasReprovadas = tentativasReprovadas;
+    }
+
+    public LocalDateTime getDataBloqueio() {
+        return dataBloqueio;
+    }
+
+    public void setDataBloqueio(LocalDateTime dataBloqueio) {
+        this.dataBloqueio = dataBloqueio;
     }
 }

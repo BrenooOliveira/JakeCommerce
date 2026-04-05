@@ -1,4 +1,6 @@
-# TASK-PAY-04: Validar e Distribuir Pagamento em Cartoes
+você é o paymente-agent e vamos implementar de maneira simulada o fluxo de pagamento. Basicamente: Definir forma de pagamento (pagamento em diferentes cartões, uso de cupom de troca e promocional);
+
+Revise os códigos atuais para irmos para a PAY-04# TASK-PAY-04: Validar e Distribuir Pagamento em Cartoes
 
 ## Metadata
 
