@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Confirmar Pedido - Checkout</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçалho -->
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 class="display-6">
+                        <i class="bi bi-check2-square"></i> Confirmar Pedido
+                    </h1>
+                    <p class="text-muted">Revise os dados antes de finalizar sua compra</p>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${mensagemSucesso}"></span>
+            </div>
+
+            <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${mensagemErro}"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Endereço de Entrega -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-geo-alt-fill"></i> Endereço de Entrega
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-2" th:text="${endereco.nomeIdentificador()}"></h6>
+                            <p class="mb-1" th:text="${endereco.enderecoFormatado()}"></p>
+                        </div>
+                    </div>
+
+                    <!-- Itens do Carrinho -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-cart3"></i> Itens do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th class="text-center">Quantidade</th>
+                                            <th class="text-end">Valor Unitário</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${carrinho.itens()}">
+                                            <td th:text="${item.titulo()}"></td>
+                                            <td class="text-center" th:text="${item.quantidade()}"></td>
+                                            <td class="text-end" th:text="${#numbers.formatCurrency(item.valorUnitario())}"></td>
+                                            <td class="text-end" th:text="${#numbers.formatCurrency(item.subtotal())}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cupons Aplicados -->
+                    <div class="card mb-3" th:if="${cuponsAplicados != null and not #lists.isEmpty(cuponsAplicados)}">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-ticket-perforated"></i> Cupons Aplicados
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                    th:each="cupom : ${cuponsAplicados}">
+                                    <div>
+                                        <span class="badge bg-success me-2" th:text="${cupom.tipo()}"></span>
+                                        <strong th:text="${cupom.codigo()}"></strong>
+                                    </div>
+                                    <span class="text-success" th:text="'-' + ${#numbers.formatCurrency(cupom.valor())}"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo do Pedido -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm sticky-top" style="top: 20px;">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-receipt"></i> Resumo do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal Produtos:</span>
+                                <strong th:text="${#numbers.formatCurrency(valorProdutos)}"></strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Frete:</span>
+                                <strong th:text="${#numbers.formatCurrency(frete.valor())}">
+                                </strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2" th:if="${cuponsAplicados != null and not #lists.isEmpty(cuponsAplicados)}">
+                                <span class="text-success">Desconto (Cupons):</span>
+                                <strong class="text-success">
+                                    - <span th:text="${#numbers.formatCurrency(#aggregates.sum(cuponsAplicados.![valor()]))}"></span>
+                                </strong>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="fs-5 fw-bold">Total:</span>
+                                <span class="fs-4 fw-bold text-success" th:text="${#numbers.formatCurrency(valorTotal)}"></span>
+                            </div>
+
+                            <!-- Formulário de Finalização -->
+                            <form th:action="@{/checkout/finalizar}" method="post">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-check2-circle"></i>
+                                        Finalizar Compra
+                                    </button>
+                                    <a href="/checkout/pagamento" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Voltar para Pagamento
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card-footer bg-light">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Compra 100% segura e protegida
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

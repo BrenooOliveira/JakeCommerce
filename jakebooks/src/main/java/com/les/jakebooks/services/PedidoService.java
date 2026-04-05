@@ -12,6 +12,7 @@ import com.les.jakebooks.domain.Pagamento;
 import com.les.jakebooks.domain.PagamentoCartao;
 import com.les.jakebooks.domain.PagamentoCupom;
 import com.les.jakebooks.domain.Pedido;
+import com.les.jakebooks.dto.ConversaoPedidoDTO;
 import com.les.jakebooks.dto.FinalizarPedidoDTO;
 import com.les.jakebooks.dto.ItemCarrinhoDTO;
 import com.les.jakebooks.dto.PagamentoCartaoDadosDTO;
@@ -342,6 +343,145 @@ public class PedidoService {
                         .collect(Collectors.toList()),
                 "Pedido finalizado com sucesso! Número do pedido: " + pedido.getId()
         );
+    }
+
+    /**
+     * Converte carrinho em pedido após pagamento aprovado.
+     * TASK-CHK-03: Converter Carrinho em Pedido
+     * RF0037: Finalizar compra (status inicial: EM_PROCESSAMENTO)
+     * RN0064: Pedido mínimo 20 sem frete
+     *
+     * Pré-condições:
+     * - Carrinho com status ABERTO
+     * - Pagamento processado com status APROVADA
+     * - Endereço de entrega selecionado
+     * - Frete calculado
+     *
+     * Pós-condições:
+     * - Pedido criado com status EM_PROCESSAMENTO
+     * - ItemPedido criado para cada ItemCarrinho
+     * - Carrinho NÃO alterado (será finalizado por CompraService)
+     *
+     * @param dados DTO com dados para conversão
+     * @return Pedido criado
+     * @throws ValidacaoNegocioException se validações falham
+     * @throws RecursoNaoEncontradoException se carrinho não existe
+     */
+    @Transactional
+    public Pedido converterCarrinhoEmPedido(ConversaoPedidoDTO dados) {
+        // Buscar carrinho pelo ID
+        Carrinho carrinho = carrinhoRepository.findById(dados.getCarrinhoId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                    "Carrinho com ID " + dados.getCarrinhoId() + " não encontrado"));
+
+        // Validar pré-condições
+        validarConversao(carrinho, dados);
+
+        // Criar pedido
+        Pedido pedido = criarPedido(carrinho, dados);
+        pedido = pedidoRepository.save(pedido);
+
+        // Criar itens do pedido a partir dos itens do carrinho
+        for (ItemCarrinho itemCarrinho : carrinho.getItens()) {
+            ItemPedido itemPedido = new ItemPedido();
+            itemPedido.setPedido(pedido);
+            itemPedido.setLivro(itemCarrinho.getLivro());
+            itemPedido.setQuantidade(itemCarrinho.getQuantidade());
+            itemPedido.setValorUnitario(itemCarrinho.getValorUnitario());
+            pedido.getItens().add(itemPedido);
+        }
+
+        // Salvar pedido novamente com itens
+        pedido = pedidoRepository.save(pedido);
+
+        return pedido;
+    }
+
+    /**
+     * Valida pré-condições para conversão de carrinho em pedido.
+     * TASK-CHK-03: Validações específicas para conversão
+     *
+     * @param carrinho carrinho a ser convertido
+     * @param dados dados da conversão
+     * @throws ValidacaoNegocioException se validações falham
+     */
+    private void validarConversao(Carrinho carrinho, ConversaoPedidoDTO dados) {
+        // Validar status do carrinho
+        if (carrinho.getStatus() != StatusCarrinho.ABERTO) {
+            throw new ValidacaoNegocioException(
+                "Carrinho não está disponível para conversão. Status atual: " + carrinho.getStatus()
+            );
+        }
+
+        // Validar pagamento aprovado
+        if (dados.getPagamento().getStatus() != StatusPagamento.APROVADA) {
+            throw new ValidacaoNegocioException(
+                "Conversão permitida apenas para pagamentos aprovados. Status: " +
+                dados.getPagamento().getStatus()
+            );
+        }
+
+        // Validar se carrinho tem itens
+        if (carrinho.getItens() == null || carrinho.getItens().isEmpty()) {
+            throw new ValidacaoNegocioException("Carrinho está vazio");
+        }
+
+        // Validar se endereço foi fornecido
+        if (dados.getEnderecoEntrega() == null) {
+            throw new ValidacaoNegocioException("Endereço de entrega não foi selecionado");
+        }
+
+        // Validar se frete foi calculado
+        if (dados.getValorFrete() == null) {
+            throw new ValidacaoNegocioException("Valor do frete não foi calculado");
+        }
+    }
+
+    /**
+     * Cria entidade Pedido a partir do carrinho e dados fornecidos.
+     * TASK-CHK-03: Criação do pedido
+     *
+     * @param carrinho carrinho fonte
+     * @param dados dados da conversão
+     * @return Pedido criado (ainda não salvo)
+     */
+    private Pedido criarPedido(Carrinho carrinho, ConversaoPedidoDTO dados) {
+        Pedido pedido = new Pedido();
+
+        // Dados básicos
+        pedido.setDataCriacao(LocalDate.now());
+        pedido.setStatus(StatusPedido.EM_PROCESSAMENTO);
+        pedido.setCliente(carrinho.getCliente());
+        pedido.setEndereco(dados.getEnderecoEntrega());
+        pedido.setPagamento(dados.getPagamento());
+        pedido.setValorFrete(dados.getValorFrete());
+
+        // Calcular valor total: subtotal itens + frete - cupons
+        BigDecimal subtotalItens = calcularSubtotalItens(carrinho.getItens());
+        BigDecimal valorCupons = dados.getPagamento().getValorPagoCupons() != null
+                ? dados.getPagamento().getValorPagoCupons()
+                : BigDecimal.ZERO;
+        BigDecimal valorTotal = subtotalItens.add(dados.getValorFrete()).subtract(valorCupons);
+
+        // Garantir que valor total não seja negativo
+        pedido.setValorTotal(valorTotal.max(BigDecimal.ZERO));
+
+        return pedido;
+    }
+
+    /**
+     * Calcula subtotal dos itens do carrinho.
+     * TASK-CHK-03: Cálculo auxiliar
+     *
+     * @param itens itens do carrinho
+     * @return subtotal
+     */
+    private BigDecimal calcularSubtotalItens(List<ItemCarrinho> itens) {
+        return itens.stream()
+                .map(item -> item.getValorUnitario().multiply(
+                    BigDecimal.valueOf(item.getQuantidade())
+                ))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.les.jakebooks.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -8,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+
+import com.les.jakebooks.model.enums.StatusPagamentoCartao;
 
 /**
  * Entidade que representa uma parcela de pagamento feita com cartão.
@@ -31,6 +35,9 @@ public class PagamentoCartao {
     @ManyToOne
     @JoinColumn(name = "cartao_id")
     private Cartao cartao;
+
+    @Enumerated(EnumType.STRING)
+    private StatusPagamentoCartao status;
 
     // Construtores
     public PagamentoCartao() {
@@ -72,5 +79,13 @@ public class PagamentoCartao {
 
     public void setCartao(Cartao cartao) {
         this.cartao = cartao;
+    }
+
+    public StatusPagamentoCartao getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusPagamentoCartao status) {
+        this.status = status;
     }
 }

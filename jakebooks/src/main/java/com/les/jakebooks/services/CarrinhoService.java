@@ -8,6 +8,8 @@ import com.les.jakebooks.domain.Livro;
 import com.les.jakebooks.dto.CarrinhoComExpiracaoDTO;
 import com.les.jakebooks.dto.CarrinhoDTO;
 import com.les.jakebooks.dto.ItemCarrinhoDTO;
+import com.les.jakebooks.exception.CarrinhoBloqueadoPagamentoException;
+import com.les.jakebooks.exception.CarrinhoNaoEncontradoException;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.model.enums.StatusCarrinho;
@@ -59,6 +61,7 @@ public class CarrinhoService {
 
     // Constantes
     private static final int MAX_QUANTIDADE_LIVRO = 10;  // RN0063
+    private static final int MAX_TENTATIVAS_REPROVADAS = 3;  // RN0065
 
     /**
      * Obtém o carrinho aberto do cliente ou cria um novo.
@@ -428,5 +431,121 @@ public class CarrinhoService {
         return itens.stream()
                 .map(item -> item.getValorUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Incrementa contador de tentativas reprovadas.
+     * RN0065: 3 pagamentos REPROVADOS consecutivos bloqueiam carrinho.
+     * TASK-PAY-06: Controlar tentativas reprovadas.
+     *
+     * @param carrinhoId ID do carrinho
+     * @throws CarrinhoBloqueadoPagamentoException se atingir limite
+     * @throws CarrinhoNaoEncontradoException se carrinho não existe
+     */
+    @Transactional
+    public void registrarTentativaReprovada(Long carrinhoId) {
+        Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
+                .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
+
+        if (carrinho.getStatus() == StatusCarrinho.BLOQUEADO) {
+            throw new CarrinhoBloqueadoPagamentoException(carrinho.getCliente().getId());
+        }
+
+        int tentativas = carrinho.getTentativasReprovadas() + 1;
+        carrinho.setTentativasReprovadas(tentativas);
+
+        if (tentativas >= MAX_TENTATIVAS_REPROVADAS) {
+            carrinho.setStatus(StatusCarrinho.BLOQUEADO);
+            carrinho.setDataBloqueio(LocalDateTime.now());
+            carrinhoRepository.save(carrinho);
+
+            // Lançar exceção informando bloqueio
+            throw new CarrinhoBloqueadoPagamentoException(
+                    carrinho.getCliente().getId(), tentativas);
+        }
+
+        carrinhoRepository.save(carrinho);
+    }
+
+    /**
+     * Reseta contador apos pagamento aprovado.
+     * RN0065: Contador reseta após aprovação.
+     * TASK-PAY-06: Controlar tentativas reprovadas.
+     *
+     * @param carrinhoId ID do carrinho
+     * @throws CarrinhoNaoEncontradoException se carrinho não existe
+     */
+    @Transactional
+    public void resetarTentativasReprovadas(Long carrinhoId) {
+        Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
+                .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
+
+        carrinho.setTentativasReprovadas(0);
+        carrinhoRepository.save(carrinho);
+    }
+
+    /**
+     * Verifica se carrinho esta bloqueado.
+     * TASK-PAY-06: Controlar tentativas reprovadas.
+     *
+     * @param carrinhoId ID do carrinho
+     * @throws CarrinhoBloqueadoPagamentoException se carrinho está bloqueado
+     * @throws CarrinhoNaoEncontradoException se carrinho não existe
+     */
+    public void verificarCarrinhoBloqueado(Long carrinhoId) {
+        Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
+                .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
+
+        if (carrinho.getStatus() == StatusCarrinho.BLOQUEADO) {
+            throw new CarrinhoBloqueadoPagamentoException(carrinho.getCliente().getId());
+        }
+    }
+
+    /**
+     * Retorna tentativas restantes.
+     * TASK-PAY-06: Controlar tentativas reprovadas.
+     *
+     * @param carrinhoId ID do carrinho
+     * @return número de tentativas restantes
+     * @throws CarrinhoNaoEncontradoException se carrinho não existe
+     */
+    public int getTentativasRestantes(Long carrinhoId) {
+        Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
+                .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
+
+        return MAX_TENTATIVAS_REPROVADAS - carrinho.getTentativasReprovadas();
+    }
+
+    /**
+     * Finaliza o carrinho alterando status para FINALIZADO.
+     * TASK-CHK-03: Converter Carrinho em Pedido
+     * RF0037: Finalizar compra
+     *
+     * Chamado após conversão bem-sucedida de carrinho em pedido.
+     * Impede que o carrinho seja reutilizado.
+     *
+     * @param carrinhoId ID do carrinho a finalizar
+     * @throws CarrinhoNaoEncontradoException se carrinho não existe
+     */
+    @Transactional
+    public void finalizarCarrinho(Long carrinhoId) {
+        Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
+                .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
+
+        carrinho.setStatus(StatusCarrinho.FINALIZADO);
+        carrinhoRepository.save(carrinho);
+    }
+
+    /**
+     * Busca carrinho por ID.
+     * TASK-CHK-03: Usado para conversão de carrinho em pedido.
+     *
+     * @param carrinhoId ID do carrinho
+     * @return entidade Carrinho
+     * @throws CarrinhoNaoEncontradoException se carrinho não existe
+     */
+    public Carrinho buscarPorId(Long carrinhoId) {
+        return carrinhoRepository.findById(carrinhoId)
+                .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
     }
 }

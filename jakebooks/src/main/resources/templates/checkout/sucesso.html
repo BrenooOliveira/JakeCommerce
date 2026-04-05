@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Compra Finalizada - Checkout</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <!-- Cabeçalho de Sucesso -->
+            <div class="row mb-4">
+                <div class="col text-center">
+                    <div class="alert alert-success py-4">
+                        <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                        <h1 class="display-6 mt-3">Compra Finalizada com Sucesso!</h1>
+                        <p class="lead mb-0">Seu pedido foi criado e está sendo processado.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalhes do Pedido -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-receipt"></i> Detalhes do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <!-- Número do Pedido -->
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Número do Pedido</label>
+                                    <p class="fs-4 text-primary mb-0">
+                                        <i class="bi bi-hash"></i>
+                                        <span th:text="${pedido.id}"></span>
+                                    </p>
+                                </div>
+
+                                <!-- Data do Pedido -->
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Data</label>
+                                    <p class="mb-0">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span th:text="${#temporals.format(pedido.dataCriacao, 'dd/MM/yyyy')}"></span>
+                                    </p>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Status</label>
+                                    <p class="mb-0">
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-clock-history"></i>
+                                            <span th:text="${pedido.status}"></span>
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <!-- Valor Total -->
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-bold">Valor Total</label>
+                                    <p class="fs-4 text-success mb-0">
+                                        <i class="bi bi-currency-dollar"></i>
+                                        <span th:text="${#numbers.formatCurrency(pedido.valorTotal)}"></span>
+                                    </p>
+                                </div>
+
+                                <!-- Endereço de Entrega -->
+                                <div class="col-12">
+                                    <label class="form-label text-muted fw-bold">Endereço de Entrega</label>
+                                    <p class="mb-0">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span th:text="${pedido.endereco.logradouro} + ', ' + ${pedido.endereco.numero} + ' - ' + ${pedido.endereco.bairro} + ' - ' + ${pedido.endereco.cidade} + '/' + ${pedido.endereco.estado}"></span>
+                                    </p>
+                                </div>
+
+                                <!-- Mensagem de Sucesso -->
+                                <div class="col-12" th:if="${mensagemSucesso}">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span th:text="${mensagemSucesso}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Itens do Pedido -->
+                        <div class="card-body border-top">
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-box-seam"></i> Itens do Pedido
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th class="text-center">Quantidade</th>
+                                            <th class="text-end">Valor Unitário</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${pedido.itens}">
+                                            <td th:text="${item.livro.titulo}"></td>
+                                            <td class="text-center" th:text="${item.quantidade}"></td>
+                                            <td class="text-end" th:text="${#numbers.formatCurrency(item.valorUnitario)}"></td>
+                                            <td class="text-end" th:text="${#numbers.formatCurrency(item.valorUnitario * item.quantidade)}"></td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="3" class="text-end fw-bold">Frete:</td>
+                                            <td class="text-end" th:text="${#numbers.formatCurrency(pedido.valorFrete)}"></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end fw-bold">Total:</td>
+                                            <td class="text-end fw-bold text-success" th:text="${#numbers.formatCurrency(pedido.valorTotal)}"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Ações -->
+                        <div class="card-footer bg-light">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                <a href="/livros" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Continuar Comprando
+                                </a>
+                                <a href="/pedidos" class="btn btn-primary">
+                                    <i class="bi bi-list-ul"></i> Ver Meus Pedidos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações Adicionais -->
+                    <div class="alert alert-light mt-4">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Próximos Passos
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Você receberá um e-mail de confirmação em breve</li>
+                            <li>Acompanhe o status do seu pedido em "Meus Pedidos"</li>
+                            <li>O prazo de entrega será informado assim que o pedido for despachado</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

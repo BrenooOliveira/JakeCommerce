@@ -1,19 +1,24 @@
 package com.les.jakebooks.services;
 
 import com.les.jakebooks.domain.Estoque;
+import com.les.jakebooks.domain.ItemPedido;
 import com.les.jakebooks.domain.Livro;
+import com.les.jakebooks.domain.Pedido;
 import com.les.jakebooks.dto.EntradaEstoqueDTO;
 import com.les.jakebooks.dto.EstoqueListaDTO;
+import com.les.jakebooks.dto.MovimentoEstoque;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.repository.EstoqueRepository;
 import com.les.jakebooks.repository.LivroRepository;
+import com.les.jakebooks.service.LogService;
 import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +43,9 @@ public class EstoqueService {
 
     @Autowired
     private LivroRepository livroRepository;
+
+    @Autowired
+    private LogService logService;
 
     /**
      * Registra uma entrada de estoque.
@@ -201,7 +209,7 @@ public class EstoqueService {
     public void reentrada(Long livroId, int quantidade) {
         // Buscar estoque
         Estoque estoque = estoqueRepository.findByLivroId(livroId);
-        
+
         if (estoque == null) {
             throw new RecursoNaoEncontradoException("Estoque para livro com ID " + livroId + " não encontrado");
         }
@@ -217,6 +225,194 @@ public class EstoqueService {
     }
 
     /**
+     * Executa baixa de estoque para todos os itens de um pedido.
+     * TASK-CHK-04: Coordenar Baixa de Estoque
+     * RF0053: Baixa automática após venda
+     * RN0028: Baixa estoque apenas após pagamento aprovado
+     *
+     * Este método executa a baixa transacional de estoque com:
+     * - Validação de pré-condições (pagamento APROVADO, status EM_PROCESSAMENTO)
+     * - Re-validação de estoque com lock pessimista
+     * - Registro detalhado de log de movimentos
+     * - Atomicidade garantida (tudo ou nada)
+     *
+     * Pré-condição: Pagamento do pedido deve ter status APROVADA.
+     * Pós-condição: Estoque decrementado para cada item do pedido.
+     *
+     * @param pedido pedido cujos itens terão estoque baixado
+     * @throws PagamentoNaoAprovadoException se pagamento não está APROVADO
+     * @throws StatusPedidoInvalidoException se pedido não está EM_PROCESSAMENTO
+     * @throws EstoqueInsuficienteParaBaixaException se estoque insuficiente no momento da baixa
+     * @throws EstoqueNaoEncontradoException se estoque não existe
+     * @throws ValidacaoNegocioException para outras validações
+     */
+    @Transactional
+    public void executarBaixaPorPedido(Pedido pedido) {
+        // Validar pré-condições básicas
+        if (pedido == null) {
+            throw new ValidacaoNegocioException("Pedido não pode ser null");
+        }
+
+        if (pedido.getItens() == null || pedido.getItens().isEmpty()) {
+            throw new ValidacaoNegocioException("Pedido não possui itens");
+        }
+
+        // Validar pré-condições de negócio (TASK-CHK-04)
+        validarPreCondicoesBaixa(pedido);
+
+        // Re-validar estoque disponível antes da baixa (segurança adicional)
+        revalidarEstoqueDisponivel(pedido.getItens());
+
+        // Executar baixa para cada item com lock pessimista
+        List<MovimentoEstoque> movimentos = new ArrayList<>();
+
+        for (ItemPedido item : pedido.getItens()) {
+            MovimentoEstoque movimento = executarBaixaItem(item);
+            movimentos.add(movimento);
+        }
+
+        // Registrar log consolidado da operação (RNF0012)
+        registrarLogBaixaEstoque(pedido, movimentos);
+    }
+
+    /**
+     * Valida pré-condições para baixa de estoque.
+     * TASK-CHK-04: Validações de negócio críticas
+     *
+     * @param pedido pedido a validar
+     * @throws PagamentoNaoAprovadoException se pagamento não APROVADO (RN0028)
+     * @throws StatusPedidoInvalidoException se status não EM_PROCESSAMENTO
+     */
+    private void validarPreCondicoesBaixa(Pedido pedido) {
+        // RN0028: Baixa apenas após pagamento APROVADO
+        if (pedido.getPagamento() == null ||
+            pedido.getPagamento().getStatus() != com.les.jakebooks.model.enums.StatusPagamento.APROVADA) {
+            throw new com.les.jakebooks.exception.PagamentoNaoAprovadoException(
+                "Baixa de estoque permitida apenas para pagamentos aprovados"
+            );
+        }
+
+        // Validar status do pedido
+        if (pedido.getStatus() != com.les.jakebooks.model.enums.StatusPedido.EM_PROCESSAMENTO) {
+            throw new com.les.jakebooks.exception.StatusPedidoInvalidoException(
+                "Pedido deve estar EM_PROCESSAMENTO para baixa de estoque. Status atual: " +
+                pedido.getStatus()
+            );
+        }
+    }
+
+    /**
+     * Re-valida disponibilidade de estoque antes da baixa.
+     * TASK-CHK-04: Segurança adicional para evitar baixa com estoque insuficiente
+     *
+     * @param itens itens do pedido
+     * @throws EstoqueNaoEncontradoException se estoque não existe
+     * @throws EstoqueInsuficienteParaBaixaException se estoque insuficiente
+     */
+    private void revalidarEstoqueDisponivel(List<ItemPedido> itens) {
+        for (ItemPedido item : itens) {
+            // Buscar estoque com lock pessimista
+            Estoque estoque = estoqueRepository.findByLivroIdWithLock(item.getLivro().getId())
+                .orElseThrow(() -> new com.les.jakebooks.exception.EstoqueNaoEncontradoException(
+                    "Estoque não encontrado para livro: " + item.getLivro().getTitulo()
+                ));
+
+            // Validar quantidade disponível
+            if (estoque.getQuantidade() < item.getQuantidade()) {
+                throw new com.les.jakebooks.exception.EstoqueInsuficienteParaBaixaException(
+                    item.getLivro().getTitulo(),
+                    estoque.getQuantidade(),
+                    item.getQuantidade()
+                );
+            }
+        }
+    }
+
+    /**
+     * Executa baixa de um item específico com lock pessimista.
+     * TASK-CHK-04: Baixa atomica por item
+     *
+     * @param item item do pedido
+     * @return MovimentoEstoque com dados do movimento para log
+     * @throws EstoqueNaoEncontradoException se estoque não existe
+     * @throws EstoqueInsuficienteParaBaixaException se quantidade insuficiente
+     */
+    private MovimentoEstoque executarBaixaItem(ItemPedido item) {
+        // Buscar estoque com lock pessimista (previne race conditions)
+        Estoque estoque = estoqueRepository.findByLivroIdWithLock(item.getLivro().getId())
+            .orElseThrow(() -> new com.les.jakebooks.exception.EstoqueNaoEncontradoException(
+                "Estoque não encontrado para baixa"
+            ));
+
+        // Capturar estado anterior
+        Integer quantidadeAnterior = estoque.getQuantidade();
+        Integer quantidadeBaixa = item.getQuantidade();
+        Integer novaQuantidade = quantidadeAnterior - quantidadeBaixa;
+
+        // Validar se nova quantidade é válida (double-check)
+        if (novaQuantidade < 0) {
+            throw new com.les.jakebooks.exception.EstoqueInsuficienteParaBaixaException(
+                item.getLivro().getTitulo(),
+                quantidadeAnterior,
+                quantidadeBaixa
+            );
+        }
+
+        // Executar baixa
+        estoque.setQuantidade(novaQuantidade);
+        estoque = estoqueRepository.save(estoque);
+
+        // Retornar dados do movimento para log
+        return com.les.jakebooks.dto.MovimentoEstoque.builder()
+            .livroId(item.getLivro().getId())
+            .tituloLivro(item.getLivro().getTitulo())
+            .quantidadeAnterior(quantidadeAnterior)
+            .quantidadeBaixa(quantidadeBaixa)
+            .quantidadeNova(novaQuantidade)
+            .dataMovimento(java.time.LocalDateTime.now())
+            .build();
+    }
+
+    /**
+     * Registra log consolidado da baixa de estoque.
+     * TASK-CHK-04: Log detalhado conforme RNF0012
+     *
+     * @param pedido pedido que teve estoque baixado
+     * @param movimentos lista de movimentos executados
+     */
+    private void registrarLogBaixaEstoque(Pedido pedido, List<MovimentoEstoque> movimentos) {
+        // Log consolidado da operação
+        String resumo = String.format(
+            "Pedido ID: %d | Cliente: %s | Itens: %d",
+            pedido.getId(),
+            pedido.getCliente().getNome(),
+            movimentos.size()
+        );
+
+        // Log detalhado de cada movimento
+        StringBuilder detalhes = new StringBuilder();
+        for (MovimentoEstoque mov : movimentos) {
+            detalhes.append(String.format(
+                "Livro: %s (ID: %d) | Antes: %d | Baixa: %d | Depois: %d; ",
+                mov.getTituloLivro(),
+                mov.getLivroId(),
+                mov.getQuantidadeAnterior(),
+                mov.getQuantidadeBaixa(),
+                mov.getQuantidadeNova()
+            ));
+        }
+
+        // Registrar no log (RNF0012)
+        logService.registrar(
+            "BAIXA_ESTOQUE",
+            "Estoque",
+            resumo,
+            detalhes.toString(),
+            "Baixa de estoque executada com sucesso para pedido " + pedido.getId()
+        );
+    }
+
+    /**
      * Lista todos os estoques com informações dos livros.
      * RF0051: Visualizar entrada em estoque.
      *
@@ -224,7 +420,7 @@ public class EstoqueService {
      */
     public List<EstoqueListaDTO> listarTodos() {
         List<Estoque> estoques = estoqueRepository.findAll();
-        
+
         return estoques.stream()
                 .map(estoque -> new EstoqueListaDTO(
                         estoque.getId(),
@@ -237,5 +433,66 @@ public class EstoqueService {
                         estoque.getLivro().getValorVenda()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Reverte baixa de estoque em caso de necessidade.
+     * TASK-CHK-04: Reversão para casos excepcionais de inconsistência
+     *
+     * Usado apenas em situações excepcionais onde é necessário
+     * desfazer uma baixa de estoque já executada.
+     *
+     * @param pedido pedido cuja baixa será revertida
+     * @param motivo motivo da reversão (para log)
+     * @throws EstoqueNaoEncontradoException se estoque não existe
+     * @throws ValidacaoNegocioException para validações
+     */
+    @Transactional
+    public void reverterBaixaPorPedido(Pedido pedido, String motivo) {
+        // Validar pedido
+        if (pedido == null) {
+            throw new ValidacaoNegocioException("Pedido não pode ser null");
+        }
+
+        if (pedido.getItens() == null || pedido.getItens().isEmpty()) {
+            throw new ValidacaoNegocioException("Pedido não possui itens");
+        }
+
+        // Reverter baixa para cada item
+        for (ItemPedido item : pedido.getItens()) {
+            Estoque estoque = estoqueRepository.findByLivroId(item.getLivro().getId());
+
+            if (estoque == null) {
+                throw new com.les.jakebooks.exception.EstoqueNaoEncontradoException(
+                    "Estoque não encontrado para reversão: " + item.getLivro().getTitulo()
+                );
+            }
+
+            // Adicionar quantidade de volta ao estoque
+            Integer quantidadeAnterior = estoque.getQuantidade();
+            Integer quantidadeRevertida = item.getQuantidade();
+            Integer novaQuantidade = quantidadeAnterior + quantidadeRevertida;
+
+            estoque.setQuantidade(novaQuantidade);
+            estoqueRepository.save(estoque);
+
+            // Registrar log da reversão individual
+            logService.registrar(
+                "REVERSAO_ESTOQUE",
+                "Estoque",
+                String.format("Livro: %s | Antes: %d", item.getLivro().getTitulo(), quantidadeAnterior),
+                String.format("Depois: %d | Revertido: %d", novaQuantidade, quantidadeRevertida),
+                String.format("Item do pedido %d revertido. Motivo: %s", pedido.getId(), motivo)
+            );
+        }
+
+        // Registrar log consolidado da reversão (RNF0012)
+        logService.registrar(
+            "REVERSAO_ESTOQUE_PEDIDO",
+            "Pedido",
+            "Pedido ID: " + pedido.getId(),
+            "Motivo: " + motivo + " | Itens revertidos: " + pedido.getItens().size(),
+            "Reversão de estoque executada para pedido " + pedido.getId()
+        );
     }
 }
