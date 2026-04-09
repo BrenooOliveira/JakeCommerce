@@ -153,11 +153,12 @@
                                 </strong>
                             </div>
 
-                            <!-- Info de Pedido Mínimo -->
-                            <div class="alert alert-info small mb-3" th:if="${carrinho.valorTotal() < 20}">
-                                <i class="bi bi-info-circle"></i> 
-                                Pedido mínimo de R$ 20,00 para frete grátis. 
-                                Faltam: R$ <span th:text="${#numbers.formatDecimal(#numbers.createBigDecimal('20') - carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
+                            <!-- Info de Pedido Mínimo (RN0064: a partir de R$20 sem frete) -->
+                            <div class="alert alert-info small mb-3"
+                                 th:if="${carrinho.valorTotal().compareTo(T(java.math.BigDecimal).valueOf(20L)) lt 0}">
+                                <i class="bi bi-info-circle"></i>
+                                Pedido mínimo de R$ 20,00 para frete grátis.
+                                Faltam: R$ <span th:text="${#numbers.formatDecimal(T(java.math.BigDecimal).valueOf(20L).subtract(carrinho.valorTotal()), 1, 2, 'POINT')}"></span>
                             </div>
 
                             <!-- Botões de Ação -->
@@ -168,7 +169,7 @@
                                 type="button" 
                                 class="btn btn-success w-100"
                                 th:disabled="${carrinho.itens().isEmpty()}"
-                                onclick="if(!this.disabled) window.location.href='/carrinho/checkout';">
+                                onclick="if(!this.disabled) window.location.href='/checkout';">
                                 <i class="bi bi-credit-card"></i> Prosseguir com Pagamento
                             </button>
                         </div>
@@ -212,7 +213,7 @@
 
             // Verificar expiração do carrinho a cada 30 segundos
             document.addEventListener('DOMContentLoaded', function() {
-                var dataExpiracaoStr = /*[[${carrinho.dataExpiracao() != null ? carrinho.dataExpiracao().toString() : null}]]*/ null;
+                var dataExpiracaoStr = /*[[${carrinho.dataExpiracao() != null ? #temporals.format(carrinho.dataExpiracao(), 'yyyy-MM-dd') : null}]]*/ null;
 
                 function verificarExpiracao() {
                     if (!dataExpiracaoStr) return;

@@ -1,23 +1,15 @@
 package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Carrinho;
-import com.les.jakebooks.domain.Cartao;
 import com.les.jakebooks.domain.Cliente;
-import com.les.jakebooks.domain.Cupom;
 import com.les.jakebooks.domain.Endereco;
 import com.les.jakebooks.domain.Estoque;
 import com.les.jakebooks.domain.ItemCarrinho;
 import com.les.jakebooks.domain.ItemPedido;
 import com.les.jakebooks.domain.Pagamento;
-import com.les.jakebooks.domain.PagamentoCartao;
-import com.les.jakebooks.domain.PagamentoCupom;
 import com.les.jakebooks.domain.Pedido;
 import com.les.jakebooks.dto.ConversaoPedidoDTO;
-import com.les.jakebooks.dto.FinalizarPedidoDTO;
-import com.les.jakebooks.dto.ItemCarrinhoDTO;
-import com.les.jakebooks.dto.PagamentoCartaoDadosDTO;
 import com.les.jakebooks.dto.PedidoAdminResumoDTO;
-import com.les.jakebooks.dto.PedidoConfirmadoDTO;
 import com.les.jakebooks.dto.PedidoDetalheDTO;
 import com.les.jakebooks.dto.PedidoListagemDTO;
 import com.les.jakebooks.dto.PedidoResumoDTO;
@@ -28,11 +20,8 @@ import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.domain.enums.StatusCarrinho;
 import com.les.jakebooks.domain.enums.StatusPagamento;
 import com.les.jakebooks.domain.enums.StatusPedido;
-import com.les.jakebooks.domain.enums.TipoCupom;
 import com.les.jakebooks.repository.CarrinhoRepository;
-import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.ClienteRepository;
-import com.les.jakebooks.repository.CupomRepository;
 import com.les.jakebooks.repository.EnderecoRepository;
 import com.les.jakebooks.repository.EstoqueRepository;
 import com.les.jakebooks.repository.PagamentoRepository;
@@ -53,7 +42,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -98,12 +86,6 @@ public class PedidoService {
     private EnderecoRepository enderecoRepository;
 
     @Autowired
-    private CartaoRepository cartaoRepository;
-
-    @Autowired
-    private CupomRepository cupomRepository;
-
-    @Autowired
     private EstoqueRepository estoqueRepository;
 
     @Autowired
@@ -114,7 +96,6 @@ public class PedidoService {
 
     // Constantes
     private static final BigDecimal VALOR_MINIMO_SEM_FRETE = new BigDecimal("20.00");
-    private static final BigDecimal VALOR_MINIMO_CARTAO = new BigDecimal("10.00");
     private static final int TENTATIVAS_PAGAMENTO_REPROVADAS_BLOQUEIO = 3;
 
     /**
@@ -160,189 +141,6 @@ public class PedidoService {
         }
 
         return frete;
-    }
-
-    /**
-     * Finaliza um pedido com todas as validações e criação de Pagamento.
-     * RF0033: Realizar compra.
-     * RF0037: Finalizar compra.
-     * RN0032: Validar estoque.
-     * RN0033: Apenas um cupom promocional.
-     * RN0034: Múltiplos cartões.
-     * RN0035: Consumir cupons antes do cartão.
-     * RN0064: Pedido mínimo R$20.
-     *
-     * @param dto dados para finalizar pedido
-     * @return DTO do pedido confirmado
-     * @throws ValidacaoNegocioException se validações falham
-     * @throws RecursoNaoEncontradoException se recursos não existem
-     */
-    public PedidoConfirmadoDTO finalizarPedido(FinalizarPedidoDTO dto) {
-        // Buscar cliente
-        Cliente cliente = clienteRepository.findByCodigo(dto.codigoCliente())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente com código " + dto.codigoCliente() + " não encontrado"));
-
-        // Buscar carrinho
-        Carrinho carrinho = carrinhoRepository.findById(dto.carrinhoId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho com ID " + dto.carrinhoId() + " não encontrado"));
-
-        // Validar se carrinho pertence ao cliente
-        if (!carrinho.getCliente().getId().equals(cliente.getId())) {
-            throw new ValidacaoNegocioException("Carrinho não pertence ao cliente");
-        }
-
-        // Buscar endereço
-        Endereco endereco = enderecoRepository.findById(dto.enderecoId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Endereço com ID " + dto.enderecoId() + " não encontrado"));
-
-        // Validar se carrinho tem itens
-        if (carrinho.getItens().isEmpty()) {
-            throw new ValidacaoNegocioException("Carrinho está vazio");
-        }
-
-        // RN0032: Revalidar estoque de todos os itens
-        for (ItemCarrinho item : carrinho.getItens()) {
-            Estoque estoque = estoqueRepository.findByLivroId(item.getLivro().getId());
-            if (estoque == null || estoque.getQuantidade() < item.getQuantidade()) {
-                throw new ValidacaoNegocioException("Estoque insuficiente para o livro: " + item.getLivro().getTitulo());
-            }
-        }
-
-        // Calcular valor total dos produtos
-        BigDecimal valorProdutos = carrinho.getItens().stream()
-                .map(item -> item.getValorUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Calcular frete
-        BigDecimal valorFrete = calcularFrete(dto.carrinhoId(), dto.enderecoId());
-
-        // RN0064: Validar pedido mínimo sem frete
-        BigDecimal valorTotal = valorProdutos.add(valorFrete);
-
-        // Montar Pagamento
-        Pagamento pagamento = new Pagamento();
-        pagamento.setStatus(StatusPagamento.PENDENTE);
-
-        BigDecimal valorRestante = valorTotal;
-
-        // RN0035: Consumir cupons antes do cartão
-        // RN0033: Apenas um cupom promocional por compra
-        if (dto.codigoCupomPromocional() != null && !dto.codigoCupomPromocional().isEmpty()) {
-            Cupom cupom = cupomRepository.findByCodigoAndAtivoTrue(dto.codigoCupomPromocional())
-                    .orElseThrow(() -> new ValidacaoNegocioException("Cupom inválido ou expirado"));
-
-            // Validar se é cupom promocional
-            if (!cupom.getTipo().equals(TipoCupom.PROMOCIONAL)) {
-                throw new ValidacaoNegocioException("Apenas cupons promocionais podem ser usados nesta compra");
-            }
-
-            // Usar cupom (parcial ou total)
-            BigDecimal valorCupom = cupom.getValor().min(valorRestante);
-            PagamentoCupom pagamentoCupom = new PagamentoCupom(valorCupom, cupom);
-            pagamentoCupom.setPagamento(pagamento);
-            pagamento.getPagamentosCupom().add(pagamentoCupom);
-
-            valorRestante = valorRestante.subtract(valorCupom);
-        }
-
-        // RN0034: Múltiplos cartões com mínimo R$10
-        if (dto.pagamentosCartao() != null && !dto.pagamentosCartao().isEmpty()) {
-            for (PagamentoCartaoDadosDTO dados : dto.pagamentosCartao()) {
-                // Validar valor mínimo por cartão
-                if (dados.valor().compareTo(VALOR_MINIMO_CARTAO) < 0) {
-                    throw new ValidacaoNegocioException("Valor mínimo por cartão é R$ 10.00");
-                }
-
-                // Buscar cartão
-                Cartao cartao = cartaoRepository.findById(dados.cartaoId())
-                        .orElseThrow(() -> new RecursoNaoEncontradoException("Cartão com ID " + dados.cartaoId() + " não encontrado"));
-
-                // Validar se cartão pertence ao cliente
-                if (!cartao.getCliente().getId().equals(cliente.getId())) {
-                    throw new ValidacaoNegocioException("Cartão não pertence ao cliente");
-                }
-
-                // Usar valor do cartão (máximo o valor restante)
-                BigDecimal valorCartao = dados.valor().min(valorRestante);
-                PagamentoCartao pagamentoCartao = new PagamentoCartao(valorCartao, cartao);
-                pagamentoCartao.setPagamento(pagamento);
-                pagamento.getPagamentosCartao().add(pagamentoCartao);
-
-                valorRestante = valorRestante.subtract(valorCartao);
-            }
-        }
-
-        // RN0036: Gerar cupom para excedente se houver valores em excesso
-        if (valorRestante.compareTo(BigDecimal.ZERO) < 0) {
-            // Há excedente
-            BigDecimal valorExcedente = valorRestante.negate();
-            Cupom cupomExcedente = new Cupom();
-            cupomExcedente.setCodigo("TROCA-" + UUID.randomUUID().toString().substring(0, 8));
-            cupomExcedente.setValor(valorExcedente);
-            cupomExcedente.setTipo(TipoCupom.TROCA);
-            cupomExcedente.setAtivo(true);
-            cupomRepository.save(cupomExcedente);
-
-            valorRestante = BigDecimal.ZERO;
-        }
-
-        // Validar se o pagamento foi totalmente coberto
-        if (valorRestante.compareTo(BigDecimal.ZERO) > 0) {
-            throw new ValidacaoNegocioException("Formas de pagamento insuficientes. Faltam: R$ " + valorRestante);
-        }
-
-        pagamento.setValorTotal(valorTotal);
-        pagamento = pagamentoRepository.save(pagamento);
-
-        // Criar Pedido com status EM_PROCESSAMENTO
-        Pedido pedido = new Pedido();
-        pedido.setCliente(cliente);
-        pedido.setEndereco(endereco);
-        pedido.setDataCriacao(LocalDate.now());
-        pedido.setStatus(StatusPedido.EM_PROCESSAMENTO);
-        pedido.setValorTotal(valorTotal);
-        pedido.setValorFrete(valorFrete);
-        pedido.setPagamento(pagamento);
-
-        // Adicionar itens do carrinho ao pedido
-        for (ItemCarrinho itemCarrinho : carrinho.getItens()) {
-            ItemPedido itemPedido = new ItemPedido();
-            itemPedido.setLivro(itemCarrinho.getLivro());
-            itemPedido.setQuantidade(itemCarrinho.getQuantidade());
-            itemPedido.setValorUnitario(itemCarrinho.getValorUnitario());
-            itemPedido.setPedido(pedido);
-            pedido.getItens().add(itemPedido);
-        }
-
-        pedido = pedidoRepository.save(pedido);
-
-        // Marcar carrinho como finalizado
-        carrinho.setStatus(StatusCarrinho.FINALIZADO);
-        carrinhoRepository.save(carrinho);
-
-        // Retornar DTO do pedido confirmado
-        return new PedidoConfirmadoDTO(
-                pedido.getId(),
-                pedido.getDataCriacao(),
-                pedido.getStatus(),
-                pedido.getValorTotal(),
-                pedido.getValorFrete(),
-                valorProdutos,
-                cliente.getNome(),
-                endereco.getLogradouro() + ", " + endereco.getNumero() + " - " + endereco.getCidade() + "/" + endereco.getEstado(),
-                carrinho.getItens().stream()
-                        .map(item -> new ItemCarrinhoDTO(
-                                item.getId(),
-                                item.getLivro().getId(),
-                                item.getLivro().getCodigo(),
-                                item.getLivro().getTitulo(),
-                                item.getQuantidade(),
-                                item.getValorUnitario(),
-                                item.getValorUnitario().multiply(BigDecimal.valueOf(item.getQuantidade()))
-                        ))
-                        .collect(Collectors.toList()),
-                "Pedido finalizado com sucesso! Número do pedido: " + pedido.getId()
-        );
     }
 
     /**

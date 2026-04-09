@@ -153,7 +153,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(erro);
         } else {
             redirectAttributes.addFlashAttribute("erro", ex.getMessage());
-            return "redirect:/carrinho/checkout";
+            return "redirect:/checkout";
         }
     }
 
@@ -218,7 +218,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(erro);
         } else {
             redirectAttributes.addFlashAttribute("erro", "Cupom inválido: " + ex.getMotivoInvalid());
-            return "redirect:/carrinho/checkout";
+            return "redirect:/checkout";
         }
     }
 
@@ -355,7 +355,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             return "/carrinho";
         } else if (ex instanceof PagamentoReprovadoException ||
                    ex instanceof CupomInvalidoException) {
-            return "/carrinho/checkout";
+            return "/checkout";
         } else if (ex instanceof TrocaNaoPermitidaException) {
             return "/pedidos";
         }
