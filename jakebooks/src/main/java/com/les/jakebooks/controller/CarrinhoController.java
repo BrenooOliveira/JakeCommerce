@@ -7,13 +7,12 @@ import com.les.jakebooks.dto.PagamentoCartaoDadosDTO;
 import com.les.jakebooks.dto.PedidoConfirmadoDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.BandeiraCartao;
+import com.les.jakebooks.domain.enums.BandeiraCartao;
 import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.EnderecoRepository;
-import com.les.jakebooks.services.CarrinhoService;
-import com.les.jakebooks.services.ClienteService;
-import com.les.jakebooks.services.PedidoService;
-import com.les.jakebooks.util.SecurityUtil;
+import com.les.jakebooks.service.CarrinhoService;
+import com.les.jakebooks.service.ClienteService;
+import com.les.jakebooks.service.PedidoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -80,8 +79,7 @@ public class CarrinhoController {
             CarrinhoDTO carrinho = carrinhoService.obterOuCriar(codigoCliente);
             
             model.addAttribute("carrinho", carrinho);
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
-            
+
             return "carrinho/view";
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Cliente não encontrado");
@@ -241,7 +239,6 @@ public class CarrinhoController {
             model.addAttribute("enderecos", cliente.enderecos());
             model.addAttribute("cartoes", cliente.cartoes());
             model.addAttribute("bandeiras", BandeiraCartao.values());
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "carrinho/checkout";
         } catch (RecursoNaoEncontradoException e) {

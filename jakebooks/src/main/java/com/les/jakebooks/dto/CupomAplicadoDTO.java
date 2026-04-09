@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.TipoCupom;
+import com.les.jakebooks.domain.enums.TipoCupom;
 
 import java.math.BigDecimal;
 

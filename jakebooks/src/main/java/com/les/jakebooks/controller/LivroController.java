@@ -3,17 +3,15 @@ package com.les.jakebooks.controller;
 import com.les.jakebooks.dto.*;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusLivro;
+import com.les.jakebooks.domain.enums.StatusLivro;
 import com.les.jakebooks.repository.AutorRepository;
 import com.les.jakebooks.repository.CategoriaRepository;
 import com.les.jakebooks.repository.EditoraRepository;
 import com.les.jakebooks.repository.GrupoPrecificacaoRepository;
-import com.les.jakebooks.services.LivroService;
-import com.les.jakebooks.util.SecurityUtil;
+import com.les.jakebooks.service.LivroService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -81,7 +79,6 @@ public class LivroController {
         model.addAttribute("filtro", filtro);
         model.addAttribute("statusLivros", StatusLivro.values());
         model.addAttribute("categorias", categoriaRepository.findAll());
-        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "livros/lista";
     }
@@ -94,14 +91,12 @@ public class LivroController {
      * @param model Model para adicionar atributos à view
      * @return view name "livros/form"
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/novo")
     public String formularioNovo(Model model) {
         model.addAttribute("livroForm", new LivroFormDTO(
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
         ));
         adicionarDadosFormulario(model);
-        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
         model.addAttribute("modoEdicao", false);
         return "livros/form";
     }
@@ -116,7 +111,6 @@ public class LivroController {
      * @param attrs RedirectAttributes para mensagens flash
      * @return redirect para /livros em caso de sucesso, ou volta ao formulário
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public String criar(
             @Valid @ModelAttribute("livroForm") LivroFormDTO dto,
@@ -160,7 +154,6 @@ public class LivroController {
         try {
             LivroDetalheDTO livro = livroService.buscarPorCodigo(codigo);
             model.addAttribute("livro", livro);
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
             return "livros/detalhe";
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Livro não encontrado");
@@ -178,7 +171,6 @@ public class LivroController {
      * @param attrs RedirectAttributes para mensagens de erro
      * @return view name "livros/form" preenchido ou redirect se não encontrado
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{codigo}/editar")
     public String formularioEditar(
             @PathVariable String codigo,
@@ -210,7 +202,6 @@ public class LivroController {
             model.addAttribute("livroForm", livroForm);
             model.addAttribute("livroExistente", livroExistente);
             adicionarDadosFormulario(model);
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
             model.addAttribute("modoEdicao", true);
             model.addAttribute("codigoLivro", codigo);
 
@@ -233,7 +224,6 @@ public class LivroController {
      * @param attrs RedirectAttributes para mensagens flash
      * @return redirect para /livros/{codigo} em caso de sucesso
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{codigo}")
     public String atualizar(
             @PathVariable String codigo,
@@ -270,7 +260,6 @@ public class LivroController {
      * @param attrs RedirectAttributes para mensagens flash
      * @return redirect para /livros/{codigo}
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{codigo}/inativar")
     public String inativar(
             @PathVariable String codigo,
@@ -297,7 +286,6 @@ public class LivroController {
      * @param attrs RedirectAttributes para mensagens flash
      * @return redirect para /livros/{codigo}
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{codigo}/ativar")
     public String ativar(
             @PathVariable String codigo,

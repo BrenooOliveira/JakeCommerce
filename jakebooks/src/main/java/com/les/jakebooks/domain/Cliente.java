@@ -1,6 +1,7 @@
 package com.les.jakebooks.domain;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.les.jakebooks.model.enums.StatusCliente;
+import com.les.jakebooks.domain.enums.StatusCliente;
 
 /**
  * Entidade que representa um cliente do sistema.
@@ -61,6 +62,13 @@ public class Cliente {
      * Valor true: concede privilégios administrativos (ROLE_ADMIN)
      */
     private Boolean isAdmin = false;
+
+    /**
+     * Papel para Spring Security: ROLE_CLIENTE ou ROLE_ADMIN.
+     * Se nulo, o UserDetailsService deriva de {@link #isAdmin}.
+     */
+    @Column(name = "usuario_role", length = 32)
+    private String usuarioRole;
 
     @Enumerated(EnumType.STRING)
     private StatusCliente status;
@@ -188,6 +196,14 @@ public class Cliente {
 
     public void setIsAdmin(Boolean isAdmin) {
         this.isAdmin = isAdmin;
+    }
+
+    public String getUsuarioRole() {
+        return usuarioRole;
+    }
+
+    public void setUsuarioRole(String usuarioRole) {
+        this.usuarioRole = usuarioRole;
     }
 
     public Set<Endereco> getEnderecos() {

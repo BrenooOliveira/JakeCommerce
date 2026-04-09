@@ -243,7 +243,7 @@
                                     <td th:text="${#temporals.format(pedido.dataCriacao(), 'dd/MM/yyyy HH:mm')}"></td>
                                     <td>
                                         <span class="badge"
-                                              th:classappend="${pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE ? 'bg-success' : (pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE ? 'bg-info' : (pedido.status() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA ? 'bg-warning' : 'bg-primary'))}"
+                                              th:classappend="${pedido.status() == T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE ? 'bg-success' : (pedido.status() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE ? 'bg-info' : (pedido.status() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TROCA ? 'bg-warning' : 'bg-primary'))}"
                                               th:text="${#strings.replace(pedido.status().toString(), '_', ' ')}"></span>
                                     </td>
                                     <td>

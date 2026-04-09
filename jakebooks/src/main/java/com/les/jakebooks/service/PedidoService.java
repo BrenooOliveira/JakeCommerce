@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Carrinho;
 import com.les.jakebooks.domain.Cartao;
@@ -25,10 +25,10 @@ import com.les.jakebooks.dto.PedidoTransporteDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.TransicaoStatusInvalidaException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusCarrinho;
-import com.les.jakebooks.model.enums.StatusPagamento;
-import com.les.jakebooks.model.enums.StatusPedido;
-import com.les.jakebooks.model.enums.TipoCupom;
+import com.les.jakebooks.domain.enums.StatusCarrinho;
+import com.les.jakebooks.domain.enums.StatusPagamento;
+import com.les.jakebooks.domain.enums.StatusPedido;
+import com.les.jakebooks.domain.enums.TipoCupom;
 import com.les.jakebooks.repository.CarrinhoRepository;
 import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.ClienteRepository;

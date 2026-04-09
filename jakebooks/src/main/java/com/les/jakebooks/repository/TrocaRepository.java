@@ -1,7 +1,7 @@
 package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Troca;
-import com.les.jakebooks.model.enums.StatusTroca;
+import com.les.jakebooks.domain.enums.StatusTroca;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Cliente;
 import com.les.jakebooks.domain.Cupom;
@@ -9,7 +9,7 @@ import com.les.jakebooks.exception.CupomJaUtilizadoException;
 import com.les.jakebooks.exception.CupomNaoEncontradoException;
 import com.les.jakebooks.exception.CupomPromocionalDuplicadoException;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
-import com.les.jakebooks.model.enums.TipoCupom;
+import com.les.jakebooks.domain.enums.TipoCupom;
 import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.CupomRepository;
 import com.les.jakebooks.service.LogService;

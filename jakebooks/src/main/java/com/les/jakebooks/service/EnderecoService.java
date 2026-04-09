@@ -1,11 +1,11 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Endereco;
 import com.les.jakebooks.dto.EnderecoDTO;
 import com.les.jakebooks.exception.AcessoNegadoException;
 import com.les.jakebooks.exception.EnderecoEntregaNaoEncontradoException;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
-import com.les.jakebooks.model.enums.TipoEndereco;
+import com.les.jakebooks.domain.enums.TipoEndereco;
 import com.les.jakebooks.repository.EnderecoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{fragments/layout}">
 
 <head>
     <title>Gerenciamento de Trocas</title>
@@ -46,7 +47,7 @@
                         <i class="bi bi-search"></i>
                         Filtrar
                     </button>
-                    <a href="/trocas" class="btn btn-outline-secondary btn-sm">
+                    <a href="/admin/trocas" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-arrow-clockwise"></i>
                         Limpar
                     </a>
@@ -128,7 +129,7 @@
                             </a>
 
                             <!-- Botão Autorizar (se SOLICITADA e ADMIN) -->
-                            <th:block th:if="${isAdmin == true and troca.status().toString() == 'SOLICITADA'}">
+                            <th:block sec:authorize="hasRole('ADMIN')" th:if="${troca.status().toString() == 'SOLICITADA'}">
                                 <form method="post"
                                       th:action="@{/trocas/{id}/autorizar(id=${troca.trocaId()})}"
                                       style="display: inline;"
@@ -141,7 +142,7 @@
                             </th:block>
 
                             <!-- Botão Receber (se AUTORIZADA e ADMIN) -->
-                            <th:block th:if="${isAdmin == true and troca.status().toString() == 'AUTORIZADA'}">
+                            <th:block sec:authorize="hasRole('ADMIN')" th:if="${troca.status().toString() == 'AUTORIZADA'}">
                                 <form method="post"
                                       th:action="@{/trocas/{id}/receber(id=${troca.trocaId()})}"
                                       style="display: inline;"

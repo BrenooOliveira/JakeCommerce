@@ -1,10 +1,10 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.*;
 import com.les.jakebooks.dto.*;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusLivro;
+import com.les.jakebooks.domain.enums.StatusLivro;
 import com.les.jakebooks.repository.*;
 import com.les.jakebooks.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;

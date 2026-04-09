@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Cartao;
 import com.les.jakebooks.dto.CartaoResumoDTO;

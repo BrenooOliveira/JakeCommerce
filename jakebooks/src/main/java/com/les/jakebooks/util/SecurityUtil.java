@@ -16,7 +16,7 @@ public class SecurityUtil {
      */
     public static boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             return false;
         }
         return auth.getAuthorities().stream()

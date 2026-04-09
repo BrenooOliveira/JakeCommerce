@@ -32,10 +32,10 @@
                     <div class="card border-start border-primary border-5">
                         <div class="card-body">
                             <h6 class="card-title text-primary">Status</h6>
-                            <span class="badge" 
-                                  th:classappend="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO} ? 'bg-warning' : 
-                                                  (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : 
-                                                  (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE} ? 'bg-success' : 'bg-secondary'))"
+                            <span class="badge"
+                                  th:classappend="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO ? 'bg-warning' :
+                                                  (pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE ? 'bg-info' :
+                                                  (pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE ? 'bg-success' : 'bg-secondary'))}"
                                   th:text="${#strings.replace(pedido.getStatus().toString(), '_', ' ')}">
                             </span>
                         </div>
@@ -182,9 +182,9 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <h6 class="text-muted">Status do Pagamento</h6>
-                                        <span class="badge" 
-                                              th:classappend="${pedido.getPagamento().getStatus() == T(com.les.jakebooks.model.enums.StatusPagamento).APROVADA} ? 'bg-success' : 
-                                                              (${pedido.getPagamento().getStatus() == T(com.les.jakebooks.model.enums.StatusPagamento).REPROVADA} ? 'bg-danger' : 'bg-warning')"
+                                        <span class="badge"
+                                              th:classappend="${pedido.getPagamento().getStatus() == T(com.les.jakebooks.domain.enums.StatusPagamento).APROVADA ? 'bg-success' :
+                                                              (pedido.getPagamento().getStatus() == T(com.les.jakebooks.domain.enums.StatusPagamento).REPROVADA ? 'bg-danger' : 'bg-warning')}"
                                               th:text="${pedido.getPagamento().getStatus().toString()}">
                                         </span>
                                     </div>
@@ -225,8 +225,8 @@
                                 </div>
 
                                 <!-- Entrada: Em Processamento (Status Inicial) -->
-                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'active' : ''">
-                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'bg-warning' : 'bg-gray'"></div>
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'active' : ''">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'bg-warning' : 'bg-gray'"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Em Processamento</h6>
                                         <small class="text-muted">Aguardando processamento</small>
@@ -234,8 +234,8 @@
                                 </div>
 
                                 <!-- Entrada: Em Transporte -->
-                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'active' : ''">
-                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'bg-info' : 'bg-gray'"></div>
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'active' : ''">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'bg-info' : 'bg-gray'"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Em Transporte</h6>
                                         <small class="text-muted">Saiu para entrega</small>
@@ -243,8 +243,8 @@
                                 </div>
 
                                 <!-- Entrada: Entregue -->
-                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE.ordinal()} ? 'active' : ''">
-                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE.ordinal()} ? 'bg-success' : 'bg-gray'"></div>
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE.ordinal()} ? 'active' : ''">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE.ordinal()} ? 'bg-success' : 'bg-gray'"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Entregue</h6>
                                         <small class="text-muted">Entregue com sucesso</small>
@@ -263,7 +263,7 @@
                         </div>
                         <div class="card-body">
                             <!-- Botão Despachar (disponível apenas em EM_PROCESSAMENTO) -->
-                            <div class="d-grid gap-2 mb-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                            <div class="d-grid gap-2 mb-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO}">
                                 <form method="POST" th:action="@{/pedidos/{id}/despachar(id=${pedido.getId()})}">
                                     <button type="submit" class="btn btn-warning w-100">
                                         <i class="bi bi-truck"></i> Despachar
@@ -272,7 +272,7 @@
                             </div>
 
                             <!-- Botão Entregar (disponível apenas em EM_TRANSPORTE) -->
-                            <div class="d-grid gap-2 mb-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                            <div class="d-grid gap-2 mb-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE}">
                                 <form method="POST" th:action="@{/pedidos/{id}/entregar(id=${pedido.getId()})}">
                                     <button type="submit" class="btn btn-success w-100">
                                         <i class="bi bi-check-circle"></i> Confirmar Entrega
@@ -281,14 +281,14 @@
                             </div>
 
                             <!-- Aviso: Pedido Finalizado -->
-                            <div class="alert alert-success mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE}">
+                            <div class="alert alert-success mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE}">
                                 <i class="bi bi-check-circle"></i>
                                 <strong>Pedido Entregue</strong>
                                 <p class="mb-0 small">Este pedido foi entregue com sucesso.</p>
                             </div>
 
                             <!-- Aviso: Pedido em Troca -->
-                            <div class="alert alert-info mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA}">
+                            <div class="alert alert-info mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TROCA}">
                                 <i class="bi bi-info-circle"></i>
                                 <strong>Pedido em Troca</strong>
                                 <p class="mb-0 small">Este pedido está em processo de troca.</p>

@@ -1,7 +1,7 @@
 package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Livro;
-import com.les.jakebooks.model.enums.StatusLivro;
+import com.les.jakebooks.domain.enums.StatusLivro;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -52,6 +52,12 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
      * RF0011: Código único obrigatório.
      */
     Livro findByIsbn(String isbn);
+
+    /**
+     * Busca livro pelo código único.
+     * RF0011: Código único obrigatório.
+     */
+    Livro findByCodigo(String codigo);
 
     /**
      * Busca livro pelo código de barras.

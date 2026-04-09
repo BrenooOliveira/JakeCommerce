@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.les.jakebooks.model.enums.StatusPedido;
+import com.les.jakebooks.domain.enums.StatusPedido;
 
 /**
  * Entidade que representa um pedido do cliente.

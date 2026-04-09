@@ -2,6 +2,7 @@
 <html 
     xmlns:th="http://www.thymeleaf.org"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
     lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
@@ -29,12 +30,24 @@
     <div class="container-fluid mt-4">
         <div class="row">
             <!-- Sidebar (APENAS para admin) -->
-            <div th:if="${isAdmin == true}" class="col-md-3 col-lg-2 d-md-block bg-light sidebar py-4">
+            <div sec:authorize="hasRole('ADMIN')" class="col-md-3 col-lg-2 d-md-block bg-light sidebar py-4">
                 <div th:replace="~{fragments/sidebar :: sidebar}"></div>
             </div>
 
             <!-- Conteúdo Principal -->
-            <main th:class="${isAdmin == true} ? 'col-md-9 ms-sm-auto col-lg-10' : 'col-12'">
+            <main th:class="${painelAdmin} ? 'col-md-9 ms-sm-auto col-lg-10' : 'col-12'">
+                <!-- Contexto administrativo global para evitar perda de navegacao -->
+                <div sec:authorize="hasRole('ADMIN')" class="alert alert-warning border-start border-4 border-warning d-flex justify-content-between align-items-center" role="alert">
+                    <div>
+                        <strong><i class="bi bi-shield-check"></i> Area Administrativa</strong>
+                        <span class="ms-2 text-muted">Voce esta operando funcoes de gestao.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge text-bg-light" th:text="${requestURI}">/admin</span>
+                        <a th:href="@{/admin}" class="btn btn-sm btn-outline-dark">Painel</a>
+                    </div>
+                </div>
+
                 <!-- Mensagens Flash -->
                 <div th:replace="~{fragments/messages :: messages}"></div>
 

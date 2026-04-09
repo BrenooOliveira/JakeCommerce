@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Carrinho;
 import com.les.jakebooks.domain.Cliente;
@@ -12,7 +12,7 @@ import com.les.jakebooks.exception.CarrinhoBloqueadoPagamentoException;
 import com.les.jakebooks.exception.CarrinhoNaoEncontradoException;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusCarrinho;
+import com.les.jakebooks.domain.enums.StatusCarrinho;
 import com.les.jakebooks.repository.CarrinhoRepository;
 import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.EstoqueRepository;

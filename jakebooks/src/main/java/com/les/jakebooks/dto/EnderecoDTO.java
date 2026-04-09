@@ -1,7 +1,7 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.TipoEndereco;
-import com.les.jakebooks.model.enums.TipoResidencia;
+import com.les.jakebooks.domain.enums.TipoEndereco;
+import com.les.jakebooks.domain.enums.TipoResidencia;
 import jakarta.validation.constraints.*;
 
 /**

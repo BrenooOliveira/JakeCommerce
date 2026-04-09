@@ -2,12 +2,10 @@ package com.les.jakebooks.controller;
 
 import com.les.jakebooks.dto.DadosGraficoDTO;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.services.AnaliseService;
-import com.les.jakebooks.util.SecurityUtil;
+import com.les.jakebooks.service.AnaliseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +23,7 @@ import java.util.List;
  * RNF0055: Exibição em gráfico de linhas.
  */
 @Controller
-@RequestMapping("/analise")
+@RequestMapping("/admin/analise")
 public class AnaliseController {
 
     @Autowired
@@ -33,13 +31,12 @@ public class AnaliseController {
 
     /**
      * Exibe dashboard de análise com formulário de filtros.
-     * GET /analise
+     * GET /admin/analise
      * RF0055: Analisar histórico por período.
      *
      * @param model Model para adicionar atributos à view
      * @return view name "analise/dashboard"
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String dashboard(Model model) {
         // Dados padrão: última 30 dias
@@ -49,14 +46,13 @@ public class AnaliseController {
         model.addAttribute("dataInicio", dataInicio);
         model.addAttribute("dataFim", dataFim);
         model.addAttribute("agrupamento", "PRODUTO");
-        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "analise/dashboard";
     }
 
     /**
      * Retorna dados em JSON para renderizar no gráfico via Chart.js.
-     * GET /analise/dados
+     * GET /admin/analise/dados
      * RF0055: Analisar histórico por período.
      * RNF0055: Exibição em gráfico de linhas.
      *
@@ -65,7 +61,6 @@ public class AnaliseController {
      * @param agrupamento  tipo de agrupamento: "PRODUTO" ou "CATEGORIA"
      * @return ResponseEntity com lista de DadosGraficoDTO ou erro
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/dados")
     @ResponseBody
     public ResponseEntity<?> obterDados(

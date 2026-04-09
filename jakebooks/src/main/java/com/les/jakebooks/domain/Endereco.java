@@ -10,8 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import com.les.jakebooks.model.enums.TipoEndereco;
-import com.les.jakebooks.model.enums.TipoResidencia;
+import com.les.jakebooks.domain.enums.TipoEndereco;
+import com.les.jakebooks.domain.enums.TipoResidencia;
 
 /**
  * Entidade que representa um endereço de um cliente.

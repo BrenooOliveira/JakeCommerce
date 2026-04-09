@@ -64,27 +64,27 @@
                                             R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.valorUnitario(), 1, 2, 'POINT')}"></span>
                                         </td>
                                         <td>
-                                            <form method="POST" action="/carrinho/quantidade" class="d-inline" style="display: inline;">
+                                            <form method="POST" th:action="@{/carrinho/quantidade}" class="d-inline" style="display: inline;">
                                                 <div class="input-group input-group-sm" style="width: 100px;">
                                                     <input type="hidden" name="codigoLivro" th:value="${item.codigoLivro()}">
-                                                    <button 
-                                                        type="button" 
-                                                        class="btn btn-outline-secondary" 
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-outline-secondary"
                                                         onclick="alterarQuant(this, -1)">
                                                         <i class="bi bi-dash"></i>
                                                     </button>
-                                                    <input 
-                                                        type="number" 
+                                                    <input
+                                                        type="number"
                                                         name="novaQuantidade"
-                                                        class="form-control form-control-sm text-center" 
+                                                        class="form-control form-control-sm text-center"
                                                         th:value="${item.quantidade()}"
-                                                        min="1" 
+                                                        min="1"
                                                         max="10"
                                                         style="border-left: none; border-right: none;"
                                                         onchange="this.form.submit()">
-                                                    <button 
-                                                        type="button" 
-                                                        class="btn btn-outline-secondary" 
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-outline-secondary"
                                                         onclick="alterarQuant(this, 1)">
                                                         <i class="bi bi-plus"></i>
                                                     </button>
@@ -195,36 +195,40 @@
         </div>
 
         <!-- Script para validação de quantidade e aviso de expiração -->
-        <script>
+        <script th:inline="javascript">
             // Função para alterar quantidade com botões +/-
             function alterarQuant(btn, delta) {
                 const form = btn.closest('form');
                 const input = form.querySelector('input[name="novaQuantidade"]');
                 let valor = parseInt(input.value) + delta;
-                
+
                 // Validar limites
                 if (valor < 1) valor = 1;
                 if (valor > 10) valor = 10;
-                
+
                 input.value = valor;
                 form.submit();
             }
 
             // Verificar expiração do carrinho a cada 30 segundos
             document.addEventListener('DOMContentLoaded', function() {
+                var dataExpiracaoStr = /*[[${carrinho.dataExpiracao() != null ? carrinho.dataExpiracao().toString() : null}]]*/ null;
+
                 function verificarExpiracao() {
+                    if (!dataExpiracaoStr) return;
+
                     // Simular: Se carrinho expirar em menos de 5 minutos, mostrar aviso
-                    const dataExpiracao = new Date('${#temporals.format(carrinho.dataExpiracao(), 'yyyy-MM-dd\'T\'23:59:59')}');
+                    const dataExpiracao = new Date(dataExpiracaoStr + 'T23:59:59');
                     const agora = new Date();
                     const diferenca = dataExpiracao - agora;
-                    
+
                     if (diferenca > 0 && diferenca < 5 * 60 * 1000) {  // Menos de 5 minutos
                         const minutos = Math.ceil(diferenca / 1000 / 60);
                         document.getElementById('tempoRestante').textContent = minutos + ' minuto(s)';
                         document.getElementById('avisoExpiracao').classList.remove('d-none');
                     }
-                
-                
+                }
+
                 verificarExpiracao();
                 // Executar a cada 30 segundos
                 setInterval(verificarExpiracao, 30000);

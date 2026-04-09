@@ -91,7 +91,7 @@
                             </div>
 
                             <!-- Ações disponíveis baseadas no status -->
-                            <div th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                            <div th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO}">
                                 <form method="POST"
                                       th:action="@{/admin/pedidos/{id}/despachar(id=${pedido.id})}"
                                       th:onsubmit="'return confirm(\'Confirma despacho do pedido ' + ${pedido.codigoPedido} + '?\')'"
@@ -102,7 +102,7 @@
                                 </form>
                             </div>
 
-                            <div th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                            <div th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE}">
                                 <form method="POST"
                                       th:action="@{/admin/pedidos/{id}/confirmar-entrega(id=${pedido.id})}"
                                       th:onsubmit="'return confirm(\'Confirma entrega do pedido ' + ${pedido.codigoPedido} + '?\')'"
@@ -113,7 +113,7 @@
                                 </form>
                             </div>
 
-                            <div th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE}">
+                            <div th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE}">
                                 <span class="text-success">
                                     <i class="bi bi-check-circle-fill"></i> Pedido Entregue
                                 </span>

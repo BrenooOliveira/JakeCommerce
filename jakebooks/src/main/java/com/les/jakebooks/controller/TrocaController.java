@@ -3,11 +3,9 @@ package com.les.jakebooks.controller;
 import com.les.jakebooks.dto.TrocaDetalheDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusTroca;
-import com.les.jakebooks.services.TrocaService;
-import com.les.jakebooks.util.SecurityUtil;
+import com.les.jakebooks.domain.enums.StatusTroca;
+import com.les.jakebooks.service.TrocaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +23,7 @@ import java.util.List;
  * RF0040-RF0043: Operações com trocas
  */
 @Controller
-@RequestMapping("/trocas")
+@RequestMapping("/admin/trocas")
 public class TrocaController {
 
     @Autowired
@@ -33,14 +31,13 @@ public class TrocaController {
 
     /**
      * Lista todas as trocas com filtro por status.
-     * GET /trocas
+     * GET /admin/trocas
      * RF0042: Visualizar trocas (admin)
      *
      * @param status status da troca para filtrar (opcional)
      * @param model Model para adicionar atributos à view
      * @return view name "trocas/lista"
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String listar(
             @RequestParam(required = false) String status,
@@ -65,21 +62,19 @@ public class TrocaController {
         model.addAttribute("trocas", trocas);
         model.addAttribute("statusTrocas", StatusTroca.values());
         model.addAttribute("statusSelecionado", status);
-        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "trocas/lista";
     }
 
     /**
      * Exibe detalhes de uma troca específica.
-     * GET /trocas/{id}
+     * GET /admin/trocas/{id}
      *
      * @param id ID da troca
      * @param model Model para adicionar atributos à view
      * @param attrs RedirectAttributes para mensagens de erro
      * @return view name "trocas/detalhe" ou redirect se não encontrado
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public String detalhe(
             @PathVariable Long id,
@@ -91,26 +86,24 @@ public class TrocaController {
             
             model.addAttribute("troca", troca);
             model.addAttribute("statusTrocas", StatusTroca.values());
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "trocas/detalhe";
         } catch (Exception e) {
             attrs.addFlashAttribute("mensagemErro", "Troca não encontrada");
-            return "redirect:/trocas";
+            return "redirect:/admin/trocas";
         }
     }
 
     /**
      * Autoriza uma troca (muda status para AUTORIZADA).
-     * POST /trocas/{id}/autorizar
+     * POST /admin/trocas/{id}/autorizar
      * RF0041: Autorizar troca
      * RN0041: Altera status para AUTORIZADA
      *
      * @param id ID da troca
      * @param attrs RedirectAttributes para mensagens
-     * @return redirect para /trocas/{id}
+     * @return redirect para /admin/trocas/{id}
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/autorizar")
     public String autorizar(
             @PathVariable Long id,
@@ -119,27 +112,26 @@ public class TrocaController {
         try {
             trocaService.autorizar(id);
             attrs.addFlashAttribute("mensagemSucesso", "Troca autorizada com sucesso!");
-            return "redirect:/trocas/" + id;
+            return "redirect:/admin/trocas/" + id;
         } catch (ValidacaoNegocioException e) {
             attrs.addFlashAttribute("mensagemErro", "Erro ao autorizar: " + e.getMessage());
-            return "redirect:/trocas/" + id;
+            return "redirect:/admin/trocas/" + id;
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Troca não encontrada");
-            return "redirect:/trocas";
+            return "redirect:/admin/trocas";
         }
     }
 
     /**
      * Confirma recebimento de uma troca (muda status para CONCLUIDA e gera cupom).
-     * POST /trocas/{id}/receber
+     * POST /admin/trocas/{id}/receber
      * RF0043: Confirmar recebimento de troca
      * RN0043: Gera cupom para troca e altera status para CONCLUIDA
      *
      * @param id ID da troca
      * @param attrs RedirectAttributes para mensagens
-     * @return redirect para /trocas/{id}
+     * @return redirect para /admin/trocas/{id}
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/receber")
     public String receberTroca(
             @PathVariable Long id,
@@ -148,13 +140,13 @@ public class TrocaController {
         try {
             trocaService.confirmarRecebimento(id);
             attrs.addFlashAttribute("mensagemSucesso", "Recebimento da troca confirmado! Cupom foi gerado para o cliente.");
-            return "redirect:/trocas/" + id;
+            return "redirect:/admin/trocas/" + id;
         } catch (ValidacaoNegocioException e) {
             attrs.addFlashAttribute("mensagemErro", "Erro ao confirmar recebimento: " + e.getMessage());
-            return "redirect:/trocas/" + id;
+            return "redirect:/admin/trocas/" + id;
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Troca não encontrada");
-            return "redirect:/trocas";
+            return "redirect:/admin/trocas";
         }
     }
 
@@ -177,7 +169,6 @@ public class TrocaController {
         try {
             // Validação será feita no service ao criar a negociação
             model.addAttribute("pedidoId", pedidoId);
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "trocas/solicitar";
         } catch (Exception e) {
@@ -195,7 +186,7 @@ public class TrocaController {
      * @param pedidoId ID do pedido
      * @param motivo motivo da troca
      * @param attrs RedirectAttributes para mensagens
-     * @return redirect para /trocas/{trocaId} ou volta ao pedido se erro
+     * @return redirect para /admin/trocas/{trocaId} ou volta ao pedido se erro
      */
     @PostMapping("/pedidos/{pedidoId}/solicitar")
     public String solicitarTroca(
@@ -207,7 +198,7 @@ public class TrocaController {
             // Validar se motivo foi preenchido
             if (motivo == null || motivo.trim().isEmpty()) {
                 attrs.addFlashAttribute("mensagemErro", "Motivo da troca é obrigatório");
-                return "redirect:/trocas/pedidos/" + pedidoId + "/solicitar";
+                return "redirect:/admin/trocas/pedidos/" + pedidoId + "/solicitar";
             }
 
             // Criar solicitação de troca
@@ -216,7 +207,7 @@ public class TrocaController {
             attrs.addFlashAttribute("mensagemSucesso",
                     "Solicitação de troca criada com sucesso! ID da troca: " + troca.trocaId());
 
-            // Redirecionar para o pedido (cliente pode ver) ao invés de /trocas/{id} (admin only)
+            // Redirecionar para o pedido (cliente pode ver) ao invés de /admin/trocas/{id} (admin only)
             return "redirect:/pedidos/" + pedidoId;
         } catch (ValidacaoNegocioException e) {
             attrs.addFlashAttribute("mensagemErro", "Erro ao solicitar troca: " + e.getMessage());

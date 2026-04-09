@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Carrinho;
 import com.les.jakebooks.domain.Endereco;
@@ -10,7 +10,7 @@ import com.les.jakebooks.dto.ProcessarPagamentoDTO;
 import com.les.jakebooks.dto.ResultadoCheckoutDTO;
 import com.les.jakebooks.exception.CarrinhoBloqueadoPagamentoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusPagamento;
+import com.les.jakebooks.domain.enums.StatusPagamento;
 import com.les.jakebooks.validator.CompraValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

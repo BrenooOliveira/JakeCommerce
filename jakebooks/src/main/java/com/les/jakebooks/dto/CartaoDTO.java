@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.BandeiraCartao;
+import com.les.jakebooks.domain.enums.BandeiraCartao;
 import jakarta.validation.constraints.*;
 
 /**

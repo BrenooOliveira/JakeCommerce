@@ -93,8 +93,8 @@
                                 <td>
                                     <span class="badge"
                                         th:with="st=${cliente.status()}"
-                                        th:classappend="${st.name() == 'ATIVO'} ? 'bg-success' :
-                                                        (${st.name() == 'BLOQUEADO'} ? 'bg-danger' : 'bg-secondary')"
+                                        th:classappend="${st.name() == 'ATIVO' ? 'bg-success' :
+                                                        (st.name() == 'BLOQUEADO' ? 'bg-danger' : 'bg-secondary')}"
                                         th:text="${#strings.replace(st.name(), '_', ' ')}">
                                     </span>
                                 </td>

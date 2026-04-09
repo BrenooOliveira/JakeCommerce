@@ -6,8 +6,8 @@ import com.les.jakebooks.dto.PedidoListagemDTO;
 import com.les.jakebooks.dto.PedidoTransporteDTO;
 import com.les.jakebooks.exception.TransicaoStatusInvalidaException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusPedido;
-import com.les.jakebooks.services.PedidoService;
+import com.les.jakebooks.domain.enums.StatusPedido;
+import com.les.jakebooks.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,12 @@ public class AdminPedidoController {
             return "admin/pedidos/index";
 
         } catch (ValidacaoNegocioException e) {
+            // Adicionar atributos mínimos necessários para renderizar a view
             model.addAttribute("erro", e.getMessage());
+            model.addAttribute("contagem", Collections.emptyMap());
+            model.addAttribute("pedidos", Page.empty());
+            model.addAttribute("statusFiltro", status);
+            model.addAttribute("statusPedidos", StatusPedido.values());
             return "admin/pedidos/index";
         }
     }

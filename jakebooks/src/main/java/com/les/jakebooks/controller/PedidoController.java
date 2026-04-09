@@ -1,18 +1,14 @@
 package com.les.jakebooks.controller;
 
 import com.les.jakebooks.domain.Pedido;
-import com.les.jakebooks.dto.PedidoAdminResumoDTO;
 import com.les.jakebooks.dto.PedidoConfirmadoDTO;
 import com.les.jakebooks.dto.PedidoResumoDTO;
-import com.les.jakebooks.dto.PedidoTransporteDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.StatusPedido;
+import com.les.jakebooks.domain.enums.StatusPedido;
 import com.les.jakebooks.repository.PedidoRepository;
-import com.les.jakebooks.services.PedidoService;
-import com.les.jakebooks.util.SecurityUtil;
+import com.les.jakebooks.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,15 +21,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 /**
- * Controller responsável pelo gerenciamento de pedidos.
+ * Controller responsável pelo gerenciamento de pedidos (administrativo).
  * Segue padrão Frontend: sem lógica de negócio, apenas chamadas a Services.
- * RF0025: Consultar transações do cliente
- * RF0038-RF0039: Operações administrativas com pedidos
- *
- * Autorização:
- * - Listagem: Admin vê todos, Cliente vê próprios pedidos
- * - Detalhe: Admin vê todos, Cliente vê próprios pedidos
- * - Despachar/Entregar: Apenas Admin
+ * RF0038-RF0039: Operações com pedidos
+ * RF0042: Visualizar trocas
  */
 @Controller
 @RequestMapping("/pedidos")
@@ -46,16 +37,13 @@ public class PedidoController {
     private PedidoRepository pedidoRepository;
 
     /**
-     * Lista pedidos com filtros opcionais.
+     * Lista todos os pedidos com filtros opcionais.
      * GET /pedidos
-     * Admin: vê todos os pedidos
-     * Cliente: vê apenas próprios pedidos
-     * RF0025: Consultar transações do cliente
-     * RF0038: Despachar produtos (admin)
-     * RF0039: Confirmar entrega (admin)
+     * RF0038: Despachar produtos
+     * RF0039: Confirmar entrega
      *
      * @param status status do pedido para filtrar (opcional)
-     * @param codigoCliente código do cliente para filtrar (opcional, apenas admin)
+     * @param codigoCliente código do cliente para filtrar (opcional)
      * @param model Model para adicionar atributos à view
      * @return view name "pedidos/lista"
      */
@@ -66,41 +54,25 @@ public class PedidoController {
             Model model) {
 
         List<Pedido> pedidos;
-        boolean isAdmin = SecurityUtil.isAdmin();
-        String emailLogado = SecurityUtil.getEmailUsuarioLogado();
 
-        // Aplicar filtros baseado no perfil
-        if (isAdmin) {
-            // Admin vê todos os pedidos
-            if (status != null && !status.isEmpty()) {
-                try {
-                    StatusPedido statusEnum = StatusPedido.valueOf(status);
-                    pedidos = pedidoRepository.findByStatusOrderByDataCriacaoDesc(statusEnum);
-                } catch (IllegalArgumentException e) {
-                    pedidos = pedidoRepository.findAll();
-                }
-            } else {
+        // Aplicar filtros
+        if (status != null && !status.isEmpty()) {
+            try {
+                StatusPedido statusEnum = StatusPedido.valueOf(status);
+                pedidos = pedidoRepository.findByStatusOrderByDataCriacaoDesc(statusEnum);
+            } catch (IllegalArgumentException e) {
+                // Status inválido, listar todos
                 pedidos = pedidoRepository.findAll();
             }
         } else {
-            // Cliente vê apenas próprios pedidos
-            if (status != null && !status.isEmpty()) {
-                try {
-                    StatusPedido statusEnum = StatusPedido.valueOf(status);
-                    pedidos = pedidoRepository.findByClienteEmailAndStatusOrderByDataCriacaoDesc(emailLogado, statusEnum);
-                } catch (IllegalArgumentException e) {
-                    pedidos = pedidoRepository.findByClienteEmailOrderByDataCriacaoDesc(emailLogado);
-                }
-            } else {
-                pedidos = pedidoRepository.findByClienteEmailOrderByDataCriacaoDesc(emailLogado);
-            }
+            // Listar todos os pedidos
+            pedidos = pedidoRepository.findAll();
         }
 
         // Adicionar atributos ao modelo
         model.addAttribute("pedidos", pedidos);
         model.addAttribute("statusPedidos", StatusPedido.values());
         model.addAttribute("statusSelecionado", status);
-        model.addAttribute("isAdmin", isAdmin);
 
         return "pedidos/lista";
     }
@@ -108,7 +80,6 @@ public class PedidoController {
     /**
      * Exibe detalhes de um pedido específico.
      * GET /pedidos/{id}
-     * Cliente só pode ver próprios pedidos, admin pode ver todos.
      *
      * @param id ID do pedido
      * @param model Model para adicionar atributos à view
@@ -126,17 +97,9 @@ public class PedidoController {
             Pedido pedido = pedidoRepository.findById(id)
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido com ID " + id + " não encontrado"));
 
-            // Validar acesso: admin pode ver todos, cliente só próprios pedidos
-            String emailLogado = SecurityUtil.getEmailUsuarioLogado();
-            if (!SecurityUtil.isAdmin() && !pedido.getCliente().getEmail().equals(emailLogado)) {
-                attrs.addFlashAttribute("mensagemErro", "Você não tem permissão para visualizar este pedido");
-                return "redirect:/";
-            }
-
             // Adicionar atributos
             model.addAttribute("pedido", pedido);
             model.addAttribute("statusPedidos", StatusPedido.values());
-            model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
             return "pedidos/detalhe";
         } catch (RecursoNaoEncontradoException e) {
@@ -155,7 +118,6 @@ public class PedidoController {
      * @param attrs RedirectAttributes para mensagens
      * @return redirect para /pedidos/{id}
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/despachar")
     public String despachar(
             @PathVariable Long id,
@@ -184,7 +146,6 @@ public class PedidoController {
      * @param attrs RedirectAttributes para mensagens
      * @return redirect para /pedidos/{id}
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/entregar")
     public String entregar(
             @PathVariable Long id,
