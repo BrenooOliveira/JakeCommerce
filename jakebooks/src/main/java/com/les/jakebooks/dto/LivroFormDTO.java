@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.StatusLivro;
+import com.les.jakebooks.domain.enums.StatusLivro;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;

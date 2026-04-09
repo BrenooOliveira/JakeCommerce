@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.StatusTroca;
+import com.les.jakebooks.domain.enums.StatusTroca;
 import java.time.LocalDate;
 import java.util.List;
 

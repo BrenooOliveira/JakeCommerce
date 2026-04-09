@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.StatusPagamento;
+import com.les.jakebooks.domain.enums.StatusPagamento;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

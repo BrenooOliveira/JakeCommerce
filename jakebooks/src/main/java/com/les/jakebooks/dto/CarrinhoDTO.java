@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.StatusCarrinho;
+import com.les.jakebooks.domain.enums.StatusCarrinho;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

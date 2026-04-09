@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.les.jakebooks.model.enums.TipoCupom;
+import com.les.jakebooks.domain.enums.TipoCupom;
 
 /**
  * Entidade que representa um cupom de desconto ou troca no sistema.

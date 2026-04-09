@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <form id="formCheckout" method="POST" action="/carrinho/finalizar" class="needs-validation" novalidate>
+            <form id="formCheckout" method="POST" th:action="@{/carrinho/finalizar}" class="needs-validation" novalidate>
                 <div class="row">
                     <!-- Seção 1: Endereço de Entrega e Pagamento -->
                     <div class="col-lg-8">
@@ -50,9 +50,9 @@
                                                 <div class="ms-2 w-100">
                                                     <div class="fw-bold">
                                                         <span th:text="${endereco.nomeIdentificador()}"></span>
-                                                        <span class="badge" 
-                                                              th:classappend="${endereco.tipoEndereco().toString() == 'COBRANCA'} ? 'bg-info' : 'bg-success'"
-                                                              th:text="${endereco.tipoEndereco() == T(com.les.jakebooks.model.enums.TipoEndereco).COBRANCA ? 'Cobrança' : 'Entrega'}"></span>
+                                                        <span class="badge"
+                                                              th:classappend="${endereco.tipoEndereco()?.name() == 'COBRANCA' ? 'bg-info' : 'bg-success'}"
+                                                              th:text="${endereco.tipoEndereco()?.descricao}"></span>
                                                     </div>
                                                     <p class="mb-1 text-muted">
                                                         <span th:text="${endereco.logradouro()}"></span>, 
@@ -303,8 +303,8 @@
         </div>
 
         <!-- Script para cálculos e validações -->
-        <script>
-            const subtotalOriginal = parseFloat('${carrinho.valorTotal()}');
+        <script th:inline="javascript">
+            const subtotalOriginal = /*[[${carrinho.valorTotal()}]]*/ 0;
 
             function aplicarCupom() {
                 const codigoCupom = document.getElementById('codigoCupom').value;
@@ -312,11 +312,36 @@
                     alert('Digite um código de cupom');
                     return;
                 }
-                
-                // Simular validação de cupom
-                // Em produção, fazer chamada AJAX ao servidor
-                document.getElementById('resultadoCupom').classList.remove('d-none');
-                document.getElementById('desconto').textContent = 'R$ 50,00';
+
+                // Fazer requisição AJAX ao servidor para validar cupom
+                fetch('/checkout/validar-cupom?codigo=' + encodeURIComponent(codigoCupom), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-info');
+                        document.getElementById('resultadoCupom').classList.add('alert-danger');
+                        document.getElementById('resultadoCupom').innerHTML =
+                            '<i class="bi bi-exclamation-circle"></i> ' + data.erro;
+                    } else {
+                        document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-danger');
+                        document.getElementById('resultadoCupom').classList.add('alert-info');
+                        var valor = parseFloat(data.valor).toFixed(2).replace('.', ',');
+                        document.getElementById('desconto').textContent = 'R$ ' + valor;
+                        document.getElementById('resultadoCupom').innerHTML =
+                            '<i class="bi bi-check-circle"></i> Cupom válido! Desconto de <strong id="desconto">R$ ' + valor + '</strong>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-info');
+                    document.getElementById('resultadoCupom').classList.add('alert-danger');
+                    document.getElementById('resultadoCupom').innerHTML =
+                        '<i class="bi bi-exclamation-circle"></i> Erro ao validar cupom. Tente novamente.';
+                });
             }
 
             function calcularTotal() {

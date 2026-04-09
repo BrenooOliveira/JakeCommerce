@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import com.les.jakebooks.model.enums.BandeiraCartao;
+import com.les.jakebooks.domain.enums.BandeiraCartao;
 
 /**
  * Entidade que representa um cartão de crédito de um cliente.

@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Cartao;
 import com.les.jakebooks.domain.Cliente;
@@ -22,9 +22,9 @@ import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.exception.ValorMinimoCartaoException;
 import com.les.jakebooks.exception.ValorPagamentoInsuficienteException;
 import com.les.jakebooks.exception.ValorPagamentoInvalidoException;
-import com.les.jakebooks.model.enums.StatusPagamento;
-import com.les.jakebooks.model.enums.StatusPagamentoCartao;
-import com.les.jakebooks.model.enums.TipoCupom;
+import com.les.jakebooks.domain.enums.StatusPagamento;
+import com.les.jakebooks.domain.enums.StatusPagamentoCartao;
+import com.les.jakebooks.domain.enums.TipoCupom;
 import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.CupomRepository;
 import com.les.jakebooks.repository.PagamentoCartaoRepository;

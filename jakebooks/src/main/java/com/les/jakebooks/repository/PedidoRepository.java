@@ -1,7 +1,7 @@
 package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Pedido;
-import com.les.jakebooks.model.enums.StatusPedido;
+import com.les.jakebooks.domain.enums.StatusPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

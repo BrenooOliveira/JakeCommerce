@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.StatusCliente;
+import com.les.jakebooks.domain.enums.StatusCliente;
 
 import java.time.LocalDate;
 import java.util.List;

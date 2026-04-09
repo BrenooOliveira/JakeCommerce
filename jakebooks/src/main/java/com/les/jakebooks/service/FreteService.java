@@ -1,9 +1,9 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Endereco;
 import com.les.jakebooks.dto.FreteDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
-import com.les.jakebooks.model.enums.RegiaoFrete;
+import com.les.jakebooks.domain.enums.RegiaoFrete;
 import com.les.jakebooks.repository.EnderecoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

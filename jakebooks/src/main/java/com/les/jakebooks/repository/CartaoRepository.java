@@ -1,7 +1,7 @@
 package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Cartao;
-import com.les.jakebooks.model.enums.BandeiraCartao;
+import com.les.jakebooks.domain.enums.BandeiraCartao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

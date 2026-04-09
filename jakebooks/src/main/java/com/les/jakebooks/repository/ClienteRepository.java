@@ -1,7 +1,7 @@
 package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Cliente;
-import com.les.jakebooks.model.enums.StatusCliente;
+import com.les.jakebooks.domain.enums.StatusCliente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,9 +36,9 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findByCodigo(String codigo);
 
     /**
-     * Busca cliente pelo código com relacionamentos carregados (endereços e cartões).
+     * Busca cliente pelo código com relacionamentos carregados (endereços).
      * Usa LEFT JOIN FETCH para evitar N+1 queries e problemas de lazy loading.
-     * IMPORTANTE: Duas queries separadas para evitar produto cartesiano.
+     * IMPORTANTE: Não usa múltiplos JOIN FETCH para evitar produto cartesiano.
      */
     @Query("SELECT DISTINCT c FROM Cliente c " +
            "LEFT JOIN FETCH c.enderecos " +
@@ -53,6 +53,24 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
            "LEFT JOIN FETCH c.cartoes " +
            "WHERE c.codigo = :codigo")
     Optional<Cliente> findByCodigoComCartoes(@Param("codigo") String codigo);
+
+    /**
+     * Busca cliente pelo email com endereços carregados.
+     * Use buscarClienteComRelacionamentos no Service para carregar também cartões.
+     */
+    @Query("SELECT DISTINCT c FROM Cliente c " +
+           "LEFT JOIN FETCH c.enderecos " +
+           "WHERE c.email = :email")
+    Optional<Cliente> findByEmailComEnderecos(@Param("email") String email);
+
+    /**
+     * Busca cliente pelo email com cartões carregados.
+     * Segunda query para evitar produto cartesiano.
+     */
+    @Query("SELECT DISTINCT c FROM Cliente c " +
+           "LEFT JOIN FETCH c.cartoes " +
+           "WHERE c.email = :email")
+    Optional<Cliente> findByEmailComCartoes(@Param("email") String email);
 
     /**
      * Busca cliente pelo código com TODOS os relacionamentos.

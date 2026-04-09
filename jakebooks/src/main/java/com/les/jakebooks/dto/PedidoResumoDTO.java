@@ -1,6 +1,6 @@
 package com.les.jakebooks.dto;
 
-import com.les.jakebooks.model.enums.StatusPedido;
+import com.les.jakebooks.domain.enums.StatusPedido;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

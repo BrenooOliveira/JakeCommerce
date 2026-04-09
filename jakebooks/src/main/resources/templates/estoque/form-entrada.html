@@ -11,7 +11,7 @@
 <div layout:fragment="content" class="container py-4">
     <!-- Cabeçalho -->
     <div class="mb-4">
-        <a href="/estoque" class="btn btn-outline-secondary btn-sm mb-3">
+        <a href="/admin/estoque" class="btn btn-outline-secondary btn-sm mb-3">
             <i class="bi bi-arrow-left"></i> Voltar
         </a>
         <h1 class="h3 mb-1">
@@ -45,8 +45,8 @@
                     </div>
 
                     <!-- Formulário -->
-                    <form method="post" 
-                          th:action="@{/estoque/entrada}"
+                    <form method="post"
+                          th:action="@{/admin/estoque/entrada}"
                           novalidate>
 
                         <!-- Campo: Livro (Select) -->
@@ -165,7 +165,7 @@
                             <button type="submit" class="btn btn-primary flex-grow-1">
                                 <i class="bi bi-check-lg"></i> Registrar Entrada
                             </button>
-                            <a href="/estoque" class="btn btn-outline-secondary flex-grow-1">
+                            <a href="/admin/estoque" class="btn btn-outline-secondary flex-grow-1">
                                 <i class="bi bi-x-lg"></i> Cancelar
                             </a>
                         </div>

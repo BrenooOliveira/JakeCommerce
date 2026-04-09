@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{fragments/layout}"
       lang="pt-BR">
 <head>
@@ -94,10 +95,10 @@
                                 <td>
                                     <!-- Badge para Status -->
                                     <span class="badge" 
-                                          th:classappend="${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO} ? 'bg-warning' : 
-                                                          (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : 
-                                                          (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE} ? 'bg-success' : 
-                                                          (${pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA} ? 'bg-secondary' : 'bg-dark')))"
+                                          th:classappend="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO} ? 'bg-warning' : 
+                                                          (${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE} ? 'bg-info' : 
+                                                          (${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE} ? 'bg-success' : 
+                                                          (${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TROCA} ? 'bg-secondary' : 'bg-dark')))"
                                           th:text="${#strings.replace(pedido.getStatus().toString(), '_', ' ')}">
                                     </span>
                                 </td>
@@ -109,7 +110,7 @@
                                             <i class="bi bi-eye"></i> Detalhes
                                         </a>
                                         <!-- Botão Despachar (apenas se EM_PROCESSAMENTO e ADMIN) -->
-                                        <th:block th:if="${isAdmin == true and pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                        <th:block sec:authorize="hasRole('ADMIN')" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO}">
                                             <form method="POST" th:action="@{/pedidos/{id}/despachar(id=${pedido.getId()})}" style="display: inline;">
                                                 <button type="submit" class="btn btn-outline-info btn-sm" title="Despachar">
                                                     <i class="bi bi-truck"></i>
@@ -117,7 +118,7 @@
                                             </form>
                                         </th:block>
                                         <!-- Botão Entregar (apenas se EM_TRANSPORTE e ADMIN) -->
-                                        <th:block th:if="${isAdmin == true and pedido.getStatus() == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                        <th:block sec:authorize="hasRole('ADMIN')" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE}">
                                             <form method="POST" th:action="@{/pedidos/{id}/entregar(id=${pedido.getId()})}" style="display: inline;">
                                                 <button type="submit" class="btn btn-outline-success btn-sm" title="Entregar">
                                                     <i class="bi bi-check-circle"></i>

@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Cartao;
 import com.les.jakebooks.domain.Cliente;
@@ -7,9 +7,9 @@ import com.les.jakebooks.domain.Pedido;
 import com.les.jakebooks.dto.*;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.model.enums.BandeiraCartao;
-import com.les.jakebooks.model.enums.StatusCliente;
-import com.les.jakebooks.model.enums.TipoEndereco;
+import com.les.jakebooks.domain.enums.BandeiraCartao;
+import com.les.jakebooks.domain.enums.StatusCliente;
+import com.les.jakebooks.domain.enums.TipoEndereco;
 import com.les.jakebooks.repository.CartaoRepository;
 import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.EnderecoRepository;
@@ -112,6 +112,9 @@ public class ClienteService {
 
         // Status inicial: ATIVO
         cliente.setStatus(StatusCliente.ATIVO);
+
+        cliente.setIsAdmin(false);
+        cliente.setUsuarioRole("ROLE_CLIENTE");
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
 
@@ -630,12 +633,12 @@ public class ClienteService {
         // Contar pedidos com status ENTREGUE ou TROCADO
         List<Pedido> pedidosEntregues = pedidoRepository.findByClienteIdAndStatus(
                 cliente.getId(), 
-                com.les.jakebooks.model.enums.StatusPedido.ENTREGUE
+                com.les.jakebooks.domain.enums.StatusPedido.ENTREGUE
         );
 
         List<Pedido> pedidosTrocados = pedidoRepository.findByClienteIdAndStatus(
                 cliente.getId(),
-                com.les.jakebooks.model.enums.StatusPedido.TROCADO
+                com.les.jakebooks.domain.enums.StatusPedido.TROCADO
         );
 
         // Total de pedidos completados

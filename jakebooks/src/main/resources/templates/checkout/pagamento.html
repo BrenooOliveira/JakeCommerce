@@ -605,7 +605,7 @@
 
                     document.querySelectorAll('.cartao-check:checked').forEach(function(cb) {
                         var cartaoId = cb.dataset.cartaoId;
-                        var valor = parseFloat(document.getElementById('cartao_valor_' + cartaoId).value) || 0;
+                        var valor = parseFloat(document.getElementById('valor-' + cartaoId).value) || 0;
                         totalCartoes += valor;
 
                         // Verificar minimo por cartao (RN0034)

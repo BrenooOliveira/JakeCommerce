@@ -1,4 +1,4 @@
-package com.les.jakebooks.model.enums;
+package com.les.jakebooks.domain.enums;
 
 /**
  * Enum que representa os tipos de cupom disponíveis no sistema.

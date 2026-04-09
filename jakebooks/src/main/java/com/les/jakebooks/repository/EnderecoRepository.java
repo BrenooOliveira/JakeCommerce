@@ -1,7 +1,7 @@
 package com.les.jakebooks.repository;
 
 import com.les.jakebooks.domain.Endereco;
-import com.les.jakebooks.model.enums.TipoEndereco;
+import com.les.jakebooks.domain.enums.TipoEndereco;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

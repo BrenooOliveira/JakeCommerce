@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.les.jakebooks.model.enums.StatusCarrinho;
+import com.les.jakebooks.domain.enums.StatusCarrinho;
 
 /**
  * Entidade que representa um carrinho de compras do sistema.

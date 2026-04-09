@@ -1,4 +1,4 @@
-package com.les.jakebooks.services;
+package com.les.jakebooks.service;
 
 import com.les.jakebooks.domain.Estoque;
 import com.les.jakebooks.domain.ItemPedido;
@@ -286,14 +286,14 @@ public class EstoqueService {
     private void validarPreCondicoesBaixa(Pedido pedido) {
         // RN0028: Baixa apenas após pagamento APROVADO
         if (pedido.getPagamento() == null ||
-            pedido.getPagamento().getStatus() != com.les.jakebooks.model.enums.StatusPagamento.APROVADA) {
+            pedido.getPagamento().getStatus() != com.les.jakebooks.domain.enums.StatusPagamento.APROVADA) {
             throw new com.les.jakebooks.exception.PagamentoNaoAprovadoException(
                 "Baixa de estoque permitida apenas para pagamentos aprovados"
             );
         }
 
         // Validar status do pedido
-        if (pedido.getStatus() != com.les.jakebooks.model.enums.StatusPedido.EM_PROCESSAMENTO) {
+        if (pedido.getStatus() != com.les.jakebooks.domain.enums.StatusPedido.EM_PROCESSAMENTO) {
             throw new com.les.jakebooks.exception.StatusPedidoInvalidoException(
                 "Pedido deve estar EM_PROCESSAMENTO para baixa de estoque. Status atual: " +
                 pedido.getStatus()

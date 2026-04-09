@@ -5,11 +5,9 @@ import com.les.jakebooks.dto.EstoqueListaDTO;
 import com.les.jakebooks.dto.LivroDetalheDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
-import com.les.jakebooks.services.EstoqueService;
-import com.les.jakebooks.services.LivroService;
-import com.les.jakebooks.util.SecurityUtil;
+import com.les.jakebooks.service.EstoqueService;
+import com.les.jakebooks.service.LivroService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +26,7 @@ import java.util.List;
  * RF0051: Entrada em estoque.
  */
 @Controller
-@RequestMapping("/estoque")
+@RequestMapping("/admin/estoque")
 public class EstoqueController {
 
     @Autowired
@@ -39,13 +37,12 @@ public class EstoqueController {
 
     /**
      * Lista todos os livros com suas informações de estoque.
-     * GET /estoque
+     * GET /admin/estoque
      * RF0051: Entrada em estoque (visualizar).
      *
      * @param model Model para adicionar atributos à view
      * @return view name "estoque/lista"
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String listar(Model model) {
         // Buscar todos os estoques
@@ -53,7 +50,6 @@ public class EstoqueController {
 
         // Adicionar atributos ao modelo
         model.addAttribute("estoques", estoques);
-        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         // Calcular totalizadores
         int totalItens = estoques.stream()
@@ -71,13 +67,12 @@ public class EstoqueController {
 
     /**
      * Exibe formulário para registrar entrada de estoque.
-     * GET /estoque/entrada
+     * GET /admin/estoque/entrada
      * RF0051: Entrada em estoque.
      *
      * @param model Model para adicionar atributos à view
      * @return view name "estoque/form-entrada"
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/entrada")
     public String formularioEntrada(Model model) {
         // Buscar todos os livros para popular o select
@@ -85,14 +80,13 @@ public class EstoqueController {
 
         model.addAttribute("livros", livros);
         model.addAttribute("dataEntrada", LocalDate.now());
-        model.addAttribute("isAdmin", SecurityUtil.isAdmin());
 
         return "estoque/form-entrada";
     }
 
     /**
      * Registra uma entrada de estoque.
-     * POST /estoque/entrada
+     * POST /admin/estoque/entrada
      * RF0051: Entrada em estoque.
      * RN0051: Valida dados obrigatórios.
      * RN0061: Valida quantidade > 0.
@@ -105,9 +99,8 @@ public class EstoqueController {
      * @param fornecedor   fornecedor do produto
      * @param dataEntrada  data da entrada
      * @param attrs        RedirectAttributes para mensagens
-     * @return redirect para /estoque com mensagem de sucesso ou erro
+     * @return redirect para /admin/estoque com mensagem de sucesso ou erro
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/entrada")
     public String registrarEntrada(
             @RequestParam Long livroId,
@@ -127,16 +120,16 @@ public class EstoqueController {
             attrs.addFlashAttribute("mensagemSucesso", 
                     "Entrada de estoque registrada com sucesso! " + quantidade + " unidade(s) adicionada(s).");
 
-            return "redirect:/estoque";
+            return "redirect:/admin/estoque";
         } catch (ValidacaoNegocioException e) {
             attrs.addFlashAttribute("mensagemErro", "Erro de validação: " + e.getMessage());
-            return "redirect:/estoque/entrada";
+            return "redirect:/admin/estoque/entrada";
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Livro não encontrado: " + e.getMessage());
-            return "redirect:/estoque/entrada";
+            return "redirect:/admin/estoque/entrada";
         } catch (Exception e) {
             attrs.addFlashAttribute("mensagemErro", "Erro ao registrar entrada: " + e.getMessage());
-            return "redirect:/estoque/entrada";
+            return "redirect:/admin/estoque/entrada";
         }
     }
 }

@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
-import com.les.jakebooks.model.enums.StatusPagamentoCartao;
+import com.les.jakebooks.domain.enums.StatusPagamentoCartao;
 
 /**
  * Entidade que representa uma parcela de pagamento feita com cartão.

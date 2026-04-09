@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+      layout:decorate="~{fragments/layout}">
 
 <head>
     <title>Análise de Vendas</title>
@@ -201,7 +201,7 @@ document.getElementById('filtroForm').addEventListener('submit', async (e) => {
 
     try {
         // Fazer fetch dos dados
-        const response = await fetch(`/analise/dados?dataInicio=${dataInicio}&dataFim=${dataFim}&agrupamento=${agrupamento}`);
+        const response = await fetch(`/admin/analise/dados?dataInicio=${dataInicio}&dataFim=${dataFim}&agrupamento=${agrupamento}`);
 
         if (!response.ok) {
             const erro = await response.text();

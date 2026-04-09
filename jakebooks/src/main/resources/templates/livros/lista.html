@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{fragments/layout}"
       lang="pt-BR">
 <head>
@@ -18,7 +19,7 @@
                     <p class="text-muted">Gerenciamento de catálogo de livros</p>
                 </div>
                 <!-- Botão "Novo Livro" APENAS para admin -->
-                <div class="col-auto" th:if="${isAdmin == true}">
+                <div class="col-auto" sec:authorize="hasRole('ADMIN')">
                     <a th:href="@{/livros/novo}" class="btn btn-primary btn-lg">
                         <i class="bi bi-plus-circle"></i> Novo Livro
                     </a>
@@ -146,10 +147,10 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge" 
+                                    <span class="badge"
                                         th:with="st=${livro.status()}"
-                                        th:classappend="${st.name() == 'ATIVO'} ? 'bg-success' : 
-                                                        (${st.name() == 'INATIVO'} ? 'bg-danger' : 'bg-secondary')"
+                                        th:classappend="${st.name() == 'ATIVO' ? 'bg-success' :
+                                                        (st.name() == 'INATIVO' ? 'bg-danger' : 'bg-secondary')}"
                                         th:text="${#strings.replace(st.name(), '_', ' ')}">
                                     </span>
                                 </td>
@@ -163,7 +164,7 @@
                                         </a>
 
                                         <!-- Botões admin APENAS para admin -->
-                                        <a th:if="${isAdmin == true}"
+                                        <a sec:authorize="hasRole('ADMIN')"
                                            th:href="@{/livros/{codigo}/editar(codigo=${livro.codigo()})}"
                                            class="btn btn-outline-warning"
                                            title="Editar">
@@ -171,8 +172,20 @@
                                         </a>
                                     </div>
 
+                                    <!-- Botão Comprar - APENAS para autenticados e livro ATIVO -->
+                                    <form sec:authorize="isAuthenticated()"
+                                          th:if="${livro.status().name() == 'ATIVO'}"
+                                          th:action="@{/carrinho/adicionar}"
+                                          method="post" class="d-inline ms-1">
+                                        <input type="hidden" name="codigoLivro" th:value="${livro.codigo()}" />
+                                        <input type="hidden" name="quantidade" value="1" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Adicionar ao carrinho">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </form>
+
                                     <!-- Botões Inativar/Ativar - APENAS para admin -->
-                                    <form th:if="${isAdmin == true and livro.status().name() == 'ATIVO'}"
+                                    <form sec:authorize="hasRole('ADMIN')" th:if="${livro.status().name() == 'ATIVO'}"
                                           th:action="@{/livros/{codigo}/inativar(codigo=${livro.codigo()})}"
                                           method="post" class="d-inline ms-1">
                                         <input type="hidden" name="motivo" value="Inativação manual via listagem" />
@@ -181,7 +194,7 @@
                                         </button>
                                     </form>
 
-                                    <form th:if="${isAdmin == true and livro.status().name() == 'INATIVO'}"
+                                    <form sec:authorize="hasRole('ADMIN')" th:if="${livro.status().name() == 'INATIVO'}"
                                           th:action="@{/livros/{codigo}/ativar(codigo=${livro.codigo()})}"
                                           method="post" class="d-inline ms-1">
                                         <input type="hidden" name="justificativa" value="Ativação manual via listagem" />

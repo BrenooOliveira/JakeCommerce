@@ -42,7 +42,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h5 class="card-title">Em Processamento</h5>
-                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO] ?: 0}">0</h2>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO] ?: 0}">0</h2>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>
@@ -60,7 +60,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h5 class="card-title">Em Transporte</h5>
-                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE] ?: 0}">0</h2>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE] ?: 0}">0</h2>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="bi bi-truck" style="font-size: 2rem;"></i>
@@ -78,7 +78,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h5 class="card-title">Entregues</h5>
-                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).ENTREGUE] ?: 0}">0</h2>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE] ?: 0}">0</h2>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
@@ -96,7 +96,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h5 class="card-title">Em Troca</h5>
-                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.model.enums.StatusPedido).EM_TROCA] ?: 0}">0</h2>
+                                    <h2 class="fw-bold" th:text="${contagem[T(com.les.jakebooks.domain.enums.StatusPedido).EM_TROCA] ?: 0}">0</h2>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="bi bi-arrow-left-right" style="font-size: 2rem;"></i>
@@ -248,7 +248,7 @@
                                         </a>
 
                                         <!-- Botão Despachar (apenas se EM_PROCESSAMENTO) -->
-                                        <th:block th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_PROCESSAMENTO}">
+                                        <th:block th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO}">
                                             <form method="POST"
                                                   th:action="@{/admin/pedidos/{id}/despachar(id=${pedido.id})}"
                                                   style="display: inline;"
@@ -260,7 +260,7 @@
                                         </th:block>
 
                                         <!-- Botão Entregar (apenas se EM_TRANSPORTE) -->
-                                        <th:block th:if="${pedido.status == T(com.les.jakebooks.model.enums.StatusPedido).EM_TRANSPORTE}">
+                                        <th:block th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE}">
                                             <form method="POST"
                                                   th:action="@{/admin/pedidos/{id}/confirmar-entrega(id=${pedido.id})}"
                                                   style="display: inline;"

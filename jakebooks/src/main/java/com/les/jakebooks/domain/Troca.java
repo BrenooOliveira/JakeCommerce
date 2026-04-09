@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 
-import com.les.jakebooks.model.enums.StatusTroca;
+import com.les.jakebooks.domain.enums.StatusTroca;
 
 /**
  * Entidade que representa uma solicitação de troca de um pedido.

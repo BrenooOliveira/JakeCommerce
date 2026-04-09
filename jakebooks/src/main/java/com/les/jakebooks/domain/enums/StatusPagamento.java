@@ -1,4 +1,4 @@
-package com.les.jakebooks.model.enums;
+package com.les.jakebooks.domain.enums;
 
 /**
  * Enum que representa os possíveis status de um pagamento no sistema.
