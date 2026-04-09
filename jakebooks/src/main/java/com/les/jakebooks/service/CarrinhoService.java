@@ -125,11 +125,7 @@ public class CarrinhoService {
         Cliente cliente = clienteRepository.findByCodigo(codigoCliente)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente com código " + codigoCliente + " não encontrado"));
 
-        // Buscar livro pelo código (ISBN)
-        Livro livro = livroRepository.findByIsbn(codigoLivro);
-        if (livro == null) {
-            throw new RecursoNaoEncontradoException("Livro com código " + codigoLivro + " não encontrado");
-        }
+        Livro livro = buscarLivroPorCodigoOuIsbn(codigoLivro);
 
         // Validar estoque (RN0031)
         Estoque estoque = estoqueRepository.findByLivroId(livro.getId());
@@ -208,10 +204,7 @@ public class CarrinhoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho aberto não encontrado para cliente " + codigoCliente));
 
         // Buscar livro
-        Livro livro = livroRepository.findByIsbn(codigoLivro);
-        if (livro == null) {
-            throw new RecursoNaoEncontradoException("Livro com código " + codigoLivro + " não encontrado");
-        }
+        Livro livro = buscarLivroPorCodigoOuIsbn(codigoLivro);
 
         // Buscar e remover item
         Optional<ItemCarrinho> item = itemCarrinhoRepository.findByCarrinhoIdAndLivroId(carrinho.getId(), livro.getId());
@@ -256,10 +249,7 @@ public class CarrinhoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho aberto não encontrado"));
 
         // Buscar livro
-        Livro livro = livroRepository.findByIsbn(codigoLivro);
-        if (livro == null) {
-            throw new RecursoNaoEncontradoException("Livro com código " + codigoLivro + " não encontrado");
-        }
+        Livro livro = buscarLivroPorCodigoOuIsbn(codigoLivro);
 
         // Validar estoque
         Estoque estoque = estoqueRepository.findByLivroId(livro.getId());
@@ -431,6 +421,17 @@ public class CarrinhoService {
         return itens.stream()
                 .map(item -> item.getValorUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private Livro buscarLivroPorCodigoOuIsbn(String codigoLivro) {
+        Livro livro = livroRepository.findByCodigo(codigoLivro);
+        if (livro == null) {
+            livro = livroRepository.findByIsbn(codigoLivro);
+        }
+        if (livro == null) {
+            throw new RecursoNaoEncontradoException("Livro com código " + codigoLivro + " não encontrado");
+        }
+        return livro;
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.les.jakebooks.controller;
 
 import com.les.jakebooks.domain.Pedido;
-import com.les.jakebooks.dto.PedidoConfirmadoDTO;
 import com.les.jakebooks.dto.PedidoResumoDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;

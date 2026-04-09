@@ -67,6 +67,7 @@ public class SecurityConfig {
 
                 .requestMatchers(
                     "/carrinho/**",
+                    "/checkout/**",
                     "/pedidos/**"
                 ).hasRole("CLIENTE")
 
