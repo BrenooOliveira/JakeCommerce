@@ -170,3 +170,61 @@ transition: fade-out
 ---
 # Kanban de Tarefas
 ![alt text](image-18.png)
+
+---
+# Entrega 04 – 06/04/2026
+## Fluxo de venda
+
+**Escopo da entrega:**
+- Formalização do DVP do sistema JakeBooks
+
+
+---
+# Kanban de Tarefas
+![alt text](image-19.png)
+
+---
+# Demonstração
+> Lista de Livros
+
+![bg right 95% fit](image-20.png)
+
+---
+# Demonstração
+> Carrinho
+
+![bg right 95% fit](image-21.png)
+
+---
+
+# Demonstração
+> Checkout com seleção de endereço e pagamento com multiplos cartões
+
+
+![bg right 95% fit](image-22.png)
+
+---
+
+# Demonstração
+> Pedido Criado
+
+
+![bg right 95% fit](image-22.png)
+
+---
+
+# Entrega 05 – 13/04/2026
+## UseCase: Condução de Vendas (CDU01)
+
+**O que foi feito:**
+- Documentação completa do caso de uso com 32 fluxos (1 principal + 11 alternativos + 20 exceções)
+- 8 protótipos HTML/CSS interativos (catálogo, carrinho, checkout, confirmação, admin)
+- Pós-condições, 18 requisitos não-funcionais, pontos de extensão e 4 diagramas Mermaid
+
+**Como foi feito:**
+- Análise completa do documento de requisitos
+- Criação de protótipos com HTML semântico e CSS puro (sem frameworks)
+- Documentação estruturada com 949 linhas incluindo regras de negócio e fluxos
+
+**Resumo técnico:**
+O UseCase documenta o fluxo completo de compra de livros, desde navegação no catálogo até entrega e trocas, cobrindo múltiplos meios de pagamento, gestão de estoque, cupons e tratamento de exceções. Pronto para desenvolvimento backend.

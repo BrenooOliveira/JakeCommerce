@@ -1,0 +1,9 @@
+{
+  "profile": "openai",
+  "env": {
+    "OPENAI_BASE_URL": "https://integrate.api.nvidia.com/v1",
+    "OPENAI_MODEL": "mistralai/mistral-nemotron",
+    "OPENAI_API_KEY": "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"
+  },
+  "createdAt": "2026-04-10T02:51:48.058Z"
+}

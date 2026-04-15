@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Pedidos - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        nav a.active {
+            background: #3498db;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filters select, .filters input {
+            padding: 0.5rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        .orders-table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .orders-table thead {
+            background: #34495e;
+            color: white;
+        }
+        .orders-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: bold;
+        }
+        .orders-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .orders-table tr:last-child td {
+            border-bottom: none;
+        }
+        .orders-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-shipping {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        .action-btn {
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .btn-dispatch {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-dispatch:hover {
+            background: #229954;
+        }
+        .btn-view {
+            background: #3498db;
+            color: white;
+        }
+        .btn-view:hover {
+            background: #2980b9;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+        .modal-item {
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            margin-right: 1rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-btn-confirm {
+            background: #27ae60;
+            color: white;
+        }
+        .modal-btn-confirm:hover {
+            background: #229954;
+        }
+        .modal-btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        .modal-btn-cancel:hover {
+            background: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚙️ Painel Administrativo - JakeCommerce</h1>
+        <nav>
+            <a href="#" class="active">Pedidos</a>
+            <a href="#">Trocas</a>
+            <a href="#">Estoque</a>
+            <a href="#">Relatórios</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Estatísticas -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Pedidos em Processamento</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Pedidos em Transporte</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Trocas Pendentes</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <label for="status">Status:</label>
+            <select id="status">
+                <option>Todos</option>
+                <option selected>Em Processamento</option>
+                <option>Em Transporte</option>
+                <option>Entregue</option>
+            </select>
+
+            <label for="date">Data:</label>
+            <input type="date" id="date">
+
+            <label for="search">Buscar:</label>
+            <input type="text" placeholder="Número do pedido ou cliente...">
+        </div>
+
+        <!-- Tabela de Pedidos -->
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>ID Pedido</th>
+                    <th>Cliente</th>
+                    <th>Totais</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>#2024010123</strong></td>
+                    <td>João Silva</td>
+                    <td>R$ 455,80</td>
+                    <td>13/04/2026 15:30</td>
+                    <td>
+                        <span class="status-badge status-processing">EM PROCESSAMENTO</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-dispatch" onclick="openDispatch('2024010123')">Despachar</button>
+                        <button class="action-btn btn-view">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>#2024010122</strong></td>
+                    <td>Maria Santos</td>
+                    <td>R$ 289,50</td>
+                    <td>13/04/2026 14:45</td>
+                    <td>
+                        <span class="status-badge status-processing">EM PROCESSAMENTO</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-dispatch" onclick="openDispatch('2024010122')">Despachar</button>
+                        <button class="action-btn btn-view">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>#2024010121</strong></td>
+                    <td>Pedro Costa</td>
+                    <td>R$ 678,00</td>
+                    <td>13/04/2026 13:20</td>
+                    <td>
+                        <span class="status-badge status-shipping">EM TRANSPORTE</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-view">Confirmar Entrega</button>
+                        <button class="action-btn btn-view">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>#2024010120</strong></td>
+                    <td>Ana Silva</td>
+                    <td>R$ 145,60</td>
+                    <td>12/04/2026 16:00</td>
+                    <td>
+                        <span class="status-badge status-delivered">ENTREGUE</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-view">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>#2024010119</strong></td>
+                    <td>Carlos Oliveira</td>
+                    <td>R$ 320,15</td>
+                    <td>12/04/2026 11:30</td>
+                    <td>
+                        <span class="status-badge status-processing">EM PROCESSAMENTO</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-dispatch" onclick="openDispatch('2024010119')">Despachar</button>
+                        <button class="action-btn btn-view">Visualizar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal de Despacho -->
+    <div id="dispatchModal" class="modal">
+        <div class="modal-content">
+            <h2>🚚 Despachar Pedido</h2>
+            <div id="modalBody"></div>
+            <button class="modal-btn modal-btn-confirm" onclick="confirmDispatch()">Confirmar Despacho</button>
+            <button class="modal-btn modal-btn-cancel" onclick="closeDispatch()">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        function openDispatch(orderId) {
+            const modal = document.getElementById('dispatchModal');
+            const modalBody = document.getElementById('modalBody');
+
+            modalBody.innerHTML = `
+                <p><strong>ID do Pedido:</strong> #${orderId}</p>
+                <p><strong>Cliente:</strong> João Silva</p>
+                <div class="modal-item">
+                    <h3>Itens do Pedido:</h3>
+                    <p>📖 Clean Code x1 - R$ 89,90</p>
+                    <p>📖 Design Patterns x2 - R$ 240,00</p>
+                    <p>📖 Code Complete x1 - R$ 110,00</p>
+                </div>
+                <p><strong>Código de Rastreamento (opcional):</strong></p>
+                <input type="text" placeholder="Código de rastreamento da transportadora" style="width: 100%; padding: 0.5rem; border: 1px solid #bdc3c7; border-radius: 4px;">
+            `;
+            modal.classList.add('active');
+        }
+
+        function closeDispatch() {
+            document.getElementById('dispatchModal').classList.remove('active');
+        }
+
+        function confirmDispatch() {
+            alert('Pedido despachado com sucesso! Cliente será notificado.');
+            closeDispatch();
+        }
+    </script>
+</body>
+</html>

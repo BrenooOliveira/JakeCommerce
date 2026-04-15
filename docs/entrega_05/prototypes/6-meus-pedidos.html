@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Pedidos - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        .tab {
+            padding: 1rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+        }
+        .order-card {
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .order-header {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .order-info h3 {
+            margin-bottom: 0.5rem;
+        }
+        .order-meta {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-shipping {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        .order-content {
+            padding: 1.5rem;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .order-item:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .item-icon {
+            font-size: 2rem;
+            min-width: 50px;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .item-details strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .item-details small {
+            color: #7f8c8d;
+        }
+        .item-price {
+            font-weight: bold;
+            color: #27ae60;
+            min-width: 100px;
+            text-align: right;
+        }
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #ecf0f1;
+            margin-top: 1rem;
+        }
+        .total {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #229954;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #95a5a6;
+            color: #95a5a6;
+        }
+        .btn-outline:hover {
+            border-color: #7f8c8d;
+            color: #7f8c8d;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .exchange-options {
+            margin-bottom: 1.5rem;
+        }
+        .exchange-option {
+            padding: 1rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .exchange-option:hover {
+            border-color: #3498db;
+            background: #ecf0f1;
+        }
+        .exchange-option input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+        .exchange-reason {
+            margin-bottom: 1.5rem;
+        }
+        .exchange-reason label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .exchange-reason select,
+        .exchange-reason textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+        }
+        .exchange-reason textarea {
+            min-height: 100px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-confirm {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📦 Meus Pedidos - JakeCommerce</h1>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active">Todos os Pedidos</div>
+            <div class="tab">Em Processamento</div>
+            <div class="tab">Em Transporte</div>
+            <div class="tab">Entregues</div>
+        </div>
+
+        <!-- Pedido Em Processamento -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <h3>#2024010123</h3>
+                    <div class="order-meta">
+                        13/04/2026 às 15:30 | Entrega prevista: 20/04/2026
+                    </div>
+                </div>
+                <span class="status-badge status-processing">EM PROCESSAMENTO 📦</span>
+            </div>
+            <div class="order-content">
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>Clean Code</strong>
+                        <small>Robert C. Martin</small>
+                    </div>
+                    <div class="item-price">R$ 89,90</div>
+                </div>
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>Design Patterns</strong>
+                        <small>Gang of Four · Qtd: 2</small>
+                    </div>
+                    <div class="item-price">R$ 240,00</div>
+                </div>
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>Code Complete</strong>
+                        <small>Steve McConnell</small>
+                    </div>
+                    <div class="item-price">R$ 110,00</div>
+                </div>
+                <div class="order-footer">
+                    <div class="total">Total: R$ 455,80</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline">Rastrear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedido em Transporte -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <h3>#2024010121</h3>
+                    <div class="order-meta">
+                        12/04/2026 às 09:15 | Entrega prevista: 17/04/2026
+                    </div>
+                </div>
+                <span class="status-badge status-shipping">EM TRANSPORTE 🚚</span>
+            </div>
+            <div class="order-content">
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>Refactoring: Improving the Design of Existing Code</strong>
+                        <small>Martin Fowler · Qtd: 1</small>
+                    </div>
+                    <div class="item-price">R$ 125,00</div>
+                </div>
+                <div class="order-footer">
+                    <div class="total">Total: R$ 678,00</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Rastrear com Código</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedido Entregue (com opção de troca) -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <h3>#2024010110</h3>
+                    <div class="order-meta">
+                        05/04/2026 às 11:45 | Entregue em: 10/04/2026
+                    </div>
+                </div>
+                <span class="status-badge status-delivered">ENTREGUE ✓</span>
+            </div>
+            <div class="order-content">
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>The Clean Coder</strong>
+                        <small>Robert C. Martin</small>
+                    </div>
+                    <div class="item-price">R$ 95,00</div>
+                </div>
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>Algorithms</strong>
+                        <small>Robert Sedgewick</small>
+                    </div>
+                    <div class="item-price">R$ 145,60</div>
+                </div>
+                <div class="order-footer">
+                    <div class="total">Total: R$ 240,60</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="openExchangeModal('2024010110')">
+                            Solicitar Troca
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedido com Troca em Processamento -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-info">
+                    <h3>#2024010105</h3>
+                    <div class="order-meta">
+                        28/03/2026 às 14:20 | Status de Troca: Aguardando Autorização
+                    </div>
+                </div>
+                <span class="status-badge" style="background: #f0ad4e; color: white;">EM TROCA 🔄</span>
+            </div>
+            <div class="order-content">
+                <div class="order-item">
+                    <div class="item-icon">📖</div>
+                    <div class="item-details">
+                        <strong>Data Structures and Algorithms</strong>
+                        <small>Mark Allen Weiss</small>
+                    </div>
+                    <div class="item-price">R$ 110,00</div>
+                </div>
+                <div style="padding: 1rem; background: #e3f2fd; border-radius: 4px; margin-top: 1rem;">
+                    <strong>ℹ️ Troca Solicitada:</strong><br>
+                    Motivo: Dano na embalagem - solicitada em 12/04/2026<br>
+                    Status da Troca: <strong style="color: #f39c12;">Aguardando autorização do administrador</strong>
+                </div>
+                <div class="order-footer">
+                    <div class="total">Total: R$ 110,00</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline">Ver Detalhes da Troca</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Troca -->
+    <div id="exchangeModal" class="modal">
+        <div class="modal-content">
+            <h2>🔄 Solicitar Troca</h2>
+
+            <div class="exchange-options">
+                <label><strong>O que deseja fazer?</strong></label>
+                <div class="exchange-option">
+                    <input type="radio" name="exchangeType" value="total" checked>
+                    <label><strong>Trocar tudo (Total)</strong></label>
+                    <small>Devolver todos os itens do pedido</small>
+                </div>
+                <div class="exchange-option">
+                    <input type="radio" name="exchangeType" value="partial">
+                    <label><strong>Trocar apenas alguns itens (Parcial)</strong></label>
+                    <small>Devolver apenas alguns livros do pedido</small>
+                </div>
+            </div>
+
+            <div class="exchange-reason">
+                <label for="reason">Motivo da Troca:</label>
+                <select id="reason">
+                    <option value="">Selecione o motivo...</option>
+                    <option value="damage">Livro danificado</option>
+                    <option value="defective">Livro com defeito (páginas soltas, impressão ruim)</option>
+                    <option value="wrong">Livro errado foi enviado</option>
+                    <option value="not_expected">Não corresponde ao esperado</option>
+                    <option value="other">Outro motivo</option>
+                </select>
+            </div>
+
+            <div class="exchange-reason">
+                <label for="details">Detalhes adicionais (opcional):</label>
+                <textarea id="details" placeholder="Descreva o problema com o produto..."></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="submitExchange()">Solicitar Troca</button>
+                <button class="btn-cancel" onclick="closeExchangeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openExchangeModal(orderId) {
+            document.getElementById('exchangeModal').classList.add('active');
+        }
+
+        function closeExchangeModal() {
+            document.getElementById('exchangeModal').classList.remove('active');
+        }
+
+        function submitExchange() {
+            alert('Solicitação de troca enviada com sucesso! Um administrador será responsável pela autorização.');
+            closeExchangeModal();
+        }
+    </script>
+</body>
+</html>

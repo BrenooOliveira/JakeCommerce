@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Trocas - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        nav a.active {
+            background: #3498db;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filters select {
+            padding: 0.5rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        .exchanges-table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .exchanges-table thead {
+            background: #34495e;
+            color: white;
+        }
+        .exchanges-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: bold;
+        }
+        .exchanges-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .exchanges-table tr:last-child td {
+            border-bottom: none;
+        }
+        .exchanges-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-authorized {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .action-btn {
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .btn-authorize {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-authorize:hover {
+            background: #229954;
+        }
+        .btn-view {
+            background: #3498db;
+            color: white;
+        }
+        .btn-view:hover {
+            background: #2980b9;
+        }
+        .btn-reject {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-reject:hover {
+            background: #c0392b;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            max-width: 700px;
+            width: 90%;
+            margin: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+        .modal-section h3 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            color: #34495e;
+        }
+        .exchange-item {
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .exchange-item strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .exchange-item small {
+            color: #7f8c8d;
+        }
+        .exchange-reason-box {
+            padding: 1rem;
+            background: #e8f4f8;
+            border-left: 3px solid #3498db;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-confirm {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-confirm:hover {
+            background: #229954;
+        }
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+        .btn-reject-modal {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-reject-modal:hover {
+            background: #c0392b;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚙️ Painel Administrativo - Trocas</h1>
+        <nav>
+            <a href="#">Pedidos</a>
+            <a href="#" class="active">Trocas</a>
+            <a href="#">Estoque</a>
+            <a href="#">Relatórios</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Estatísticas -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Trocas Pendentes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Trocas Autorizadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">23</div>
+                <div class="stat-label">Trocas Concluídas</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <label for="status">Status:</label>
+            <select id="status">
+                <option>Todos</option>
+                <option selected>Pendente</option>
+                <option>Autorizada</option>
+                <option>Concluída</option>
+                <option>Rejeitada</option>
+            </select>
+
+            <label for="date">Data:</label>
+            <input type="date" id="date" style="padding: 0.5rem; border: 1px solid #bdc3c7; border-radius: 4px;">
+        </div>
+
+        <!-- Tabela de Trocas -->
+        <table class="exchanges-table">
+            <thead>
+                <tr>
+                    <th>ID Troca</th>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Tipo</th>
+                    <th>Data Solicitação</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>TR-001</strong></td>
+                    <td>#2024010125</td>
+                    <td>João Silva</td>
+                    <td>Total</td>
+                    <td>13/04/2026</td>
+                    <td>
+                        <span class="status-badge status-pending">PENDENTE</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-authorize" onclick="openTradeModal('TR-001')">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>TR-002</strong></td>
+                    <td>#2024010124</td>
+                    <td>Maria Santos</td>
+                    <td>Parcial</td>
+                    <td>12/04/2026</td>
+                    <td>
+                        <span class="status-badge status-pending">PENDENTE</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-authorize" onclick="openTradeModal('TR-002')">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>TR-003</strong></td>
+                    <td>#2024010110</td>
+                    <td>Pedro Costa</td>
+                    <td>Total</td>
+                    <td>11/04/2026</td>
+                    <td>
+                        <span class="status-badge status-authorized">AUTORIZADA</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-view" onclick="openTradeModal('TR-003')">Confirmar Receb.</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>TR-004</strong></td>
+                    <td>#2024010105</td>
+                    <td>Ana Oliveira</td>
+                    <td>Parcial</td>
+                    <td>10/04/2026</td>
+                    <td>
+                        <span class="status-badge status-pending">PENDENTE</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-authorize" onclick="openTradeModal('TR-004')">Visualizar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>TR-005</strong></td>
+                    <td>#2024010095</td>
+                    <td>Carlos Lima</td>
+                    <td>Total</td>
+                    <td>09/04/2026</td>
+                    <td>
+                        <span class="status-badge status-completed">CONCLUÍDA</span>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-view">Visualizar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal de Troca -->
+    <div id="tradeModal" class="modal">
+        <div class="modal-content">
+            <h2>🔄 Detalhes da Solicitação de Troca</h2>
+
+            <div class="modal-section">
+                <h3>Informações Gerais</h3>
+                <div class="info-row">
+                    <strong>ID da Troca:</strong>
+                    <span id="modalTradeId">TR-001</span>
+                </div>
+                <div class="info-row">
+                    <strong>Pedido Original:</strong>
+                    <span>#2024010125</span>
+                </div>
+                <div class="info-row">
+                    <strong>Cliente:</strong>
+                    <span>João Silva (joao.silva@email.com)</span>
+                </div>
+                <div class="info-row">
+                    <strong>Tipo de Troca:</strong>
+                    <span>Total</span>
+                </div>
+                <div class="info-row">
+                    <strong>Data da Solicitação:</strong>
+                    <span>13/04/2026 12:30</span>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h3>Motivo da Troca</h3>
+                <div class="exchange-reason-box">
+                    <strong>Livro danificado</strong><br>
+                    <small>Detalhes: Os primeiros 20 páginas estão manchadas. Produto chegou em má condição.</small>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h3>Itens para Devolução</h3>
+                <div class="exchange-item">
+                    <strong>Clean Code</strong>
+                    <small>Robert C. Martin - Quantidade: 1 - Valor: R$ 89,90</small>
+                </div>
+                <div class="exchange-item">
+                    <strong>Design Patterns</strong>
+                    <small>Gang of Four - Quantidade: 2 - Valor: R$ 240,00</small>
+                </div>
+                <div class="exchange-item">
+                    <strong>Code Complete</strong>
+                    <small>Steve McConnell - Quantidade: 1 - Valor: R$ 110,00</small>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h3>Valores</h3>
+                <div class="info-row">
+                    <strong>Total de Itens:</strong>
+                    <span>R$ 439,90</span>
+                </div>
+                <div class="info-row">
+                    <strong>Valor do Cupom a Gerar:</strong>
+                    <span style="color: #27ae60; font-weight: bold;">R$ 439,90</span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="authorizeExchange()">✓ Autorizar Troca</button>
+                <button class="btn-reject-modal" onclick="rejectExchange()">✗ Rejeitar</button>
+                <button class="btn-cancel" onclick="closeTradeModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTradeModal(tradeId) {
+            document.getElementById('modalTradeId').textContent = tradeId;
+            document.getElementById('tradeModal').classList.add('active');
+        }
+
+        function closeTradeModal() {
+            document.getElementById('tradeModal').classList.remove('active');
+        }
+
+        function authorizeExchange() {
+            alert('Troca autorizada com sucesso! Cliente será notificado. Cupom de R$ 439,90 será gerado.');
+            closeTradeModal();
+        }
+
+        function rejectExchange() {
+            alert('Solicitação de troca rejeitada. Cliente será notificado sobre o motivo.');
+            closeTradeModal();
+        }
+    </script>
+</body>
+</html>
