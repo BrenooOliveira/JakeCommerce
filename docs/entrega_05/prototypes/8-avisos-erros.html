@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avisos e Erros - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .notification {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            border-left: 4px solid;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .notification.warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        .notification.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .notification.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .notification.info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        .notification-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-content h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .notification-content p {
+            margin: 0.3rem 0;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .notification-content ul {
+            margin: 0.75rem 0 0 1.5rem;
+            font-size: 0.95rem;
+        }
+        .notification-content li {
+            margin-bottom: 0.25rem;
+        }
+        .close-btn {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: inherit;
+            opacity: 0.7;
+            background: none;
+            border: none;
+            flex-shrink: 0;
+        }
+        .close-btn:hover {
+            opacity: 1;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #229954;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .section {
+            margin-bottom: 3rem;
+        }
+        .section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        .details-box {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚠️ Avisos, Erros e Notificações - JakeCommerce</h1>
+    </header>
+
+    <div class="container">
+        <!-- ===== AVISOS ===== -->
+        <div class="section">
+            <h2>⏰ Avisos (Warnings)</h2>
+
+            <!-- Carrinho prestes a expirar -->
+            <div class="notification warning">
+                <div class="notification-icon">⏰</div>
+                <div class="notification-content">
+                    <h3>Sua sessão está expirando em breve!</h3>
+                    <p>Você tem <strong>5 minutos</strong> para finalizar sua compra. Os itens no carrinho estão reservados por esse período.</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Ir para Checkout</button>
+                        <button class="btn btn-secondary">Estender Sessão</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Estoque baixo -->
+            <div class="notification warning">
+                <div class="notification-icon">📉</div>
+                <div class="notification-content">
+                    <h3>Atenção com o estoque</h3>
+                    <p>Alguns itens em seu carrinho estão com estoque limitado:</p>
+                    <ul>
+                        <li><strong>The Pragmatic Programmer:</strong> apenas 2 unidades disponíveis</li>
+                        <li><strong>Elegant Objects:</strong> apenas 1 unidade disponível</li>
+                    </ul>
+                    <p style="margin-top: 0.75rem;"><em>Recomendamos finalizar seu pedido rapidamente para garantir a disponibilidade.</em></p>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Item removido do carrinho -->
+            <div class="notification warning">
+                <div class="notification-icon">🔄</div>
+                <div class="notification-content">
+                    <h3>Item removido do seu carrinho</h3>
+                    <p><strong>Code Complete</strong> foi removido do carrinho pois outro cliente comprou a última unidade disponível.</p>
+                    <p style="margin-top: 0.5rem;"><small>Os itens no carrinho são reservados apenas durante sua sessão ativa.</small></p>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+
+        <!-- ===== ERROS ===== -->
+        <div class="section">
+            <h2>❌ Erros (Errors)</h2>
+
+            <!-- Pagamento reprovado -->
+            <div class="notification error">
+                <div class="notification-icon">💳</div>
+                <div class="notification-content">
+                    <h3>Pagamento Reprovado</h3>
+                    <p>Sua transação foi <strong>rejeitada pelo banco</strong>. Possíveis motivos:</p>
+                    <ul>
+                        <li>Fundos insuficientes na conta</li>
+                        <li>Cartão bloqueado ou expirado</li>
+                        <li>Limite de crédito atingido</li>
+                        <li>Detecção de fraude</li>
+                    </ul>
+                    <p style="margin-top: 0.75rem;">Você pode: tentar outro cartão, usar um cupom, ou contactar seu banco.</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Tentar Outro Cartão</button>
+                        <button class="btn btn-secondary">Cancelar Pedido</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Múltiplas reprovações -->
+            <div class="notification error">
+                <div class="notification-icon">🔒</div>
+                <div class="notification-content">
+                    <h3>Carrinho Bloqueado - Múltiplas Reprovações</h3>
+                    <p>Sua conta foi temporariamente bloqueada após <strong>3 tentativas de pagamento falhadas</strong> consecutivas.</p>
+                    <div class="details-box">
+                        <strong>Próximas etapas:</strong><br>
+                        1. Aguarde 24 horas<br>
+                        2. Contacte nosso suporte: support@jakecommerce.com ou +55 11 9999-9999<br>
+                        3. Forneça informações sobre o problema<br>
+                        4. Sua conta será desbloqueada
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Estoque insuficiente -->
+            <div class="notification error">
+                <div class="notification-icon">📚</div>
+                <div class="notification-content">
+                    <h3>Estoque Insuficiente</h3>
+                    <p>Não é possível prosseguir com este pedido. Quantidade solicitada superior ao estoque disponível:</p>
+                    <ul>
+                        <li><strong>Design Patterns:</strong> você pediu 5, temos apenas 3 em estoque</li>
+                        <li><strong>Algorithms:</strong> você pediu 2, não temos em estoque</li>
+                    </ul>
+                    <p style="margin-top: 0.75rem;">Ajuste as quantidades no seu carrinho para continuar.</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Ir para Carrinho</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Cliente bloqueado -->
+            <div class="notification error">
+                <div class="notification-icon">⛔</div>
+                <div class="notification-content">
+                    <h3>Acesso Negado - Conta Bloqueada</h3>
+                    <p>Sua conta foi <strong>bloqueada</strong> e você não pode realizar novas compras no momento.</p>
+                    <p style="margin-top: 0.5rem;"><strong>Motivo:</strong> Violação de política de uso ou pendência de pagamentos anteriores.</p>
+                    <div class="details-box">
+                        <strong>O que fazer:</strong> Entre em contato com nosso suporte para mais informações e possível desbloqueio: support@jakecommerce.com
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Cupom inválido -->
+            <div class="notification error">
+                <div class="notification-icon">🎁</div>
+                <div class="notification-content">
+                    <h3>Cupom Inválido</h3>
+                    <p><strong>"CODIGO123"</strong> não é um cupom válido.</p>
+                    <p>Possíveis motivos:</p>
+                    <ul>
+                        <li>Cupom não existe</li>
+                        <li>Cupom expirou</li>
+                        <li>Cupom já foi utilizado</li>
+                    </ul>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Tentar Outro Cupom</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Carrinho expirado -->
+            <div class="notification error">
+                <div class="notification-icon">⏸️</div>
+                <div class="notification-content">
+                    <h3>Carrinho Expirado</h3>
+                    <p>Sua sessão expirou e os itens foram removidos do carrinho para liberar o estoque.</p>
+                    <p style="margin-top: 0.5rem;"><strong>Itens removidos:</strong></p>
+                    <ul>
+                        <li>Clean Code x1</li>
+                        <li>Design Patterns x2</li>
+                        <li>Code Complete x1</li>
+                    </ul>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Ir para Catálogo</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+
+        <!-- ===== SUCESSOS ===== -->
+        <div class="section">
+            <h2>✅ Sucessos (Success)</h2>
+
+            <!-- Compra confirmada -->
+            <div class="notification success">
+                <div class="notification-icon">🎉</div>
+                <div class="notification-content">
+                    <h3>Compra Confirmada com Sucesso!</h3>
+                    <p>Seu pedido <strong>#2024010123</strong> foi processado com sucesso.</p>
+                    <p>Um email de confirmação foi enviado para seu endereço. Você será notificado no despacho.</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-success">Acompanhar Pedido</button>
+                        <button class="btn btn-secondary">Voltar ao Catálogo</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Cupom aplicado -->
+            <div class="notification success">
+                <div class="notification-icon">🎁</div>
+                <div class="notification-content">
+                    <h3>Cupom Aplicado!</h3>
+                    <p>Cupom <strong>DESCONTO20</strong> aplicado com sucesso.</p>
+                    <p><strong>Desconto:</strong> R$ 87,98 (20% de desconto)</p>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Troca autorizada -->
+            <div class="notification success">
+                <div class="notification-icon">🔄</div>
+                <div class="notification-content">
+                    <h3>Troca Autorizada!</h3>
+                    <p>Sua solicitação de troca para o pedido <strong>#2024010120</strong> foi <strong>autorizada</strong>.</p>
+                    <p>Um rótulo de envio foi gerado. Você tem 30 dias para devolver os itens.</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-success">Baixar Rótulo de Envio</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+
+        <!-- ===== INFORMAÇÕES ===== -->
+        <div class="section">
+            <h2>ℹ️ Informações (Info)</h2>
+
+            <!-- Pedido despachado -->
+            <div class="notification info">
+                <div class="notification-icon">📦</div>
+                <div class="notification-content">
+                    <h3>Seu Pedido foi Despachado!</h3>
+                    <p>O pedido <strong>#2024010121</strong> saiu para entrega com a transportadora.</p>
+                    <p><strong>Código de Rastreamento:</strong> BR123456789XX</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Rastrear Entrega</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Endereço não cadastrado -->
+            <div class="notification info">
+                <div class="notification-icon">📍</div>
+                <div class="notification-content">
+                    <h3>Endereço de Entrega Não Cadastrado</h3>
+                    <p>Você não possui nenhum endereço de entrega cadastrado para finalizar sua compra.</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Cadastrar Endereço</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <!-- Carrinho vazio -->
+            <div class="notification info">
+                <div class="notification-icon">🛒</div>
+                <div class="notification-content">
+                    <h3>Carrinho Vazio</h3>
+                    <p>Seu carrinho não possui nenhum item. Navegue pelo catálogo para adicionar livros!</p>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">Ir para Catálogo</button>
+                    </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fechar notificações
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentElement.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

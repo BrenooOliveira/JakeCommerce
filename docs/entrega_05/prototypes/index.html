@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Índice de Protótipos - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background: white;
+            padding: 3rem;
+            border-radius: 8px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .card-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .card-flow {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        .card-content {
+            padding: 1.5rem;
+        }
+        .card-description {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .card-features {
+            list-style: none;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        .card-features li {
+            padding: 0.25rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .card-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .card-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .card-link:hover {
+            background: #764ba2;
+        }
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        .flow-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        .flow-table th {
+            background: #f5f5f5;
+            padding: 1rem;
+            text-align: left;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid #667eea;
+        }
+        .flow-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .flow-table tr:hover {
+            background: #f9f9f9;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+        footer {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            color: #7f8c8d;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .tech-item {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            border-left: 3px solid #667eea;
+        }
+        .tech-item strong {
+            display: block;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+        .tech-item small {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Protótipos JakeCommerce</h1>
+            <p>interface de fluxos de compra, checkout, pagamento e trocas</p>
+        </header>
+
+        <div class="grid">
+            <!-- Catálogo -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">Catálogo de Livros</div>
+                    <div class="card-flow">Fluxo Principal - Passo 1-2</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Navegação por livros com filtros, busca e adição ao carrinho.</p>
+                    <ul class="card-features">
+                        <li>Filtros (categoria, busca, ordenação)</li>
+                        <li>Grid responsivo de produtos</li>
+                        <li>Indicador de estoque</li>
+                        <li>Carrinho float badge</li>
+                    </ul>
+                    <a href="1-catalogo.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Carrinho -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🛒</div>
+                    <div class="card-title">Carrinho de Compras</div>
+                    <div class="card-flow">Fluxo Principal - Passo 2-5</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Visualização e ajuste de itens com aviso de expiração de sessão.</p>
+                    <ul class="card-features">
+                        <li>Tabela de itens</li>
+                        <li>Ajuste de quantidade</li>
+                        <li>Cupom promocional</li>
+                        <li>Aviso de expiração FA01</li>
+                    </ul>
+                    <a href="2-carrinho.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Checkout -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💳</div>
+                    <div class="card-title">Checkout</div>
+                    <div class="card-flow">Fluxo Principal - Passo 6-11</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Finalização com endereço, frete, cupons e múltiplos meios de pagamento.</p>
+                    <ul class="card-features">
+                        <li>Seleção de endereço</li>
+                        <li>Cálculo de frete</li>
+                        <li>Múltiplos cartões</li>
+                        <li>Cupons promo + troca</li>
+                    </ul>
+                    <a href="3-checkout.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Confirmação -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">Confirmação de Compra</div>
+                    <div class="card-flow">Fluxo Principal - Passo 15</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Resumo completo do pedido com informações de entrega e próximas ações.</p>
+                    <ul class="card-features">
+                        <li>Número e status do pedido</li>
+                        <li>Informações de entrega</li>
+                        <li>Método de pagamento</li>
+                        <li>Previsão de entrega</li>
+                    </ul>
+                    <a href="4-confirmacao.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Admin Pedidos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📦</div>
+                    <div class="card-title">Admin - Gestão de Pedidos</div>
+                    <div class="card-flow">FA06 - Despacho, FA07 - Entrega</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Painel administrativo para despacho e confirmação de entrega.</p>
+                    <ul class="card-features">
+                        <li>Dashboard com estatísticas</li>
+                        <li>Tabela de pedidos filtrada</li>
+                        <li>Modal de despacho</li>
+                        <li>Rastreamento opcional</li>
+                    </ul>
+                    <a href="5-admin-pedidos.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Meus Pedidos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Meus Pedidos (Cliente)</div>
+                    <div class="card-flow">FA08/FA09 - Solicitar Troca</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Visualização de pedidos com opção de solicitar troca total ou parcial.</p>
+                    <ul class="card-features">
+                        <li>Abas de filtro</li>
+                        <li>Cards com status</li>
+                        <li>Rastreamento</li>
+                        <li>Modal de troca</li>
+                    </ul>
+                    <a href="6-meus-pedidos.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Admin Trocas -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔄</div>
+                    <div class="card-title">Admin - Gestão de Trocas</div>
+                    <div class="card-flow">FA08/FA09 - Autorizar Troca</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Painel para autorização e gerenciamento de trocas de produtos.</p>
+                    <ul class="card-features">
+                        <li>Dashboard de trocas</li>
+                        <li>Filtro por status</li>
+                        <li>Modal com detalhes</li>
+                        <li>Autorizar/Rejeitar</li>
+                    </ul>
+                    <a href="7-admin-trocas.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+
+            <!-- Avisos e Erros -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚠️</div>
+                    <div class="card-title">Avisos, Erros e Info</div>
+                    <div class="card-flow">FA01-FA11 + FE01-FE20</div>
+                </div>
+                <div class="card-content">
+                    <p class="card-description">Exemplos de notificações para todos os fluxos alternativos e exceções.</p>
+                    <ul class="card-features">
+                        <li>Avisos (sessionexpire, estoque)</li>
+                        <li>Erros (pagamento, cupom)</li>
+                        <li>Sucessos (compra confirmada)</li>
+                        <li>Informações gerais</li>
+                    </ul>
+                    <a href="8-avisos-erros.html" class="card-link">Abrir Protótipo →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cobertura de Fluxos -->
+        <div class="section">
+            <h2>📊 Cobertura de Fluxos e Requisitos</h2>
+            <table class="flow-table">
+                <thead>
+                    <tr>
+                        <th>Fluxo/FA/FE</th>
+                        <th>Protótipos</th>
+                        <th>Status</th>
+                        <th>Requisitos Funcionais</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Fluxo Principal</strong></td>
+                        <td>1, 2, 3, 4</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RF0031-0037</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA01 - Carrinho Expirado</strong></td>
+                        <td>2, 8</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RN0044, RN0045</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA02 - Pagamento Reprovado</strong></td>
+                        <td>8</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RN0065, RF0036</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA03 - Múltiplos Cartões</strong></td>
+                        <td>3, 8</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RN0034, RF0036</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA04 - Cupom Promocional</strong></td>
+                        <td>2, 3, 8</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RN0033, RN0035, RN0036, RF0036</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA05 - Cupom de Troca</strong></td>
+                        <td>3, 8</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RN0035, RN0036, RF0036</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA06 - Despachar Produtos</strong></td>
+                        <td>5</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RF0038, RN0039</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA07 - Confirmar Entrega</strong></td>
+                        <td>5</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RF0039, RN0040</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA08/FA09 - Solicitar Troca</strong></td>
+                        <td>6, 7</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RF0040, RF0041, RF0042, RF0043, RF0044</td>
+                    </tr>
+                    <tr>
+                        <td><strong>FA10 - Estoque Insuficiente</strong></td>
+                        <td>8</td>
+                        <td><span class="status-badge status-complete">✓ Completo</span></td>
+                        <td>RN0031, RN0032</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Exceções FE01-FE20</strong></td>
+                        <td>8</td>
+                        <td><span class="status-badge status-complete">✓ Referência</span></td>
+                        <td>Tratamentos de erro</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Stack Técnico -->
+        <div class="section">
+            <h2>🛠️ Stack Técnico</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <strong>HTML5</strong>
+                    <small>Estrutura semântica</small>
+                </div>
+                <div class="tech-item">
+                    <strong>CSS3</strong>
+                    <small>Grid, Flexbox, Animações</small>
+                </div>
+                <div class="tech-item">
+                    <strong>JavaScript Vanilla</strong>
+                    <small>Interatividade modal</small>
+                </div>
+                <div class="tech-item">
+                    <strong>Sem Frameworks</strong>
+                    <small>Zero dependências</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações -->
+        <div class="section">
+            <h2>📖 Informações Adicionais</h2>
+            <p style="margin-bottom: 1rem;">
+                Todos os protótipos foram criados com base no documento de UseCase v1.0.0 e cobrem os principais fluxos do processo de venda da plataforma JakeCommerce:
+            </p>
+            <ul style="margin-left: 1.5rem; line-height: 1.8; color: #555;">
+                <li><strong>Completamente independentes:</strong> cada arquivo HTML funciona isoladamente</li>
+                <li><strong>Sem autenticação:</strong> assumem usuário já autenticado</li>
+                <li><strong>Sem backend:</strong> apenas demonstração de UI/UX</li>
+                <li><strong>Responsivos:</strong> otimizados para desktop (adaptáveis para mobile)</li>
+                <li><strong>Interativos:</strong> includes modals e ações de usuário</li>
+                <li><strong>Acessíveis:</strong> semântica HTML apropriada</li>
+            </ul>
+            <p style="margin-top: 1rem; font-size: 0.95rem;"><strong>Para mais detalhes:</strong> consulte o arquivo README.md neste diretório.</p>
+        </div>
+
+        <footer>
+            <p><strong>Protótipos JakeCommerce</strong> | Entrega 05 | 13/04/2026</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">
+                Criado para documentação e apresentação do projeto<br>
+                Todos os arquivos estão em /docs/entrega_05/prototypes/
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

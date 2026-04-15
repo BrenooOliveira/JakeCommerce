@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrinho - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+        }
+        header h1 {
+            font-size: 1.5rem;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 1rem;
+            margin: 1rem 2rem;
+            border-radius: 4px;
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        .warning-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .cart-table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .cart-table th {
+            background: #34495e;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+        .cart-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .cart-table tr:last-child td {
+            border-bottom: none;
+        }
+        .item-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .item-info img {
+            width: 60px;
+            height: 60px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .quantity-input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+        .summary {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin-left: auto;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .summary-row.total {
+            border-top: 2px solid #ecf0f1;
+            padding-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .coupon-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .coupon-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .coupon-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        .coupon-input button {
+            padding: 0.5rem 1rem;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .coupon-input button:hover {
+            background: #e67e22;
+        }
+        .checkout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        .checkout-btn:hover {
+            background: #229954;
+        }
+        .continue-shopping-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .continue-shopping-btn:hover {
+            background: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🛒 Carrinho de Compras</h1>
+    </header>
+
+    <div class="warning">
+        <div class="warning-icon">⏰</div>
+        <div>
+            <strong>Sua sessão expira em 4 minutos!</strong> Os itens no carrinho estão reservados. Confirme rapidamente ou sua sessão será encerrada.
+        </div>
+    </div>
+
+    <div class="container">
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Preço Unit.</th>
+                    <th>Quantidade</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="item-info">
+                            <div>📖</div>
+                            <div>
+                                <strong>Clean Code</strong><br>
+                                <small>Robert C. Martin</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>R$ 89,90</td>
+                    <td>
+                        <input type="number" min="1" max="10" value="1" class="quantity-input">
+                    </td>
+                    <td>R$ 89,90</td>
+                    <td>
+                        <button class="remove-btn">Remover</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="item-info">
+                            <div>📖</div>
+                            <div>
+                                <strong>Design Patterns</strong><br>
+                                <small>Gang of Four</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>R$ 120,00</td>
+                    <td>
+                        <input type="number" min="1" max="10" value="2" class="quantity-input">
+                    </td>
+                    <td>R$ 240,00</td>
+                    <td>
+                        <button class="remove-btn">Remover</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="item-info">
+                            <div>📖</div>
+                            <div>
+                                <strong>Code Complete</strong><br>
+                                <small>Steve McConnell</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>R$ 110,00</td>
+                    <td>
+                        <input type="number" min="1" max="10" value="1" class="quantity-input">
+                    </td>
+                    <td>R$ 110,00</td>
+                    <td>
+                        <button class="remove-btn">Remover</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <div class="coupon-section">
+                <label><strong>Cupom Promocional</strong></label>
+                <div class="coupon-input">
+                    <input type="text" placeholder="Código do cupom">
+                    <button>Aplicar</button>
+                </div>
+            </div>
+
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>R$ 439,90</span>
+            </div>
+            <div class="summary-row">
+                <span>Desconto:</span>
+                <span style="color: #27ae60;">- R$ 0,00</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total:</span>
+                <span>R$ 439,90</span>
+            </div>
+
+            <button class="checkout-btn">Ir para Checkout</button>
+            <button class="continue-shopping-btn">Continuar Comprando</button>
+        </div>
+    </div>
+</body>
+</html>

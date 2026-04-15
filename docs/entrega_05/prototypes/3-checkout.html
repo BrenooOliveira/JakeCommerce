@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - JakeCommerce</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step.active .step-num {
+            background: #27ae60;
+        }
+        .step-num {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 0.5rem;
+            background: #bdc3c7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .step-name {
+            font-size: 0.9rem;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .form-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .shipping-option, .payment-method {
+            padding: 1rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .shipping-option:hover, .payment-method:hover {
+            background: #ecf0f1;
+        }
+        .shipping-option.selected, .payment-method.selected {
+            border-color: #27ae60;
+            background: #f0f7f3;
+        }
+        .shipping-option input, .payment-method input {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        .shipping-price {
+            float: right;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .summary-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+        }
+        .summary-card h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .item-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .summary-row.total {
+            border: none;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .pay-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .pay-btn:hover {
+            background: #229954;
+        }
+        .card-fields {
+            margin-left: 1.5rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #ecf0f1;
+        }
+        .card-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>💳 Checkout - JakeCommerce</h1>
+    </header>
+
+    <div class="container">
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-name">Entrega</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-name">Pagamento</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-name">Confirmação</div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div>
+                <!-- Endereço -->
+                <div class="form-section">
+                    <h2>📍 Endereço de Entrega</h2>
+                    <div class="form-group">
+                        <label>Selecione o endereço:</label>
+                        <select>
+                            <option selected>Rua das Flores, 123 - São Paulo, SP (Principal)</option>
+                            <option>Avenida Paulista, 500 - São Paulo, SP</option>
+                        </select>
+                    </div>
+                    <button style="padding: 0.75rem 1.5rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        + Adicionar novo endereço
+                    </button>
+                </div>
+
+                <!-- Frete -->
+                <div class="form-section">
+                    <h2>🚚 Modo de Entrega</h2>
+                    <div class="shipping-option selected">
+                        <input type="radio" name="shipping" checked>
+                        <strong>Entrega Padrão</strong>
+                        <span class="shipping-price">R$ 15,90</span>
+                        <div style="clear: both; font-size: 0.85rem; color: #7f8c8d; margin-top: 0.5rem;">
+                            Entrega em 5-7 dias úteis
+                        </div>
+                    </div>
+                    <div class="shipping-option">
+                        <input type="radio" name="shipping">
+                        <strong>Entrega Expressa</strong>
+                        <span class="shipping-price">R$ 29,90</span>
+                        <div style="clear: both; font-size: 0.85rem; color: #7f8c8d; margin-top: 0.5rem;">
+                            Entrega em 2-3 dias úteis
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cupons -->
+                <div class="form-section">
+                    <h2>🎁 Cupons e Descontos</h2>
+                    <div class="form-group">
+                        <label>Cupom Promocional:</label>
+                        <input type="text" placeholder="Código do cupom">
+                    </div>
+                    <div class="form-group">
+                        <label>Cupons de Troca Disponíveis:</label>
+                        <div style="padding: 1rem; background: #f9f9f9; border-radius: 4px;">
+                            <input type="checkbox"> Cupom de Troca #1 - R$ 50,00<br>
+                            <input type="checkbox"> Cupom de Troca #2 - R$ 30,00
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagamento -->
+                <div class="form-section">
+                    <h2>💰 Meio de Pagamento</h2>
+
+                    <div class="payment-method selected">
+                        <input type="radio" name="payment" checked>
+                        <strong>Cartão de Crédito</strong>
+                    </div>
+                    <div class="card-fields">
+                        <div class="form-group">
+                            <label>Número do Cartão:</label>
+                            <input type="text" placeholder="1234 5678 9012 3456">
+                        </div>
+                        <div class="card-row">
+                            <div>
+                                <label>Validade:</label>
+                                <input type="text" placeholder="MM/AA">
+                            </div>
+                            <div>
+                                <label>CVV:</label>
+                                <input type="text" placeholder="123">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nome do Titular:</label>
+                            <input type="text" placeholder="João Silva">
+                        </div>
+                    </div>
+
+                    <div class="payment-method">
+                        <input type="radio" name="payment">
+                        <strong>+ Adicionar Outro Cartão (Parcelado)</strong>
+                    </div>
+
+                    <div class="payment-method">
+                        <input type="radio" name="payment">
+                        <strong>PIX</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo -->
+            <div class="summary-card">
+                <h3>📋 Resumo do Pedido</h3>
+
+                <div class="item-summary">
+                    <span>Clean Code x1</span>
+                    <span>R$ 89,90</span>
+                </div>
+                <div class="item-summary">
+                    <span>Design Patterns x2</span>
+                    <span>R$ 240,00</span>
+                </div>
+                <div class="item-summary">
+                    <span>Code Complete x1</span>
+                    <span>R$ 110,00</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>R$ 439,90</span>
+                </div>
+                <div class="summary-row">
+                    <span>Frete:</span>
+                    <span>R$ 15,90</span>
+                </div>
+                <div class="summary-row">
+                    <span>Desconto:</span>
+                    <span style="color: #27ae60;">R$ 0,00</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span>R$ 455,80</span>
+                </div>
+
+                <button class="pay-btn">Finalizar Compra</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
