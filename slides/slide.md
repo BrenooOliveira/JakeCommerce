@@ -228,3 +228,44 @@ transition: fade-out
 
 **Resumo técnico:**
 O UseCase documenta o fluxo completo de compra de livros, desde navegação no catálogo até entrega e trocas, cobrindo múltiplos meios de pagamento, gestão de estoque, cupons e tratamento de exceções. Pronto para desenvolvimento backend.
+
+---
+
+# Entrega 06 – 27/04/2026
+## Teste automatizado - Fluxo de Venda
+
+---
+# Kanban de Tarefas
+![alt text](image-23.png)
+
+---
+
+# Desenvolvimento: Teste E2E (Selenium)
+
+**Funcionalidades:**
+-  10 testes automatizados (Login, Carrinho, Checkout, Pagamento)
+-  Scroll automático para elementos fora de viewport
+-  Logging detalhado em arquivo + console
+-  Relatório final com testes aprovados/falhados
+
+---
+
+# Demonstração
+> Logs do teste E2E - Login e tentativas
+
+![alt text](image-24.png)
+
+---
+> Logs do teste E2E - Interação com carrinho
+
+![alt text](image-25.png)
+
+---
+> Logs do teste E2E - Checkout e pagamento
+
+![alt text](image-26.png)
+
+---
+> Logs do teste E2E - Finalização e Relatório
+
+![alt text](image-27.png)
