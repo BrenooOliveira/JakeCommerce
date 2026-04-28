@@ -1,0 +1,29 @@
+{
+  "e2e": {
+    "baseUrl": "http://localhost:8080",
+    "defaultCommandTimeout": 10000,
+    "requestTimeout": 10000,
+    "responseTimeout": 10000,
+    "pageLoadTimeout": 30000,
+    "setupNodeEvents(on, config) {
+      // Handle task definitions if needed
+    },
+    "specPattern": "cypress/e2e/**/*.cy.js",
+    "supportFile": "cypress/support/e2e.js"
+  },
+  "component": {
+    "devServer": {
+      "framework": "react",
+      "bundler": "webpack"
+    },
+    "specPattern": "cypress/component/**/*.cy.js",
+    "supportFile": "cypress/support/component.js"
+  },
+  "env": {
+    "test_customer_email": "cliente@jakebooks.com",
+    "test_customer_password": "Senha123!",
+    "test_book_codigo": "LIV001",
+    "test_address_id": 1,
+    "test_card_id": 1
+  }
+}
