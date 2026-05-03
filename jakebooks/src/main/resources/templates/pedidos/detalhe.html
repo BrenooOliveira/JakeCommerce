@@ -16,7 +16,7 @@
                         <i class="bi bi-bag-check"></i> Pedido #<span th:text="${pedido.getId()}"></span>
                     </h1>
                     <p class="text-muted">
-                        Criado em: <span th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy HH:mm')}"></span>
+                        Criado em: <span th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy')}"></span>
                     </p>
                 </div>
                 <div class="col-auto">
@@ -162,7 +162,8 @@
                                             R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.getValorUnitario(), 1, 2, 'POINT')}"></span>
                                         </td>
                                         <td class="text-end">
-                                            R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.getValorUnitario().multiply(#numbers.createBigDecimal(item.getQuantidade())), 1, 2, 'POINT')}"></span>
+                                            R$ <span class="font-monospace"
+                                                     th:text="${#numbers.formatDecimal((item.getValorUnitario() != null and item.getQuantidade() != null) ? item.getValorUnitario().multiply(T(java.math.BigDecimal).valueOf(item.getQuantidade().longValue())) : 0, 1, 2, 'POINT')}"></span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -220,13 +221,13 @@
                                     <div class="timeline-marker bg-primary"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Pedido Criado</h6>
-                                        <small class="text-muted" th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy HH:mm')}"></small>
+                                        <small class="text-muted" th:text="${#temporals.format(pedido.getDataCriacao(), 'dd/MM/yyyy')}"></small>
                                     </div>
                                 </div>
 
                                 <!-- Entrada: Em Processamento (Status Inicial) -->
-                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'active' : ''">
-                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO.ordinal()} ? 'bg-warning' : 'bg-gray'"></div>
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO.ordinal() ? 'active' : ''}">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO.ordinal() ? 'bg-warning' : 'bg-gray'}"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Em Processamento</h6>
                                         <small class="text-muted">Aguardando processamento</small>
@@ -234,8 +235,8 @@
                                 </div>
 
                                 <!-- Entrada: Em Transporte -->
-                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'active' : ''">
-                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE.ordinal()} ? 'bg-info' : 'bg-gray'"></div>
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE.ordinal() ? 'active' : ''}">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE.ordinal() ? 'bg-info' : 'bg-gray'}"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Em Transporte</h6>
                                         <small class="text-muted">Saiu para entrega</small>
@@ -243,8 +244,8 @@
                                 </div>
 
                                 <!-- Entrada: Entregue -->
-                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE.ordinal()} ? 'active' : ''">
-                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE.ordinal()} ? 'bg-success' : 'bg-gray'"></div>
+                                <div class="timeline-item" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE.ordinal() ? 'active' : ''}">
+                                    <div class="timeline-marker" th:classappend="${pedido.getStatus().ordinal() >= T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE.ordinal() ? 'bg-success' : 'bg-gray'}"></div>
                                     <div class="timeline-content">
                                         <h6 class="fw-bold">Entregue</h6>
                                         <small class="text-muted">Entregue com sucesso</small>
@@ -306,7 +307,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Subtotal (Produtos)</span>
-                                <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorTotal() - pedido.getValorFrete(), 1, 2, 'POINT')}"></span></strong>
+                                <strong>R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(pedido.getValorTotal().subtract(pedido.getValorFrete()), 1, 2, 'POINT')}"></span></strong>
                             </div>
                             <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
                                 <span>Frete</span>

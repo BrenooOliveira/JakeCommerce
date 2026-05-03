@@ -76,25 +76,41 @@ public class CarrinhoService {
         Cliente cliente = clienteRepository.findByCodigo(codigoCliente)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente com código " + codigoCliente + " não encontrado"));
 
-        // Buscar carrinho aberto
-        Optional<Carrinho> carrinhoAberto = carrinhoRepository.findByClienteIdAndStatusEquals(
+        Carrinho carrinho = obterOuCriarCarrinhoAberto(cliente);
+        return converterParaDTO(carrinho);
+    }
+
+    private Carrinho obterOuCriarCarrinhoAberto(Cliente cliente) {
+        Optional<Carrinho> carrinhoAberto = carrinhoRepository.findByClienteIdAndStatusWithItens(
                 cliente.getId(), StatusCarrinho.ABERTO);
-
-        Carrinho carrinho;
         if (carrinhoAberto.isPresent()) {
-            carrinho = carrinhoAberto.get();
-        } else {
-            // Criar novo carrinho
-            carrinho = new Carrinho();
-            carrinho.setCliente(cliente);
-            carrinho.setStatus(StatusCarrinho.ABERTO);
-            carrinho.setDataCriacao(LocalDate.now());
-            carrinho.setDataExpiracao(LocalDate.now().plusDays(1));  // Expira em 1 dia (aprox 30 minutos em abstração)
-
-            carrinho = carrinhoRepository.save(carrinho);
+            return carrinhoAberto.get();
         }
 
-        return converterParaDTO(carrinho);
+        Optional<Carrinho> carrinhoExistente = carrinhoRepository.findByClienteIdWithItens(cliente.getId());
+        if (carrinhoExistente.isPresent()) {
+            Carrinho carrinho = carrinhoExistente.get();
+            reabrirCarrinho(carrinho);
+            return carrinhoRepository.save(carrinho);
+        }
+
+        Carrinho carrinho = new Carrinho();
+        carrinho.setCliente(cliente);
+        carrinho.setStatus(StatusCarrinho.ABERTO);
+        carrinho.setDataCriacao(LocalDate.now());
+        carrinho.setDataExpiracao(LocalDate.now().plusDays(1));
+        carrinho.setTentativasReprovadas(0);
+        carrinho.setDataBloqueio(null);
+        return carrinhoRepository.save(carrinho);
+    }
+
+    private void reabrirCarrinho(Carrinho carrinho) {
+        carrinho.getItens().clear(); // orphanRemoval remove itens antigos
+        carrinho.setStatus(StatusCarrinho.ABERTO);
+        carrinho.setDataCriacao(LocalDate.now());
+        carrinho.setDataExpiracao(LocalDate.now().plusDays(1));
+        carrinho.setTentativasReprovadas(0);
+        carrinho.setDataBloqueio(null);
     }
 
     /**
@@ -140,12 +156,8 @@ public class CarrinhoService {
         
         Carrinho carrinho;
         if (carrinhoOpt.isEmpty()) {
-            carrinho = new Carrinho();
-            carrinho.setCliente(cliente);
-            carrinho.setStatus(StatusCarrinho.ABERTO);
-            carrinho.setDataCriacao(LocalDate.now());
-            carrinho.setDataExpiracao(LocalDate.now().plusDays(1));  // Expira em 1 dia
-            carrinho = carrinhoRepository.save(carrinho);
+            // Há unique constraint por cliente no banco; reutiliza carrinho existente quando houver
+            carrinho = obterOuCriarCarrinhoAberto(cliente);
         } else {
             carrinho = carrinhoOpt.get();
         }
@@ -533,6 +545,10 @@ public class CarrinhoService {
         Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
                 .orElseThrow(() -> new CarrinhoNaoEncontradoException(carrinhoId));
 
+        // Mantém apenas um carrinho por cliente (unique no banco) e evita reutilização com itens antigos
+        carrinho.getItens().clear();
+        carrinho.setTentativasReprovadas(0);
+        carrinho.setDataBloqueio(null);
         carrinho.setStatus(StatusCarrinho.FINALIZADO);
         carrinhoRepository.save(carrinho);
     }

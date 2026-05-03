@@ -18,6 +18,11 @@ import java.util.Optional;
 public interface CarrinhoRepository extends JpaRepository<Carrinho, Long> {
 
     /**
+     * Busca o carrinho único de um cliente (há unique constraint por cliente).
+     */
+    Optional<Carrinho> findByClienteId(Long clienteId);
+
+    /**
      * Busca carrinhos de um cliente por status.
      * RF0031: Gerenciar carrinho.
      */
@@ -34,6 +39,12 @@ public interface CarrinhoRepository extends JpaRepository<Carrinho, Long> {
      */
     @Query("SELECT c FROM Carrinho c LEFT JOIN FETCH c.itens i LEFT JOIN FETCH i.livro WHERE c.cliente.id = :clienteId AND c.status = :status")
     Optional<Carrinho> findByClienteIdAndStatusWithItens(@Param("clienteId") Long clienteId, @Param("status") StatusCarrinho status);
+
+    /**
+     * Busca o carrinho do cliente com itens carregados (para limpeza/reabertura).
+     */
+    @Query("SELECT c FROM Carrinho c LEFT JOIN FETCH c.itens i LEFT JOIN FETCH i.livro WHERE c.cliente.id = :clienteId")
+    Optional<Carrinho> findByClienteIdWithItens(@Param("clienteId") Long clienteId);
 
     /**
      * Busca carrinhos expirados.
