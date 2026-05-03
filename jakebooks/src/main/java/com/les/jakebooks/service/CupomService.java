@@ -234,6 +234,35 @@ public class CupomService {
     }
 
     /**
+     * Consome um cupom individual, marcando-o como inativo.
+     *
+     * @param cupomId ID do cupom
+     * @return valor do cupom consumido
+     */
+    public BigDecimal consumir(Long cupomId) {
+        Cupom cupom = cupomRepository.findById(cupomId)
+                .orElseThrow(() -> new CupomNaoEncontradoException(cupomId));
+
+        if (!Boolean.TRUE.equals(cupom.getAtivo())) {
+            throw new CupomJaUtilizadoException(
+                    "Cupom " + cupom.getCodigo() + " já foi utilizado", cupom.getCodigo());
+        }
+
+        cupom.setAtivo(false);
+        cupomRepository.save(cupom);
+
+        logService.registrar(
+                "CONSUMIR_CUPOM",
+                "Cupom",
+                "Ativo: true",
+                "Ativo: false",
+                "Cupom " + cupom.getCodigo() + " consumido em pagamento"
+        );
+
+        return cupom.getValor();
+    }
+
+    /**
      * Aplica cupons ao pagamento.
      * RN0033: Apenas um cupom promocional por compra.
      * RN0035: Consumir cupons antes do cartao.

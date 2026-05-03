@@ -32,10 +32,13 @@ Após ao concluir a Fase de Review, aqui está como encontrar informações impo
 
 | Documento | Propósito |
 |-----------|-----------|
-| [AGENTS.md](AGENTS.md) | Especificação oficial do sistema |
-| [BUSINESS-RULES-SUMMARY.md](BUSINESS-RULES-SUMMARY.md) | Resumo de regras de negócio |
-| [QUICK-REFERENCE.md](QUICK-REFERENCE.md) | Referência rápida de APIs |
-| [FRONTEND-GUIDE.md](FRONTEND-GUIDE.md) | Guia de componentes frontend |
+| [INDEX.md](../../INDEX.md) | Índice atualizado da documentação ativa |
+| [CLAUDE.md](../../CLAUDE.md) | Especificação e arquitetura atual |
+| [BUSINESS-RULES-SUMMARY.md](../business-rules/BUSINESS-RULES-SUMMARY.md) | Resumo de regras de negócio |
+| [QUICK-REFERENCE.md](../business-rules/QUICK-REFERENCE.md) | Referência rápida de regras |
+| [FRONTEND-GUIDE.md](../guides/FRONTEND-GUIDE.md) | Guia de componentes frontend |
+
+> **Nota:** AGENTS.md foi removido e movido para `legado/`. Use [INDEX.md](../../INDEX.md) ou [CLAUDE.md](../../CLAUDE.md) para referência atual.
 
 ---
 

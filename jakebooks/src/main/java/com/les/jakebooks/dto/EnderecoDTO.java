@@ -44,9 +44,9 @@ public record EnderecoDTO(
          * Número
          * RN0023: Campos obrigatórios
          */
-        @NotNull(message = "Número é obrigatório")
-        @Positive(message = "Número deve ser positivo")
-        Integer numero,
+        @NotBlank(message = "Número é obrigatório")
+        @Size(min = 1, max = 20, message = "Número deve ter entre 1 e 20 caracteres")
+        String numero,
 
         /**
          * Bairro

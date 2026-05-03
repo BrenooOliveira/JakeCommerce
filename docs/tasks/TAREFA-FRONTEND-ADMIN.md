@@ -949,7 +949,8 @@ Antes de considerar as tarefas concluídas, verificar:
 
 ## 📚 REFERÊNCIAS
 
-- **AGENTS.md**: Especificação completa do sistema
+- **[CLAUDE.md](../../CLAUDE.md)**: Arquitetura e especificação do sistema
+- **[INDEX.md](../../INDEX.md)**: Índice completo de documentação
 - **review-agent.md**: Checklist de revisão e validação
 - **TAREFA-BACKEND-ADMIN.md**: Tarefas do backend-agent (dependência)
 - Spring Security Documentation: https://docs.spring.io/spring-security/reference/
