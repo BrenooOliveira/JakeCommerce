@@ -6,6 +6,7 @@ import com.les.jakebooks.domain.Cupom;
 import com.les.jakebooks.domain.Pagamento;
 import com.les.jakebooks.domain.PagamentoCartao;
 import com.les.jakebooks.domain.PagamentoCupom;
+import com.les.jakebooks.domain.Pedido;
 import com.les.jakebooks.dto.CartaoResumoDTO;
 import com.les.jakebooks.dto.CupomAplicadoDTO;
 import com.les.jakebooks.dto.CupomDTO;
@@ -30,6 +31,7 @@ import com.les.jakebooks.repository.CupomRepository;
 import com.les.jakebooks.repository.PagamentoCartaoRepository;
 import com.les.jakebooks.repository.PagamentoCupomRepository;
 import com.les.jakebooks.repository.PagamentoRepository;
+import com.les.jakebooks.repository.PedidoRepository;
 import com.les.jakebooks.service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,13 +39,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -80,7 +80,16 @@ public class PagamentoService {
     private PagamentoCupomRepository pagamentoCupomRepository;
 
     @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
     private LogService logService;
+
+    @Autowired
+    private EstoqueService estoqueService;
+
+    @Autowired
+    private PaymentGatewayService paymentGatewayService;
 
     // Constantes
     private static final BigDecimal VALOR_MINIMO_CARTAO = new BigDecimal("10.00");
@@ -367,7 +376,25 @@ public class PagamentoService {
         if (aprovado) {
             pagamento.setStatus(StatusPagamento.APROVADA);
 
-            // Consumir cupons utilizados
+            // RN0028: Reduzir estoque APÓS pagamento APROVADO
+            if (pagamento.getPedido() != null) {
+                try {
+                    estoqueService.executarBaixaPorPedido(pagamento.getPedido());
+                } catch (Exception e) {
+                    // Se falhar a baixa de estoque, marcar pagamento como reprovado
+                    pagamento.setStatus(StatusPagamento.REPROVADA);
+                    logService.registrar(
+                            "ERRO_BAIXA_ESTOQUE",
+                            "Pagamento",
+                            "Status: APROVADA (gateway)",
+                            "Status: REPROVADA (falha estoque)",
+                            "Erro ao baixar estoque: " + e.getMessage()
+                    );
+                    return pagamentoRepository.save(pagamento);
+                }
+            }
+
+            // Consumir cupons utilizados (RN0035)
             if (pagamento.getCuponsConsumidos() != null) {
                 cupomService.consumirCupons(pagamento.getCuponsConsumidos());
             }
@@ -379,8 +406,8 @@ public class PagamentoService {
                     "PAGAMENTO_APROVADO",
                     "Pagamento",
                     "Status: PENDENTE",
-                    "Status: APROVADA",
-                    "Pagamento aprovado - Valor: R$ " + pagamento.getValorTotal()
+                    "Status: APROVADA + Estoque baixado",
+                    "Pagamento aprovado e estoque reduzido - Valor: R$ " + pagamento.getValorTotal()
             );
         } else {
             pagamento.setStatus(StatusPagamento.REPROVADA);
@@ -402,15 +429,27 @@ public class PagamentoService {
 
     /**
      * Simula processamento de gateway de pagamento.
-     * Para fins de teste, aprova 90% das vezes.
+     * Delega para PaymentGatewayService.
      *
      * @param pagamento pagamento a processar
      * @return true se aprovado, false se reprovado
      */
     private boolean simularGatewayPagamento(Pagamento pagamento) {
-        // Simulação: 90% de aprovação
-        Random random = new Random();
-        return random.nextInt(100) < 90;
+        // Processar cada cartão com o gateway
+        if (pagamento.getPagamentosCartao() == null || pagamento.getPagamentosCartao().isEmpty()) {
+            // Se não há cartões, consideramos aprovado se houver cupons que cobrem o total
+            return pagamento.getValorPagoCupons() != null &&
+                   pagamento.getValorPagoCupons().compareTo(pagamento.getValorTotal()) >= 0;
+        }
+
+        // Simular processamento de cada cartão
+        for (PagamentoCartao pagamentoCartao : pagamento.getPagamentosCartao()) {
+            StatusPagamentoCartao status = paymentGatewayService.simularProcessamento(pagamentoCartao);
+            pagamentoCartao.setStatus(status);
+        }
+
+        // Pagar é aprovado se TODOS os cartões foram aprovados
+        return paymentGatewayService.todosCartõesAprovados(pagamento.getPagamentosCartao());
     }
 
     /**
@@ -557,6 +596,125 @@ public class PagamentoService {
      * @return Pagamento com status APROVADA ou REPROVADA
      */
     @Transactional
+    public Pagamento processar(Long pedidoId, Long cupomId, Map<Long, BigDecimal> cartoesValores, Long clienteId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido não encontrado: ID " + pedidoId));
+
+        if (pedido.getCliente() == null || !pedido.getCliente().getId().equals(clienteId)) {
+            throw new ValidacaoNegocioException("Pedido não pertence ao cliente informado");
+        }
+
+        verificarBloqueio(clienteId);
+
+        Pagamento pagamento = new Pagamento();
+        pagamento.setPedido(pedido);
+        pagamento.setDataCriacao(LocalDateTime.now());
+        pagamento.setValorTotal(pedido.getValorTotal());
+        pagamento.setStatus(StatusPagamento.PENDENTE);
+
+        BigDecimal valorPagoCupons = BigDecimal.ZERO;
+        BigDecimal valorPagoCartoes = BigDecimal.ZERO;
+        BigDecimal valorRestante = pedido.getValorTotal();
+        List<Cupom> cuponsConsumidos = new ArrayList<>();
+
+        if (cupomId != null) {
+            Cupom cupom = cupomRepository.findById(cupomId)
+                    .orElseThrow(() -> new CupomNaoEncontradoException(cupomId));
+
+            if (!Boolean.TRUE.equals(cupom.getAtivo())) {
+                throw new ValidacaoNegocioException("Cupom já utilizado ou inativo");
+            }
+
+            if (cupom.getCliente() != null && !cupom.getCliente().getId().equals(clienteId)) {
+                throw new ValidacaoNegocioException("Cupom não pertence ao cliente informado");
+            }
+
+            BigDecimal valorAplicado = cupom.getValor().min(valorRestante.max(BigDecimal.ZERO));
+            if (valorAplicado.compareTo(BigDecimal.ZERO) > 0) {
+                PagamentoCupom pagamentoCupom = new PagamentoCupom(valorAplicado, cupom);
+                pagamentoCupom.setPagamento(pagamento);
+                pagamento.getPagamentosCupom().add(pagamentoCupom);
+
+                valorPagoCupons = valorPagoCupons.add(valorAplicado);
+                valorRestante = valorRestante.subtract(valorAplicado);
+                cuponsConsumidos.add(cupom);
+            }
+        }
+
+        boolean todosCartoesAprovados = true;
+        if (valorRestante.compareTo(BigDecimal.ZERO) > 0) {
+            if (cartoesValores == null || cartoesValores.isEmpty()) {
+                throw new CartaoNaoSelecionadoException();
+            }
+
+            BigDecimal totalCartoes = BigDecimal.ZERO;
+            for (Map.Entry<Long, BigDecimal> entry : cartoesValores.entrySet()) {
+                Long cartaoId = entry.getKey();
+                BigDecimal valor = entry.getValue();
+
+                if (valor == null || valor.compareTo(VALOR_MINIMO_CARTAO) < 0) {
+                    throw new ValorMinimoCartaoException(valor, cartaoId);
+                }
+
+                Cartao cartao = cartaoRepository.findById(cartaoId)
+                        .orElseThrow(() -> new RecursoNaoEncontradoException(
+                                "Cartão não encontrado: ID " + cartaoId));
+
+                if (!cartao.getCliente().getId().equals(clienteId)) {
+                    throw new ValidacaoNegocioException("Cartão não pertence ao cliente");
+                }
+
+                PagamentoCartao pagamentoCartao = new PagamentoCartao(valor, cartao);
+                pagamentoCartao.setPagamento(pagamento);
+
+                StatusPagamentoCartao statusCartao = paymentGatewayService.simularProcessamento(pagamentoCartao);
+                pagamentoCartao.setStatus(statusCartao);
+                pagamento.getPagamentosCartao().add(pagamentoCartao);
+
+                if (statusCartao == StatusPagamentoCartao.APROVADO) {
+                    valorPagoCartoes = valorPagoCartoes.add(valor);
+                } else {
+                    todosCartoesAprovados = false;
+                }
+
+                totalCartoes = totalCartoes.add(valor);
+            }
+
+            if (totalCartoes.compareTo(valorRestante) < 0) {
+                throw new ValorPagamentoInsuficienteException(valorRestante, totalCartoes);
+            }
+        }
+
+        pagamento.setValorPagoCupons(valorPagoCupons);
+        pagamento.setValorPagoCartoes(valorPagoCartoes);
+
+        boolean pagamentoCompleto = valorPagoCupons.add(valorPagoCartoes)
+                .compareTo(pagamento.getValorTotal()) >= 0;
+
+        if (pagamentoCompleto && todosCartoesAprovados) {
+            pagamento.setStatus(StatusPagamento.APROVADA);
+
+            // RN0028: reduzir estoque somente após aprovação.
+            estoqueService.executarBaixaPorPedido(pedido);
+
+            // RN0035: consumir cupom somente após aprovação.
+            cupomService.consumirCupons(cuponsConsumidos);
+
+            zerarTentativasReprovadas(clienteId);
+        } else {
+            pagamento.setStatus(StatusPagamento.REPROVADA);
+            incrementarTentativasReprovadas(clienteId);
+        }
+
+        return pagamentoRepository.save(pagamento);
+    }
+
+    /**
+     * Processa pagamento completo conforme PAY-05.
+     * Mantém compatibilidade com fluxo atual de checkout sem pedido pré-criado.
+     * @return Pagamento com status APROVADA ou REPROVADA
+     */
+    @Transactional
     public Pagamento processarPagamento(ProcessarPagamentoDTO dto, Long clienteId) {
         // 1. Criar entidade Pagamento
         Pagamento pagamento = new Pagamento();
@@ -564,26 +722,25 @@ public class PagamentoService {
         pagamento.setValorTotal(dto.getValorTotal());
         pagamento.setStatus(StatusPagamento.PENDENTE);
 
-        pagamento = pagamentoRepository.save(pagamento);
-
         // 2. Registrar pagamentos com cupons
         BigDecimal valorPagoCupons = BigDecimal.ZERO;
+        List<Cupom> cuponsConsumidos = new ArrayList<>();
 
         if (dto.getCuponsAplicados() != null && !dto.getCuponsAplicados().isEmpty()) {
             for (CupomAplicadoDTO cupomDto : dto.getCuponsAplicados()) {
                 Cupom cupom = cupomRepository.findById(cupomDto.id())
                     .orElseThrow(() -> new CupomNaoEncontradoException(cupomDto.id()));
 
+                if (!Boolean.TRUE.equals(cupom.getAtivo())) {
+                    throw new ValidacaoNegocioException("Cupom já utilizado ou inativo");
+                }
+
                 PagamentoCupom pc = new PagamentoCupom();
                 pc.setPagamento(pagamento);
                 pc.setCupom(cupom);
                 pc.setValor(cupomDto.valor());
-
-                pagamentoCupomRepository.save(pc);
-
-                // Marcar cupom como utilizado
-                cupom.setAtivo(false);
-                cupomRepository.save(cupom);
+                pagamento.getPagamentosCupom().add(pc);
+                cuponsConsumidos.add(cupom);
 
                 valorPagoCupons = valorPagoCupons.add(cupomDto.valor());
             }
@@ -612,8 +769,7 @@ public class PagamentoService {
                 // Simular processamento com gateway
                 StatusPagamentoCartao statusCartao = simularGateway(cartao, valor);
                 pc.setStatus(statusCartao);
-
-                pagamentoCartaoRepository.save(pc);
+                pagamento.getPagamentosCartao().add(pc);
 
                 if (statusCartao == StatusPagamentoCartao.APROVADO) {
                     valorPagoCartoes = valorPagoCartoes.add(valor);
@@ -631,13 +787,11 @@ public class PagamentoService {
 
         if (pagamentoCompleto && todosCartoesAprovados) {
             pagamento.setStatus(StatusPagamento.APROVADA);
+
+            // RN0035: consumir cupons apenas após aprovação final.
+            cupomService.consumirCupons(cuponsConsumidos);
         } else {
             pagamento.setStatus(StatusPagamento.REPROVADA);
-
-            // Reverter cupons se pagamento reprovado
-            if (dto.getCuponsAplicados() != null) {
-                reverterCuponsUtilizados(dto.getCuponsAplicados());
-            }
         }
 
         pagamento = pagamentoRepository.save(pagamento);
@@ -658,37 +812,13 @@ public class PagamentoService {
 
     /**
      * Simula gateway de pagamento (ambiente academico)
-     * Em producao, integrar com gateway real
+     * DEPRECATED: Usar PaymentGatewayService.simularProcessamento()
      */
+    @Deprecated
     private StatusPagamentoCartao simularGateway(Cartao cartao, BigDecimal valor) {
-        // Simulacao: 90% de aprovacao
-        // Cartoes com final par: sempre aprovam
-        // Cartoes com final impar: 80% aprovacao
-
-        String ultimoDigito = cartao.getNumero().substring(cartao.getNumero().length() - 1);
-        int digito = Integer.parseInt(ultimoDigito);
-
-        if (digito % 2 == 0) {
-            return StatusPagamentoCartao.APROVADO;
-        }
-
-        // 80% de chance de aprovar
-        return Math.random() < 0.8 ?
-            StatusPagamentoCartao.APROVADO :
-            StatusPagamentoCartao.REPROVADO;
-    }
-
-    /**
-     * Reverte cupons utilizados em caso de falha
-     */
-    private void reverterCuponsUtilizados(List<CupomAplicadoDTO> cupons) {
-        for (CupomAplicadoDTO cupomDto : cupons) {
-            Cupom cupom = cupomRepository.findById(cupomDto.id()).orElse(null);
-            if (cupom != null) {
-                cupom.setAtivo(true);
-                cupomRepository.save(cupom);
-            }
-        }
+        // Delegado para PaymentGatewayService - manter por compatibilidade
+        PagamentoCartao dummy = new PagamentoCartao(valor, cartao);
+        return paymentGatewayService.simularProcessamento(dummy);
     }
 
     /**

@@ -1,6 +1,8 @@
-# 📚 Documentação do Projeto JakeCommerce
+# 📚 Documentação Ativa do Projeto JakeBooks
 
-Esta pasta contém toda a documentação técnica e organizacional do projeto, categorizada por tipo.
+Esta pasta contém documentação técnica, organizacional e operacional **ativa** do projeto JakeBooks, categorizada por tipo.
+
+> ℹ️ **Nota:** Documentação legada (entregas passadas, especificações antigas) está em `/legado/`
 
 ## 📁 Estrutura de Pastas
 
@@ -92,7 +94,8 @@ Documentação geral e controle de mudanças.
 Alguns documentos permanecem na raiz do repositório por serem essenciais:
 
 - `/README.md` - README principal do projeto
-- `/AGENTS.md` - Especificação completa do sistema e requisitos
+- `/CLAUDE.md` - Especificação e arquitetura do sistema (atualizado)
+- `/INDEX.md` - Índice completo de documentação
 - `/jakebooks/README.md` - README do módulo Spring Boot
 
 ---
@@ -108,7 +111,7 @@ Alguns documentos permanecem na raiz do repositório por serem essenciais:
 | Ver status do projeto | `reports/` |
 | Aprender padrões do projeto | `guides/` |
 | Verificar mudanças recentes | `general/CHANGELOG.md` |
-| Entender requisitos | `/AGENTS.md` (raiz) |
+| Entender requisitos | `/CLAUDE.md` ou `/INDEX.md` |
 
 ### Por Papel no Projeto
 
