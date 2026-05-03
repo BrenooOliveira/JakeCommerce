@@ -33,9 +33,9 @@ public class Endereco {
     private TipoResidencia tipoResidencia;
     
     private String logradouro;
-    
-    private Integer numero;
-    
+
+    private String numero;
+
     private String bairro;
     
     private String cep;
@@ -57,8 +57,8 @@ public class Endereco {
     public Endereco() {
     }
 
-    public Endereco(String nomeIdentificador, TipoResidencia tipoResidencia, String logradouro, 
-                    Integer numero, String bairro, String cep, String cidade, String estado, 
+    public Endereco(String nomeIdentificador, TipoResidencia tipoResidencia, String logradouro,
+                    String numero, String bairro, String cep, String cidade, String estado,
                     String pais, TipoEndereco tipoEndereco) {
         this.nomeIdentificador = nomeIdentificador;
         this.tipoResidencia = tipoResidencia;
@@ -105,11 +105,11 @@ public class Endereco {
         this.logradouro = logradouro;
     }
 
-    public Integer getNumero() {
+    public String getNumero() {
         return numero;
     }
 
-    public void setNumero(Integer numero) {
+    public void setNumero(String numero) {
         this.numero = numero;
     }
 
