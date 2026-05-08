@@ -72,15 +72,19 @@
                                     <div th:if="${enderecos.isEmpty()}" class="col-12">
                                         <div class="alert alert-danger">
                                             <i class="bi bi-exclamation-triangle"></i> 
-                                            Você não tem endereços cadastrados. 
-                                            <a href="/clientes/detalhes" class="alert-link">Clique aqui para adicionar um endereço</a>
+                                            Você não tem endereços cadastrados. Adicione um endereço abaixo.
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Botão para adicionar novo endereço -->
+                                <div class="mt-3">
+                                    <a href="#addNovoEndereco" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse">
+                                        <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
+                                    </a>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Card 2: Pagamento -->
                         <div class="card mb-4">
                             <div class="card-header bg-info text-white">
                                 <h5 class="card-title mb-0">
@@ -300,6 +304,25 @@
                     </div>
                 </div>
             </form>
+
+            <!-- Seção colapsável: Adicionar Novo Endereço (Fora do formulário principal) -->
+            <div class="row mt-4">
+                <div class="col-lg-8">
+                    <div class="collapse" id="addNovoEndereco">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Include do fragmento do formulário -->
+                                <div th:replace="~{fragments/form-endereco-fragment :: form(clienteCodigo=${clienteCodigo}, endereco=${endereco}, tiposResidencia=${tiposResidencia}, tiposEndereco=${tiposEndereco}, formAction='/checkout/novo-endereco')}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Script para cálculos e validações -->

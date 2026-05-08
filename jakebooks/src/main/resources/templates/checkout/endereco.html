@@ -56,7 +56,7 @@
                                 </div>
                                 <div class="card-body">
                                     <!-- Iteração sobre os endereços -->
-                                    <div th:each="endereco, iterStat : ${enderecos}" class="mb-3">
+                                    <div th:each="enderecoItem, iterStat : ${enderecos}" class="mb-3">
                                         <div class="card"
                                              th:classappend="${iterStat.first} ? 'border-primary' : ''">
                                             <div class="card-body">
@@ -65,24 +65,24 @@
                                                         class="form-check-input"
                                                         type="radio"
                                                         name="enderecoId"
-                                                        th:id="'end-' + ${endereco.id()}"
-                                                        th:value="${endereco.id()}"
+                                                        th:id="'end-' + ${enderecoItem.id()}"
+                                                        th:value="${enderecoItem.id()}"
                                                         th:checked="${iterStat.first}"
                                                         required>
                                                     <label
                                                         class="form-check-label flex-grow-1"
-                                                        th:for="'end-' + ${endereco.id()}"
+                                                        th:for="'end-' + ${enderecoItem.id()}"
                                                         style="cursor: pointer;">
                                                         <div class="d-flex justify-content-between align-items-start">
                                                             <div>
                                                                 <h6 class="mb-2">
                                                                     <i class="bi bi-house-fill text-primary"></i>
-                                                                    <span th:text="${endereco.nomeIdentificador()}"></span>
+                                                                    <span th:text="${enderecoItem.nomeIdentificador()}"></span>
                                                                 </h6>
-                                                                <p class="mb-1 text-muted" th:text="${endereco.enderecoFormatado()}"></p>
+                                                                <p class="mb-1 text-muted" th:text="${enderecoItem.enderecoFormatado()}"></p>
                                                                 <small class="text-muted">
                                                                     <span class="badge bg-secondary"
-                                                                          th:text="${endereco.tipoEndereco().getDescricao()}">
+                                                                          th:text="${enderecoItem.tipoEndereco().getDescricao()}">
                                                                     </span>
                                                                 </small>
                                                             </div>
@@ -99,12 +99,12 @@
                                         <p class="text-muted mt-3">Nenhum endereço de entrega encontrado</p>
                                     </div>
                                 </div>
-                                <div class="card-footer bg-light" th:unless="${enderecos.isEmpty()}">
+                                <div class="card-footer bg-light">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <a th:href="@{/clientes/enderecos/novo}" class="btn btn-outline-secondary btn-sm">
+                                        <a href="#addEnderecoForm" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse">
                                             <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
                                         </a>
-                                        <div>
+                                        <div th:if="!${enderecos.isEmpty()}">
                                             <a href="/carrinho/view" class="btn btn-outline-secondary me-2">
                                                 <i class="bi bi-arrow-left"></i> Voltar ao Carrinho
                                             </a>
@@ -116,6 +116,21 @@
                                 </div>
                             </div>
                         </form>
+
+                        <!-- Seção colapsável: Adicionar Novo Endereço -->
+                        <div class="collapse mt-4" id="addEnderecoForm">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Include do fragmento do formulário -->
+                                    <div th:replace="~{fragments/form-endereco-fragment :: form(clienteCodigo=${clienteCodigo}, endereco=${endereco}, tiposResidencia=${tiposResidencia}, tiposEndereco=${tiposEndereco}, formAction='/checkout/novo-endereco')}"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Resumo do Pedido (sidebar) -->

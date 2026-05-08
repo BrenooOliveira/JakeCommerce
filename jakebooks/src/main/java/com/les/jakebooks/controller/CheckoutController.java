@@ -2,19 +2,26 @@ package com.les.jakebooks.controller;
 
 import com.les.jakebooks.dto.CarrinhoDTO;
 import com.les.jakebooks.dto.ClienteDetalheDTO;
+import com.les.jakebooks.dto.EnderecoDTO;
 import com.les.jakebooks.dto.FinalizarPedidoDTO;
 import com.les.jakebooks.dto.PagamentoCartaoDadosDTO;
 import com.les.jakebooks.dto.ResultadoCheckoutDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
+import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.domain.enums.BandeiraCartao;
+import com.les.jakebooks.domain.enums.TipoEndereco;
+import com.les.jakebooks.domain.enums.TipoResidencia;
 import com.les.jakebooks.service.CarrinhoService;
 import com.les.jakebooks.service.ClienteService;
 import com.les.jakebooks.service.CompraService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -65,14 +72,47 @@ public class CheckoutController {
 
             model.addAttribute("carrinho", carrinho);
             model.addAttribute("cliente", cliente);
+            model.addAttribute("clienteCodigo", codigoCliente);
             model.addAttribute("enderecos", cliente.enderecos());
             model.addAttribute("cartoes", cliente.cartoes());
             model.addAttribute("bandeiras", BandeiraCartao.values());
+            // Atributos para o formulário de novo endereço
+            model.addAttribute("endereco", new EnderecoDTO(null, null, null, null, null, null, null, null, null, null, null, null));
+            model.addAttribute("tiposResidencia", TipoResidencia.values());
+            model.addAttribute("tiposEndereco", TipoEndereco.values());
 
             return "carrinho/checkout";
         } catch (RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", "Dados não encontrados: " + e.getMessage());
             return "redirect:/carrinho";
+        }
+    }
+
+    @PostMapping("/novo-endereco")
+    public String novoEnderecoCheckout(
+            HttpSession session,
+            @Valid @ModelAttribute EnderecoDTO dto,
+            BindingResult result,
+            RedirectAttributes attrs) {
+
+        try {
+            String codigoCliente = (String) session.getAttribute("codigoClienteAutenticado");
+            if (codigoCliente == null || codigoCliente.isEmpty()) {
+                attrs.addFlashAttribute("mensagemErro", "Você precisa estar autenticado");
+                return "redirect:/login";
+            }
+
+            if (result.hasErrors()) {
+                attrs.addFlashAttribute("mensagemErro", "Verifique os erros do formulário");
+                return "redirect:/checkout";
+            }
+
+            clienteService.adicionarEndereco(codigoCliente, dto);
+            attrs.addFlashAttribute("mensagemSucesso", "Endereço adicionado com sucesso!");
+            return "redirect:/checkout";
+        } catch (ValidacaoNegocioException | RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", e.getMessage());
+            return "redirect:/checkout";
         }
     }
 

@@ -1,0 +1,193 @@
+<!-- Fragment: Formulário de endereço reutilizável para cliente e checkout -->
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="form(clienteCodigo, endereco, tiposResidencia, tiposEndereco, formAction)">
+        <form th:action="${formAction != null ? formAction : '/clientes/' + clienteCodigo + '/enderecos'}" method="post" th:object="${endereco}" class="needs-validation" novalidate>
+            <!-- Campo hidden para o ID (necessário para binding do record) -->
+            <input type="hidden" th:field="*{id}"/>
+            
+            <!-- Card 1: Identificação -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-tag"></i> Identificação
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="nomeIdentificador" class="form-label">Nome do Endereço (ex: Casa, Trabalho) *</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="nomeIdentificador" 
+                            th:field="*{nomeIdentificador}"
+                            th:classappend="${#fields.hasErrors('nomeIdentificador')} ? 'is-invalid' : ''"
+                            placeholder="Casa"
+                            required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nomeIdentificador')}">
+                            <span th:errors="*{nomeIdentificador}"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tipoResidencia" class="form-label">Tipo de Residência *</label>
+                            <select class="form-select" id="tipoResidencia" th:field="*{tipoResidencia}" required>
+                                <option value="">Selecione...</option>
+                                <option th:each="tipo : ${tiposResidencia}" th:value="${tipo}" th:text="${tipo.getDescricao()}"></option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="tipoEndereco" class="form-label">Tipo de Endereço *</label>
+                            <select class="form-select" id="tipoEndereco" th:field="*{tipoEndereco}" required>
+                                <option value="">Selecione...</option>
+                                <option th:each="tipo : ${tiposEndereco}" th:value="${tipo}" th:text="${tipo.getDescricao()}"></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Localização -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-map"></i> Localização
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- CEP -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="cep" class="form-label">CEP *</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="cep" 
+                                th:field="*{cep}"
+                                th:classappend="${#fields.hasErrors('cep')} ? 'is-invalid' : ''"
+                                placeholder="00000-000"
+                                data-mask="cep"
+                                required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('cep')}">
+                                <span th:errors="*{cep}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logradouro -->
+                    <div class="mb-3">
+                        <label for="logradouro" class="form-label">Logradouro (Rua, Avenida, etc.) *</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="logradouro" 
+                            th:field="*{logradouro}"
+                            th:classappend="${#fields.hasErrors('logradouro')} ? 'is-invalid' : ''"
+                            placeholder="Rua das Flores"
+                            required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('logradouro')}">
+                            <span th:errors="*{logradouro}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Número -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="numero" class="form-label">Numero *</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="numero"
+                                th:field="*{numero}"
+                                th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid' : ''"
+                                placeholder="123"
+                                min="1"
+                                required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}">
+                                <span th:errors="*{numero}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bairro -->
+                    <div class="mb-3">
+                        <label for="bairro" class="form-label">Bairro *</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="bairro" 
+                            th:field="*{bairro}"
+                            th:classappend="${#fields.hasErrors('bairro')} ? 'is-invalid' : ''"
+                            placeholder="Centro"
+                            required>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('bairro')}">
+                            <span th:errors="*{bairro}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Cidade, Estado, País -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cidade" class="form-label">Cidade *</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="cidade" 
+                                th:field="*{cidade}"
+                                th:classappend="${#fields.hasErrors('cidade')} ? 'is-invalid' : ''"
+                                placeholder="São Paulo"
+                                required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('cidade')}">
+                                <span th:errors="*{cidade}"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="estado" class="form-label">Estado *</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="estado" 
+                                th:field="*{estado}"
+                                th:classappend="${#fields.hasErrors('estado')} ? 'is-invalid' : ''"
+                                placeholder="SP"
+                                maxlength="2"
+                                required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('estado')}">
+                                <span th:errors="*{estado}"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="pais" class="form-label">País *</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="pais" 
+                                th:field="*{pais}"
+                                th:classappend="${#fields.hasErrors('pais')} ? 'is-invalid' : ''"
+                                placeholder="Brasil"
+                                required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('pais')}">
+                                <span th:errors="*{pais}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="d-flex gap-2 mb-4">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-check-lg"></i> Salvar
+                </button>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

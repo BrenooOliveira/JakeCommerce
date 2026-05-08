@@ -45,6 +45,26 @@
                             <h6 class="mb-2" th:text="${endereco.nomeIdentificador()}"></h6>
                             <p class="mb-1" th:text="${endereco.enderecoFormatado()}"></p>
                         </div>
+                        <div class="card-footer bg-light">
+                            <a href="#addEnderecoFormConfirm" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse">
+                                <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Seção colapsável: Adicionar Novo Endereço -->
+                    <div class="collapse mb-3" id="addEnderecoFormConfirm">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Include do fragmento do formulário -->
+                                <div th:replace="~{fragments/form-endereco-fragment :: form(clienteCodigo=${clienteCodigo}, endereco=${endereco}, tiposResidencia=${tiposResidencia}, tiposEndereco=${tiposEndereco}, formAction='/checkout/novo-endereco')}"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Itens do Carrinho -->
