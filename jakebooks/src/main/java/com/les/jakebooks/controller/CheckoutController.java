@@ -1,6 +1,7 @@
 package com.les.jakebooks.controller;
 
 import com.les.jakebooks.dto.CarrinhoDTO;
+import com.les.jakebooks.dto.CartaoDTO;
 import com.les.jakebooks.dto.ClienteDetalheDTO;
 import com.les.jakebooks.dto.EnderecoDTO;
 import com.les.jakebooks.dto.FinalizarPedidoDTO;
@@ -78,6 +79,7 @@ public class CheckoutController {
             model.addAttribute("bandeiras", BandeiraCartao.values());
             // Atributos para o formulário de novo endereço
             model.addAttribute("endereco", new EnderecoDTO(null, null, null, null, null, null, null, null, null, null, null, null));
+            model.addAttribute("cartao", new CartaoDTO(null, null, null, null, null, false));
             model.addAttribute("tiposResidencia", TipoResidencia.values());
             model.addAttribute("tiposEndereco", TipoEndereco.values());
 
@@ -109,6 +111,34 @@ public class CheckoutController {
 
             clienteService.adicionarEndereco(codigoCliente, dto);
             attrs.addFlashAttribute("mensagemSucesso", "Endereço adicionado com sucesso!");
+            return "redirect:/checkout";
+        } catch (ValidacaoNegocioException | RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", e.getMessage());
+            return "redirect:/checkout";
+        }
+    }
+
+    @PostMapping("/novo-cartao")
+    public String novoCartaoCheckout(
+            HttpSession session,
+            @Valid @ModelAttribute CartaoDTO dto,
+            BindingResult result,
+            RedirectAttributes attrs) {
+
+        try {
+            String codigoCliente = (String) session.getAttribute("codigoClienteAutenticado");
+            if (codigoCliente == null || codigoCliente.isEmpty()) {
+                attrs.addFlashAttribute("mensagemErro", "Você precisa estar autenticado");
+                return "redirect:/login";
+            }
+
+            if (result.hasErrors()) {
+                attrs.addFlashAttribute("mensagemErro", "Verifique os erros do formulário de cartão");
+                return "redirect:/checkout";
+            }
+
+            clienteService.adicionarCartao(codigoCliente, dto);
+            attrs.addFlashAttribute("mensagemSucesso", "Cartão adicionado com sucesso!");
             return "redirect:/checkout";
         } catch (ValidacaoNegocioException | RecursoNaoEncontradoException e) {
             attrs.addFlashAttribute("mensagemErro", e.getMessage());

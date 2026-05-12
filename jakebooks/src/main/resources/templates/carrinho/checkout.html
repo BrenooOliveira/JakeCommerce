@@ -4,27 +4,20 @@
       layout:decorate="~{fragments/layout}"
       lang="pt-BR">
 <head>
-    <title>Finalizar Compra</title>
+    <title>Checkout</title>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
-            <!-- Cabeçalho -->
-            <div class="row mb-4">
-                <div class="col">
-                    <h1 class="display-6">
-                        <i class="bi bi-credit-card"></i> Finalizar Compra
-                    </h1>
-                    <p class="text-muted">Verifique seus dados e escolha a forma de pagamento</p>
-                </div>
-            </div>
+        <div class="container py-4">
+            <h1 class="mb-4">
+                <i class="bi bi-bag-check"></i> Checkout
+            </h1>
 
-            <form id="formCheckout" method="POST" th:action="@{/checkout/finalizar}" class="needs-validation" novalidate>
-                <div class="row">
-                    <!-- Seção 1: Endereço de Entrega e Pagamento -->
+                <div class="row g-4">
+                    <!-- COLUNA ESQUERDA: Endereços, Cupom e Cartões -->
                     <div class="col-lg-8">
                         
-                        <!-- Card 1: Endereço de Entrega -->
+                        <!-- SEÇÃO 1: ENDEREÇO DE ENTREGA -->
                         <div class="card mb-4">
                             <div class="card-header bg-primary text-white">
                                 <h5 class="card-title mb-0">
@@ -32,197 +25,223 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <!-- Input hidden com carrinhoId -->
-                                <input type="hidden" name="carrinhoId" th:value="${carrinho.id()}">
+                                <div th:if="${enderecos.isEmpty()}" class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Você não tem endereços cadastrados. Adicione um novo endereço abaixo.
+                                </div>
 
-                                <!-- Seleção de Endereço -->
-                                <div class="row">
-                                    <div th:if="${!enderecos.isEmpty()}" class="col-12">
-                                        <div class="list-group">
-                                            <label class="list-group-item" th:each="endereco, iterStat : ${enderecos}">
-                                                <input 
-                                                    type="radio" 
-                                                    name="enderecoId" 
-                                                    class="form-check-input me-2"
-                                                    th:value="${endereco.id()}"
-                                                    th:checked="${iterStat.first}"
-                                                    required>
-                                                <div class="ms-2 w-100">
-                                                    <div class="fw-bold">
-                                                        <span th:text="${endereco.nomeIdentificador()}"></span>
-                                                        <span class="badge"
-                                                              th:classappend="${endereco.tipoEndereco()?.name() == 'COBRANCA' ? 'bg-info' : 'bg-success'}"
-                                                              th:text="${endereco.tipoEndereco()?.descricao}"></span>
-                                                    </div>
-                                                    <p class="mb-1 text-muted">
-                                                        <span th:text="${endereco.logradouro()}"></span>, 
-                                                        <span th:text="${endereco.numero()}"></span>
-                                                        <br>
-                                                        <span th:text="${endereco.bairro()}"></span> - 
-                                                        <span th:text="${endereco.cidade()}"></span>/<span th:text="${endereco.estado()}"></span>
-                                                        <br>
-                                                        <span th:text="${endereco.cep()}"></span>
-                                                    </p>
-                                                </div>
+                                <div th:if="${!enderecos.isEmpty()}" id="containerEnderecos">
+                                    <div class="row g-3">
+                                        <div class="col-12" th:each="endereco : ${enderecos}">
+                                            <div class="form-check border rounded p-3">
+                                                      <input class="form-check-input" type="radio" name="enderecoId" form="formCheckout"
+                                                       th:id="'endereco_' + ${endereco.id()}" 
+                                                       th:value="${endereco.id()}" 
+                                                       required>
+                                                <label class="form-check-label w-100" th:for="'endereco_' + ${endereco.id()}">
+                                                    <strong th:text="${endereco.nomeIdentificador()}"></strong> - 
+                                                    <span th:text="${endereco.logradouro()} + ', ' + ${endereco.numero()} + ' - ' + ${endereco.cidade()} + ', ' + ${endereco.estado()}"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#formNovoEndereco">
+                                        <i class="bi bi-plus-circle"></i> Adicionar novo endereço
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO 1.5: FORMULÁRIO NOVO ENDEREÇO (COLLAPSE) -->
+                        <div class="collapse mb-4" id="formNovoEndereco">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-plus-circle"></i> Novo Endereço
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div th:replace="~{fragments/form-endereco-fragment :: form(clienteCodigo=${clienteCodigo}, endereco=${endereco}, tiposResidencia=${tiposResidencia}, tiposEndereco=${tiposEndereco}, formAction='/checkout/novo-endereco')}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO 2: CUPOM DE DESCONTO -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-ticket"></i> Cupom de Desconto
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="codigoCupom" placeholder="Digite seu código de cupom">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="aplicarCupom()">
+                                        <i class="bi bi-check-lg"></i> Aplicar
+                                    </button>
+                                </div>
+                                <div id="resultadoCupom" class="mt-3 d-none alert"></div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO 3: CARTÕES/PAGAMENTO -->
+                        <div class="card" th:if="${!carrinho.itens().isEmpty()}">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-credit-card"></i> Forma de Pagamento
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div th:if="${cartoes.isEmpty()}" class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Você não tem cartões cadastrados. Adicione um novo cartão abaixo.
+                                </div>
+
+                                <div th:if="${!cartoes.isEmpty()}" id="containerCartoes">
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <label class="form-label">
+                                                <strong>Selecione como deseja pagar</strong>
+                                                <small class="text-muted d-block">Você pode distribuir o pagamento em vários cartões (mínimo R$ 10,00 por cartão)</small>
                                             </label>
                                         </div>
                                     </div>
 
-                                    <!-- Mensagem quando não há endereços -->
-                                    <div th:if="${enderecos.isEmpty()}" class="col-12">
-                                        <div class="alert alert-danger">
-                                            <i class="bi bi-exclamation-triangle"></i> 
-                                            Você não tem endereços cadastrados. Adicione um endereço abaixo.
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Botão para adicionar novo endereço -->
-                                <div class="mt-3">
-                                    <a href="#addNovoEndereco" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse">
-                                        <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card mb-4">
-                            <div class="card-header bg-info text-white">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-credit-card"></i> Pagamento
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <!-- Abas de Pagamento -->
-                                <ul class="nav nav-tabs mb-3" id="pagamentoTabs" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="cupom-tab" data-bs-toggle="tab" data-bs-target="#cupom" type="button" role="tab" aria-controls="cupom" aria-selected="true">
-                                            <i class="bi bi-ticket-perforated"></i> Cupom
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="cartoes-tab" data-bs-toggle="tab" data-bs-target="#cartoes" type="button" role="tab" aria-controls="cartoes" aria-selected="false">
-                                            <i class="bi bi-credit-card"></i> Cartões
-                                        </button>
-                                    </li>
-                                </ul>
-
-                                <!-- Conteúdo das Abas -->
-                                <div class="tab-content" id="pagamentoTabContent">
-                                    <!-- Tab: Cupom Promocional -->
-                                    <div class="tab-pane fade show active" id="cupom" role="tabpanel" aria-labelledby="cupom-tab">
-                                        <div class="input-group mb-3">
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                id="codigoCupom"
-                                                name="codigoCupom"
-                                                placeholder="Cole seu código de cupom aqui"
-                                                maxlength="50">
-                                            <button 
-                                                type="button" 
-                                                class="btn btn-outline-primary"
-                                                onclick="aplicarCupom()">
-                                                <i class="bi bi-check-circle"></i> Aplicar
-                                            </button>
-                                        </div>
-                                        <div id="resultadoCupom" class="alert alert-info d-none">
-                                            <i class="bi bi-info-circle"></i> 
-                                            Cupom aplicado! Desconto de 
-                                            <strong id="desconto">R$ 0,00</strong>
-                                        </div>
-                                        <small class="text-muted">
-                                            <i class="bi bi-info-circle"></i> 
-                                            Você pode usar apenas um cupom promocional por compra. Cupons de troca são aplicados automaticamente.
-                                        </small>
-                                    </div>
-
-                                    <!-- Tab: Cartões -->
-                                    <div class="tab-pane fade" id="cartoes" role="tabpanel" aria-labelledby="cartoes-tab">
-                                        <!-- Mensagem se não há cartões -->
-                                        <div th:if="${cartoes.isEmpty()}" class="alert alert-danger">
-                                            <i class="bi bi-exclamation-triangle"></i> 
-                                            Você não tem cartões cadastrados. 
-                                            <a href="/clientes/detalhes" class="alert-link">Clique aqui para adicionar um cartão</a>
-                                        </div>
-
-                                        <!-- Lista de Cartões -->
-                                        <div th:if="${!cartoes.isEmpty()}" id="containerCartoes">
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">
-                                                        <strong>Distribuir pagamento entre cartões</strong>
-                                                        <small class="text-muted d-block">Mínimo de R$ 10,00 por cartão</small>
-                                                    </label>
-                                                </div>
-                                            </div>
-
-                                            <!-- Cada cartão em uma linha -->
-                                            <div class="row g-3 mb-3" th:each="cartao : ${cartoes}">
-                                                <div class="col-md-8">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div>
-                                                                    <h6 class="card-title mb-1" th:text="${cartao.nomeImpresso()}"></h6>
-                                                                    <p class="mb-1 font-monospace small">
-                                                                        <i class="bi bi-credit-card"></i>
-                                                                        XXXX XXXX XXXX 
-                                                                        <span th:text="${#strings.substring(cartao.numero(), cartao.numero().length() - 4)}"></span>
-                                                                    </p>
-                                                                    <span class="badge bg-secondary" th:text="${cartao.bandeira()}"></span>
-                                                                    <span class="badge bg-success" th:if="${cartao.preferencial()}">
-                                                                        <i class="bi bi-star-fill"></i> Preferencial
-                                                                    </span>
-                                                                </div>
-                                                            </div>
+                                    <div class="row g-3 mb-3" th:each="cartao : ${cartoes}">
+                                        <div class="col-md-8">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <h6 class="card-title mb-1" th:text="${cartao.nomeImpresso()}"></h6>
+                                                            <p class="mb-1 font-monospace small">
+                                                                <i class="bi bi-credit-card"></i>
+                                                                XXXX XXXX XXXX
+                                                                <span th:text="${#strings.substring(cartao.numero(), cartao.numero().length() - 4)}"></span>
+                                                            </p>
+                                                            <span class="badge bg-secondary" th:text="${cartao.bandeira()}"></span>
+                                                            <span class="badge bg-success" th:if="${cartao.preferencial()}">
+                                                                <i class="bi bi-star-fill"></i> Preferencial
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">R$</span>
-                                                        <input 
-                                                            type="number"
-                                                            class="form-control valorCartao"
-                                                            th:data-cartao-id="${cartao.id()}"
-                                                            step="0.01"
-                                                            min="0"
-                                                            placeholder="0,00"
-                                                            onchange="calcularTotal()">
-                                                    </div>
-                                                    <small class="form-text text-muted d-block">
-                                                        Acima de R$ 10,00
-                                                    </small>
-                                                </div>
                                             </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <span class="input-group-text">R$</span>
+                                                <input
+                                                    type="number"
+                                                    class="form-control valorCartao"
+                                                    th:data-cartao-id="${cartao.id()}"
+                                                    step="0.01"
+                                                    min="0"
+                                                    placeholder="0,00"
+                                                    onchange="calcularTotal()">
+                                            </div>
+                                            <small class="form-text text-muted d-block">
+                                                Mínimo R$ 10,00
+                                            </small>
+                                        </div>
+                                    </div>
 
-                                            <!-- Verificação de total -->
-                                            <div id="validacaoPagamento" class="alert alert-warning d-none">
-                                                <i class="bi bi-warning"></i>
-                                                <span id="mensagemValidacao"></span>
+                                    <div id="validacaoPagamento" class="alert alert-warning d-none">
+                                        <i class="bi bi-warning"></i>
+                                        <span id="mensagemValidacao"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#formNovoCartao">
+                                        <i class="bi bi-plus-circle"></i> Adicionar novo cartão
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO 3.5: FORMULÁRIO NOVO CARTÃO (COLLAPSE) -->
+                        <div class="collapse mt-4" id="formNovoCartao">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-credit-card-2-front"></i> Novo Cartão
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form th:action="@{/checkout/novo-cartao}" method="post" th:object="${cartao}" class="needs-validation" novalidate>
+                                        <div class="mb-3">
+                                            <label for="numero" class="form-label">Número do Cartão (16 dígitos) *</label>
+                                            <input type="text" class="form-control" id="numero" th:field="*{numero}" th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid' : ''" placeholder="0000000000000000" maxlength="16" required>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}">
+                                                <span th:errors="*{numero}"></span>
                                             </div>
                                         </div>
 
-                                        <!-- Input hidden para armazenar dados de pagamento -->
-                                        <input type="hidden" id="pagamentoJson" name="pagamentoJson" value="[]">
-                                    </div>
+                                        <div class="mb-3">
+                                            <label for="nomeImpresso" class="form-label">Nome Impresso no Cartão *</label>
+                                            <input type="text" class="form-control" id="nomeImpresso" th:field="*{nomeImpresso}" th:classappend="${#fields.hasErrors('nomeImpresso')} ? 'is-invalid' : ''" placeholder="NOME DO TITULAR" style="text-transform: uppercase;" required>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('nomeImpresso')}">
+                                                <span th:errors="*{nomeImpresso}"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="bandeira" class="form-label">Bandeira *</label>
+                                                <select class="form-select" id="bandeira" th:field="*{bandeira}" required>
+                                                    <option value="">Selecione...</option>
+                                                    <option th:each="b : ${bandeiras}" th:value="${b}" th:text="${b}"></option>
+                                                </select>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('bandeira')}">
+                                                    <span th:errors="*{bandeira}"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label for="codigoSeguranca" class="form-label">CVV/CVC (3-4 dígitos) *</label>
+                                                <input type="text" class="form-control" id="codigoSeguranca" th:field="*{codigoSeguranca}" th:classappend="${#fields.hasErrors('codigoSeguranca')} ? 'is-invalid' : ''" placeholder="000" maxlength="4" required>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('codigoSeguranca')}">
+                                                    <span th:errors="*{codigoSeguranca}"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-check mb-4">
+                                            <input type="checkbox" class="form-check-input" id="preferencial" th:field="*{preferencial}">
+                                            <label class="form-check-label" for="preferencial">
+                                                Definir como cartão preferencial
+                                            </label>
+                                        </div>
+
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-check-lg"></i> Salvar cartão
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#formNovoCartao">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Seção 2: Resumo do Pedido -->
+                    <!-- COLUNA DIREITA: RESUMO DO PEDIDO -->
                     <div class="col-lg-4">
-                        <div class="card sticky-top" style="top: 20px;">
+                        <div class="card position-sticky" style="top: 20px;">
                             <div class="card-header bg-light">
                                 <h5 class="card-title mb-0">
                                     <i class="bi bi-receipt"></i> Resumo do Pedido
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <!-- Itens -->
                                 <div class="mb-3 pb-3 border-bottom">
-                                    <h6 class="mb-2">Itens:</h6>
+                                    <h6 class="mb-2">Itens do Carrinho:</h6>
                                     <div th:each="item : ${carrinho.itens()}" class="d-flex justify-content-between small mb-1">
                                         <span>
                                             <span th:text="${item.tituloLivro()}"></span>
@@ -232,19 +251,16 @@
                                     </div>
                                 </div>
 
-                                <!-- Subtotal -->
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Subtotal</span>
                                     <span id="subtotal" th:text="'R$ ' + ${#numbers.formatDecimal(carrinho.valorTotal(), 1, 2, 'POINT')}"></span>
                                 </div>
 
-                                <!-- Cupom (desconto) -->
                                 <div class="d-flex justify-content-between mb-2" id="linhaDesconto" style="display: none;">
-                                    <span>Desconto</span>
+                                    <span>Desconto (Cupom)</span>
                                     <span class="text-success"><strong id="valorDesconto">-R$ 0,00</strong></span>
                                 </div>
 
-                                <!-- Frete -->
                                 <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
                                     <span>Frete</span>
                                     <span id="frete">
@@ -257,7 +273,6 @@
                                     </span>
                                 </div>
 
-                                <!-- Total -->
                                 <div class="d-flex justify-content-between mb-3">
                                     <strong class="h5">Total</strong>
                                     <strong class="h5 text-success" id="totalFinal">
@@ -270,29 +285,23 @@
                                     </strong>
                                 </div>
 
-                                <!-- Informações de Entrega -->
                                 <div class="alert alert-info small mb-3">
                                     <i class="bi bi-info-circle"></i>
-                                    <strong>Entrega gratuita</strong> para pedidos acima de R$ 20,00. 
-                                    Outros pedidos têm frete de R$ 15,00.
+                                    <strong>Entrega gratuita</strong> para pedidos acima de R$ 20,00.
                                 </div>
 
-                                <!-- Botão de Finalizar Compra -->
-                                <button 
-                                    type="submit" 
-                                    class="btn btn-success w-100 btn-lg"
-                                    id="btnFinalizarCompra"
-                                    th:disabled="${enderecos.isEmpty() || cartoes.isEmpty()}">
-                                    <i class="bi bi-check-lg"></i> Finalizar Compra
-                                </button>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" form="formCheckout" class="btn btn-success btn-lg" id="btnFinalizarCompra"
+                                            th:disabled="${enderecos.isEmpty() || cartoes.isEmpty()}">
+                                        <i class="bi bi-check-lg"></i> Finalizar Compra
+                                    </button>
+                                </div>
 
-                                <!-- Aviso de campo obrigatório -->
                                 <small class="form-text text-muted d-block mt-2" th:if="${enderecos.isEmpty() || cartoes.isEmpty()}">
                                     <i class="bi bi-exclamation-circle"></i>
                                     Complete seu perfil com endereço e cartão para finalizar.
                                 </small>
 
-                                <!-- Terms -->
                                 <div class="form-check mt-3 pt-3 border-top">
                                     <input class="form-check-input" type="checkbox" id="concordo" required>
                                     <label class="form-check-label small" for="concordo">
@@ -303,29 +312,15 @@
                         </div>
                     </div>
                 </div>
-            </form>
 
-            <!-- Seção colapsável: Adicionar Novo Endereço (Fora do formulário principal) -->
-            <div class="row mt-4">
-                <div class="col-lg-8">
-                    <div class="collapse" id="addNovoEndereco">
-                        <div class="card">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="card-title mb-0">
-                                    <i class="bi bi-plus-circle"></i> Adicionar Novo Endereço
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <!-- Include do fragmento do formulário -->
-                                <div th:replace="~{fragments/form-endereco-fragment :: form(clienteCodigo=${clienteCodigo}, endereco=${endereco}, tiposResidencia=${tiposResidencia}, tiposEndereco=${tiposEndereco}, formAction='/checkout/novo-endereco')}"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <form id="formCheckout" th:action="@{/checkout/finalizar}" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" name="carrinhoId" th:value="${carrinho.id()}">
+                    <input type="hidden" id="pagamentoJson" name="pagamentoJson" value="[]">
+                    <input type="hidden" name="codigoCupom" id="codigoCupomHidden" value="">
+                </form>
         </div>
 
-        <!-- Script para cálculos e validações -->
+        <!-- SCRIPTS -->
         <script th:inline="javascript">
             const subtotalOriginal = /*[[${carrinho.valorTotal()}]]*/ 0;
 
@@ -354,9 +349,15 @@
                         document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-danger');
                         document.getElementById('resultadoCupom').classList.add('alert-info');
                         var valor = parseFloat(data.valor).toFixed(2).replace('.', ',');
-                        document.getElementById('desconto').textContent = 'R$ ' + valor;
                         document.getElementById('resultadoCupom').innerHTML =
-                            '<i class="bi bi-check-circle"></i> Cupom válido! Desconto de <strong id="desconto">R$ ' + valor + '</strong>';
+                            '<i class="bi bi-check-circle"></i> Cupom válido! Desconto de <strong>R$ ' + valor + '</strong>';
+                        
+                        // Mostrar linha de desconto
+                        document.getElementById('linhaDesconto').style.display = 'flex';
+                        document.getElementById('valorDesconto').textContent = '-R$ ' + valor;
+                        
+                        // Armazenar cupom
+                        document.getElementById('codigoCupomHidden').value = codigoCupom;
                     }
                 })
                 .catch(error => {
@@ -381,40 +382,43 @@
 
                 // Atualizar input hidden
                 document.getElementById('pagamentoJson').value = valorCartoes
-                    .map(p => `${p.cartaoId}:${p.valor}`)
+                    .map(function(p) { return p.cartaoId + ':' + p.valor; })
                     .join(',');
             }
 
             // Validação ao submeter formulário
-            document.getElementById('formCheckout').addEventListener('submit', function(e) {
-                // Validar se endereço foi selecionado
-                const enderecoSelecionado = document.querySelector('input[name="enderecoId"]:checked');
-                if (!enderecoSelecionado) {
-                    e.preventDefault();
-                    alert('Selecione um endereço de entrega');
-                    return false;
-                }
-
-                // Validar se terms foi aceito
-                if (!document.getElementById('concordo').checked) {
-                    e.preventDefault();
-                    alert('Você deve concordar com os termos e condições');
-                    return false;
-                }
-
-                // Validar pagamento
-                const temPagamento = document.querySelectorAll('.valorCartao').length > 0;
-                if (temPagamento) {
-                    const totalPago = Array.from(document.querySelectorAll('.valorCartao'))
-                        .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
-                    
-                    if (totalPago < subtotalOriginal) {
+            const form = document.getElementById('formCheckout');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Validar se endereço foi selecionado
+                    const enderecoSelecionado = document.querySelector('input[name="enderecoId"]:checked');
+                    if (!enderecoSelecionado) {
                         e.preventDefault();
-                        alert(`Valor total do pagamento (R$ ${totalPago.toFixed(2)}) deve ser igual ao subtotal (R$ ${subtotalOriginal.toFixed(2)})`);
+                        alert('Selecione um endereço de entrega');
                         return false;
                     }
-                }
-            });
+
+                    // Validar se agreement foi aceito
+                    if (!document.getElementById('concordo').checked) {
+                        e.preventDefault();
+                        alert('Você deve concordar com os termos e condições');
+                        return false;
+                    }
+
+                    // Validar pagamento
+                    const temPagamento = document.querySelectorAll('.valorCartao').length > 0;
+                    if (temPagamento) {
+                        const totalPago = Array.from(document.querySelectorAll('.valorCartao'))
+                            .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+
+                        if (totalPago < subtotalOriginal) {
+                            e.preventDefault();
+                            alert('Valor total do pagamento (R$ ' + totalPago.toFixed(2) + ') deve ser igual ao subtotal (R$ ' + subtotalOriginal.toFixed(2) + ')');
+                            return false;
+                        }
+                    }
+                });
+            }
         </script>
     </div>
 </body>

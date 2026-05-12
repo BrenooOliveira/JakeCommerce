@@ -97,13 +97,12 @@
                         <div class="col-md-4">
                             <label for="numero" class="form-label">Numero *</label>
                             <input
-                                type="number"
+                                type="text"
                                 class="form-control"
                                 id="numero"
                                 th:field="*{numero}"
                                 th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid' : ''"
                                 placeholder="123"
-                                min="1"
                                 required>
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}">
                                 <span th:errors="*{numero}"></span>
