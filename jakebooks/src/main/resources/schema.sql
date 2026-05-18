@@ -29,7 +29,11 @@ CREATE TABLE cupom (
     codigo VARCHAR(100) NOT NULL UNIQUE,
     valor DECIMAL(19, 2) NOT NULL,
     tipo VARCHAR(50) NOT NULL,
-    ativo BOOLEAN NOT NULL
+    ativo BOOLEAN NOT NULL,
+    data_validade DATE,
+    data_criacao DATE NOT NULL DEFAULT CURRENT_DATE,
+    cliente_id BIGINT,
+    CONSTRAINT fk_cupom_cliente FOREIGN KEY (cliente_id) REFERENCES cliente(id)
 );
 
 -- Tabela de Estoque (Sem dependências)

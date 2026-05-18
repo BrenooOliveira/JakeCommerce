@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}"
+      lang="pt-BR">
+<head>
+    <title>Cupons - Administração</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-6">
+                    <i class="bi bi-ticket-perforated"></i> Cupons promocionais
+                </h1>
+                <p class="text-muted">Cadastro simples do cupom BEMVINDO10 para o fluxo de venda.</p>
+            </div>
+        </div>
+
+        <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${mensagemSucesso}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <strong>Novo cupom promocional</strong>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/cupons}" th:object="${cupomForm}" method="post">
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código</label>
+                                <input type="text"
+                                       id="codigo"
+                                       class="form-control"
+                                       th:field="*{codigo}"
+                                       placeholder="BEMVINDO10"
+                                       maxlength="100"
+                                       required>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('codigo')}" th:errors="*{codigo}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="valor" class="form-label">Valor do desconto</label>
+                                <input type="number"
+                                       id="valor"
+                                       class="form-control"
+                                       th:field="*{valor}"
+                                       min="0.01"
+                                       step="0.01"
+                                       placeholder="10.00"
+                                       required>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('valor')}" th:errors="*{valor}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="dataValidade" class="form-label">Validade opcional</label>
+                                <input type="date"
+                                       id="dataValidade"
+                                       class="form-control"
+                                       th:field="*{dataValidade}">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                Salvar cupom
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Cupons cadastrados</strong>
+                        <span class="badge bg-primary" th:text="${cupons.size()} + ' cupom(ns)'"></span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Valor</th>
+                                <th>Validade</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="cupom : ${cupons}">
+                                <td><span class="badge bg-dark" th:text="${cupom.codigo}"></span></td>
+                                <td th:text="'R$ ' + ${#numbers.formatDecimal(cupom.valor, 1, 2, 'POINT')}"></td>
+                                <td th:text="${cupom.dataValidade != null ? #temporals.format(cupom.dataValidade, 'dd/MM/yyyy') : '-'}"></td>
+                                <td>
+                                    <span class="badge" th:classappend="${cupom.ativo ? ' bg-success' : ' bg-secondary'}"
+                                          th:text="${cupom.ativo ? 'Ativo' : 'Inativo'}"></span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(cupons)}">
+                                <td colspan="4" class="text-center text-muted py-4">Nenhum cupom encontrado.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

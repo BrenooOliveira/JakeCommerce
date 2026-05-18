@@ -30,14 +30,9 @@ INSERT INTO categoria (nome) VALUES
 ('Conto'),
 ('Crônica');
 
--- Inserir Cupons (para teste)
-INSERT INTO cupom (codigo, valor, tipo, ativo) VALUES
-('BENVINDO10', 10.00, 'PROMOCIONAL', true),
-('DESCONTO20', 20.00, 'PROMOCIONAL', true),
-('FRETE15', 15.00, 'PROMOCIONAL', true),
-('SUPER30', 30.00, 'PROMOCIONAL', true),
-('MEGA50', 50.00, 'PROMOCIONAL', true),
-('TESTE5', 5.00, 'PROMOCIONAL', true);
+-- Inserir cupom simples para o fluxo de venda
+INSERT INTO cupom (codigo, valor, tipo, ativo, data_criacao, data_validade, cliente_id) VALUES
+('BEMVINDO10', 10.00, 'PROMOCIONAL', true, CURRENT_DATE, NULL, NULL);
 
 -- Inserir Estoques
 INSERT INTO estoque (quantidade, custo_atual, data_entrada) VALUES

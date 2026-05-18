@@ -10,9 +10,7 @@ import com.les.jakebooks.exception.CupomNaoEncontradoException;
 import com.les.jakebooks.exception.CupomPromocionalDuplicadoException;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.domain.enums.TipoCupom;
-import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.CupomRepository;
-import com.les.jakebooks.service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,9 +35,6 @@ public class CupomService {
 
     @Autowired
     private CupomRepository cupomRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
 
     @Autowired
     private LogService logService;
@@ -370,6 +365,26 @@ public class CupomService {
     public Cupom buscarPorCodigo(String codigo) {
         return cupomRepository.findByCodigo(codigo)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cupom não encontrado: " + codigo));
+    }
+
+    /**
+     * Salva um cupom no banco de dados.
+     *
+     * @param cupom cupom a salvar
+     * @return cupom salvo
+     */
+    public Cupom salvar(Cupom cupom) {
+        return cupomRepository.save(cupom);
+    }
+
+    /**
+     * Busca cupons por tipo.
+     *
+     * @param tipo tipo do cupom
+     * @return lista de cupons encontrados
+     */
+    public List<Cupom> buscarPorTipo(TipoCupom tipo) {
+        return cupomRepository.findByTipo(tipo);
     }
 
     /**
