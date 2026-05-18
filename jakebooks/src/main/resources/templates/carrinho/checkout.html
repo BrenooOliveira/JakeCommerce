@@ -233,7 +233,7 @@
 
                     <!-- COLUNA DIREITA: RESUMO DO PEDIDO -->
                     <div class="col-lg-4">
-                        <div class="card position-sticky" style="top: 20px;">
+                        <div class="card position-sticky" style="top: 20px;" id="resumoPedido" th:attr="data-subtotal=${carrinho.valorTotal()}">
                             <div class="card-header bg-light">
                                 <h5 class="card-title mb-0">
                                     <i class="bi bi-receipt"></i> Resumo do Pedido
@@ -322,7 +322,44 @@
 
         <!-- SCRIPTS -->
         <script th:inline="javascript">
-            const subtotalOriginal = /*[[${carrinho.valorTotal()}]]*/ 0;
+            const resumoPedido = document.getElementById('resumoPedido');
+            const subtotalOriginal = resumoPedido ? Number(resumoPedido.dataset.subtotal) : 0;
+            const resultadoCupomElemento = document.getElementById('resultadoCupom');
+            const linhaDescontoElemento = document.getElementById('linhaDesconto');
+            const valorDescontoElemento = document.getElementById('valorDesconto');
+            const codigoCupomHiddenElemento = document.getElementById('codigoCupomHidden');
+            const totalFinalElemento = document.getElementById('totalFinal');
+            let descontoCupomAtual = 0;
+
+            function atualizarResultadoCupom(tipoClasse, mensagemHtml) {
+                if (!resultadoCupomElemento) {
+                    return;
+                }
+
+                resultadoCupomElemento.classList.remove('d-none', 'alert-info', 'alert-danger');
+                resultadoCupomElemento.classList.add(tipoClasse);
+                resultadoCupomElemento.innerHTML = mensagemHtml;
+            }
+
+            function formatarMoeda(valor) {
+                return valor.toFixed(2).replace('.', ',');
+            }
+
+            function calcularFrete() {
+                return subtotalOriginal >= 20 ? 0 : 15;
+            }
+
+            function calcularTotalPedido() {
+                return Math.max(subtotalOriginal - descontoCupomAtual + calcularFrete(), 0);
+            }
+
+            function atualizarTotalExibido() {
+                if (totalFinalElemento) {
+                    totalFinalElemento.textContent = 'R$ ' + formatarMoeda(calcularTotalPedido());
+                }
+            }
+
+            atualizarTotalExibido();
 
             function aplicarCupom() {
                 const codigoCupom = document.getElementById('codigoCupom').value;
@@ -333,38 +370,58 @@
 
                 // Fazer requisição AJAX ao servidor para validar cupom
                 fetch('/checkout/validar-cupom?codigo=' + encodeURIComponent(codigoCupom), {
-                    method: 'POST',
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
                     }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.erro) {
-                        document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-info');
-                        document.getElementById('resultadoCupom').classList.add('alert-danger');
-                        document.getElementById('resultadoCupom').innerHTML =
-                            '<i class="bi bi-exclamation-circle"></i> ' + data.erro;
+                        atualizarResultadoCupom('alert-danger', '<i class="bi bi-exclamation-circle"></i> ' + data.erro);
                     } else {
-                        document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-danger');
-                        document.getElementById('resultadoCupom').classList.add('alert-info');
-                        var valor = parseFloat(data.valor).toFixed(2).replace('.', ',');
-                        document.getElementById('resultadoCupom').innerHTML =
-                            '<i class="bi bi-check-circle"></i> Cupom válido! Desconto de <strong>R$ ' + valor + '</strong>';
+                        const valorNumero = Number(data.valor);
+                        if (Number.isNaN(valorNumero)) {
+                            throw new Error('Valor do cupom inválido');
+                        }
+
+                        const valor = formatarMoeda(valorNumero);
+                        atualizarResultadoCupom(
+                            'alert-info',
+                            '<i class="bi bi-check-circle"></i> Cupom válido! Desconto de <strong>R$ ' + valor + '</strong>'
+                        );
                         
                         // Mostrar linha de desconto
-                        document.getElementById('linhaDesconto').style.display = 'flex';
-                        document.getElementById('valorDesconto').textContent = '-R$ ' + valor;
+                        if (linhaDescontoElemento) {
+                            linhaDescontoElemento.style.display = 'flex';
+                        }
+                        if (valorDescontoElemento) {
+                            valorDescontoElemento.textContent = '-R$ ' + valor;
+                        }
                         
                         // Armazenar cupom
-                        document.getElementById('codigoCupomHidden').value = codigoCupom;
+                        if (codigoCupomHiddenElemento) {
+                            codigoCupomHiddenElemento.value = codigoCupom;
+                        }
+
+                        descontoCupomAtual = valorNumero;
+
+                        // Atualizar o total exibido no resumo
+                        atualizarTotalExibido();
+
+                        console.debug('Cupom aplicado com sucesso', {
+                            codigo: codigoCupom,
+                            desconto: valorNumero,
+                            subtotal: subtotalOriginal,
+                            totalAtual: calcularTotalPedido()
+                        });
                     }
                 })
                 .catch(error => {
-                    document.getElementById('resultadoCupom').classList.remove('d-none', 'alert-info');
-                    document.getElementById('resultadoCupom').classList.add('alert-danger');
-                    document.getElementById('resultadoCupom').innerHTML =
-                        '<i class="bi bi-exclamation-circle"></i> Erro ao validar cupom. Tente novamente.';
+                    atualizarResultadoCupom(
+                        'alert-danger',
+                        '<i class="bi bi-exclamation-circle"></i> Erro ao validar cupom. Tente novamente.'
+                    );
                 });
             }
 
@@ -410,10 +467,11 @@
                     if (temPagamento) {
                         const totalPago = Array.from(document.querySelectorAll('.valorCartao'))
                             .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+                        const totalEsperado = calcularTotalPedido();
 
-                        if (totalPago < subtotalOriginal) {
+                        if (Math.abs(totalPago - totalEsperado) > 0.01) {
                             e.preventDefault();
-                            alert('Valor total do pagamento (R$ ' + totalPago.toFixed(2) + ') deve ser igual ao subtotal (R$ ' + subtotalOriginal.toFixed(2) + ')');
+                            alert('Valor total do pagamento (R$ ' + totalPago.toFixed(2) + ') deve ser igual ao total atual (R$ ' + totalEsperado.toFixed(2) + ')');
                             return false;
                         }
                     }

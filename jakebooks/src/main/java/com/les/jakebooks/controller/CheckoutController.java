@@ -7,6 +7,7 @@ import com.les.jakebooks.dto.EnderecoDTO;
 import com.les.jakebooks.dto.FinalizarPedidoDTO;
 import com.les.jakebooks.dto.PagamentoCartaoDadosDTO;
 import com.les.jakebooks.dto.ResultadoCheckoutDTO;
+import com.les.jakebooks.dto.CupomDTO;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
 import com.les.jakebooks.domain.enums.BandeiraCartao;
@@ -24,6 +25,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -48,6 +50,9 @@ public class CheckoutController {
 
     @Autowired
     private CompraService compraService;
+
+    @Autowired
+    private com.les.jakebooks.service.CupomService cupomService;
 
     @GetMapping
     public String checkout(
@@ -217,5 +222,25 @@ public class CheckoutController {
             attrs.addFlashAttribute("mensagemErro", "Dados não encontrados: " + e.getMessage());
             return "redirect:/checkout";
         }
+    }
+
+        @org.springframework.web.bind.annotation.RequestMapping(
+            value = "/validar-cupom",
+            method = {RequestMethod.GET, RequestMethod.POST},
+            produces = "application/json")
+        @org.springframework.web.bind.annotation.ResponseBody
+        public org.springframework.http.ResponseEntity<?> validarCupom(
+            jakarta.servlet.http.HttpSession session,
+            @RequestParam String codigo) {
+
+        // Apenas valida e retorna o valor do cupom promocional como JSON.
+        com.les.jakebooks.dto.CupomDTO dto = cupomService.validarCupomPromocional(codigo);
+
+        java.util.Map<String, Object> body = java.util.Map.of(
+                "valor", dto.valor(),
+                "codigo", dto.codigo()
+        );
+
+        return org.springframework.http.ResponseEntity.ok(body);
     }
 }
