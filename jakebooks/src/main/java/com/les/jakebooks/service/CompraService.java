@@ -169,10 +169,6 @@ public class CompraService {
                 Cupom cupom = cupomRepository.findByCodigoAndAtivoTrue(dto.codigoCupomPromocional().trim().toUpperCase())
                         .orElseThrow(() -> new ValidacaoNegocioException("Cupom inválido ou expirado"));
 
-                if (!TipoCupom.PROMOCIONAL.equals(cupom.getTipo())) {
-                    throw new ValidacaoNegocioException("Apenas cupons promocionais podem ser usados nesta compra");
-                }
-
                 BigDecimal valorAplicar = cupom.getValor().min(valorRestante.max(BigDecimal.ZERO));
                 if (valorAplicar.compareTo(BigDecimal.ZERO) > 0) {
                     cuponsAplicados.add(new CupomAplicadoDTO(

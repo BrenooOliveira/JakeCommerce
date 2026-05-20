@@ -288,6 +288,13 @@
                                 <p class="mb-0 small">Este pedido foi entregue com sucesso.</p>
                             </div>
 
+                            <!-- Botão: Solicitar Troca (apenas para ENTREGUE e não em troca) -->
+                            <div class="d-grid gap-2 mb-2 mt-2" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).ENTREGUE}">
+                                <a class="btn btn-outline-primary w-100" th:href="@{/trocas/pedidos/{id}/solicitar(id=${pedido.getId()})}">
+                                    <i class="bi bi-arrow-repeat"></i> Solicitar Troca
+                                </a>
+                            </div>
+
                             <!-- Aviso: Pedido em Troca -->
                             <div class="alert alert-info mb-0" th:if="${pedido.getStatus() == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TROCA}">
                                 <i class="bi bi-info-circle"></i>

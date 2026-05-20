@@ -24,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +68,14 @@ public class TrocaService {
      * @throws ValidacaoNegocioException     se pedido não está entregue ou não pertence ao cliente
      */
     public TrocaDetalheDTO solicitar(Long pedidoId, String motivo) {
+        return solicitar(pedidoId, motivo, null);
+    }
+
+    /**
+     * Solicita uma troca especificando os itens do pedido que serão trocados.
+     * Se itemIds for null ou vazio, considera todos os itens do pedido.
+     */
+    public TrocaDetalheDTO solicitar(Long pedidoId, String motivo, List<Long> itemIds) {
         // Buscar pedido
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido com ID " + pedidoId + " não encontrado"));
@@ -95,6 +105,18 @@ public class TrocaService {
         troca.setDataSolicitacao(LocalDate.now());
         troca.setStatus(StatusTroca.SOLICITADA);
         troca.setMotivo(motivo);
+
+        // Definir itens selecionados (CSV de item_pedido ids)
+        if (itemIds == null || itemIds.isEmpty()) {
+            // selecionar todos
+            String csv = pedido.getItens().stream()
+                    .map(i -> String.valueOf(i.getId()))
+                    .collect(Collectors.joining(","));
+            troca.setItens(csv);
+        } else {
+            String csv = itemIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+            troca.setItens(csv);
+        }
 
         troca = trocaRepository.save(troca);
 
@@ -137,6 +159,40 @@ public class TrocaService {
     }
 
     /**
+     * Descarta (nega) uma troca. Apenas admin.
+     * Altera status para DESCARTADA e restaura o pedido para ENTREGUE.
+     *
+     * @param trocaId ID da troca
+     * @param justificativa motivo/observação da decisão
+     */
+    public void descartar(Long trocaId, String justificativa) {
+        if (!SecurityUtil.isAdmin()) {
+            throw new ValidacaoNegocioException("Acesso negado. Apenas administradores podem descartar trocas.");
+        }
+
+        Troca troca = trocaRepository.findById(trocaId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Troca com ID " + trocaId + " não encontrada"));
+
+        if (!(troca.getStatus().equals(StatusTroca.SOLICITADA) || troca.getStatus().equals(StatusTroca.AUTORIZADA))) {
+            throw new ValidacaoNegocioException("Apenas trocas com status SOLICITADA ou AUTORIZADA podem ser descartadas. Status atual: " + troca.getStatus().getDescricao());
+        }
+
+        // Registrar justificativa (acrescentar ao motivo existente)
+        if (justificativa != null && !justificativa.trim().isEmpty()) {
+            String novoMotivo = troca.getMotivo() + " | DECISAO ADMIN: " + justificativa;
+            troca.setMotivo(novoMotivo);
+        }
+
+        troca.setStatus(StatusTroca.DESCARTADA);
+        trocaRepository.save(troca);
+
+        // Restaurar pedido para ENTREGUE
+        Pedido pedido = troca.getPedido();
+        pedido.setStatus(StatusPedido.ENTREGUE);
+        pedidoRepository.save(pedido);
+    }
+
+    /**
      * Confirma o recebimento de uma troca.
      * RF0043: Confirmar recebimento de troca.
      * RF0054: Reentrada via troca.
@@ -168,10 +224,24 @@ public class TrocaService {
         Pedido pedido = troca.getPedido();
         BigDecimal valorTotalTroca = BigDecimal.ZERO;
 
+        // Determinar itens selecionados na troca (CSV de item_pedido ids)
+        List<Long> itensSelecionados = null;
+        if (troca.getItens() != null && !troca.getItens().trim().isEmpty()) {
+            itensSelecionados = Arrays.stream(troca.getItens().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::valueOf)
+                    .collect(Collectors.toList());
+        }
+
         for (ItemPedido item : pedido.getItens()) {
-            Estoque estoque = estoqueRepository.findByLivroId(item.getLivro().getId());
-            if (estoque != null) {
-                // Reentra quantidade no estoque
+            if (itensSelecionados != null && !itensSelecionados.contains(item.getId())) {
+                continue; // pular itens não selecionados
+            }
+
+            Optional<Estoque> optEstoque = estoqueRepository.findByLivroIdWithLock(item.getLivro().getId());
+            if (optEstoque.isPresent()) {
+                Estoque estoque = optEstoque.get();
                 int novaQuantidade = estoque.getQuantidade() + item.getQuantidade();
                 estoque.setQuantidade(novaQuantidade);
                 estoqueRepository.save(estoque);
@@ -184,17 +254,22 @@ public class TrocaService {
 
         // RF0044: Gerar cupom de troca
         Cupom cupomTroca = new Cupom();
-        cupomTroca.setCodigo("TROCA-" + UUID.randomUUID().toString().substring(0, 8));
+        cupomTroca.setCodigo("TROCA-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         cupomTroca.setValor(valorTotalTroca);
+        // Definir validade do cupom de troca (6 meses por padrão)
+        cupomTroca.setDataValidade(LocalDate.now().plusMonths(6));
         cupomTroca.setTipo(TipoCupom.TROCA);
         cupomTroca.setAtivo(true);
+        // Vincular cupom ao cliente proprietário do pedido
+        cupomTroca.setCliente(pedido.getCliente());
         cupomTroca = cupomRepository.save(cupomTroca);
 
-        // RN0042: Alterar troca para RECEBIDA
-        troca.setStatus(StatusTroca.RECEBIDA);
+        // Vincular cupom na troca e marcar como concluída
+        troca.setCupom(cupomTroca);
+        troca.setStatus(StatusTroca.CONCLUIDA);
         trocaRepository.save(troca);
 
-        // RN0042: Alterar pedido para TROCADO
+        // Alterar pedido para TROCADO
         pedido.setStatus(StatusPedido.TROCADO);
         pedidoRepository.save(pedido);
     }
@@ -247,14 +322,22 @@ public class TrocaService {
     private TrocaDetalheDTO converterParaDTO(Troca troca) {
         Pedido pedido = troca.getPedido();
 
-        // Buscar cupom gerado se a troca foi concluída
+        // Buscar cupom gerado se existe vínculo na troca
         String codigoCupom = null;
-        if (troca.getStatus().equals(StatusTroca.RECEBIDA)) {
-            // Buscar cupom de troca gerado para este pedido
-            // Aqui seria necessário ter um relacionamento ou busca mais específica
-            // Por enquanto, deixamos como null ou podia-se ter um campo cupomId na Troca
-            codigoCupom = "TROCA-" + troca.getId();
+        java.math.BigDecimal valorCupom = null;
+        if (troca.getCupom() != null) {
+            codigoCupom = troca.getCupom().getCodigo();
+            valorCupom = troca.getCupom().getValor();
         }
+
+        // Filtrar itens retornados para apenas os selecionados na troca
+        List<Long> itensSelecionadosDTO = (troca.getItens() != null && !troca.getItens().trim().isEmpty())
+                ? Arrays.stream(troca.getItens().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::valueOf)
+                    .collect(Collectors.toList())
+                : null;
 
         return new TrocaDetalheDTO(
                 troca.getId(),
@@ -264,18 +347,20 @@ public class TrocaService {
                 troca.getDataSolicitacao(),
                 troca.getStatus(),
                 troca.getMotivo(),
-                pedido.getItens().stream()
-                        .map(item -> new ItemCarrinhoDTO(
-                                item.getId(),
-                                item.getLivro().getId(),
-                                item.getLivro().getCodigo(),
-                                item.getLivro().getTitulo(),
-                                item.getQuantidade(),
-                                item.getValorUnitario(),
-                                item.getValorUnitario().multiply(BigDecimal.valueOf(item.getQuantidade()))
-                        ))
-                        .collect(Collectors.toList()),
-                codigoCupom
+            pedido.getItens().stream()
+                .filter(item -> itensSelecionadosDTO == null || itensSelecionadosDTO.contains(item.getId()))
+                .map(item -> new ItemCarrinhoDTO(
+                    item.getId(),
+                    item.getLivro().getId(),
+                    item.getLivro().getCodigo(),
+                    item.getLivro().getTitulo(),
+                    item.getQuantidade(),
+                    item.getValorUnitario(),
+                    item.getValorUnitario().multiply(BigDecimal.valueOf(item.getQuantidade()))
+                ))
+                .collect(Collectors.toList()),
+                codigoCupom,
+                valorCupom
         );
     }
 }

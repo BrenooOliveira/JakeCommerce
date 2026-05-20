@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 import com.les.jakebooks.domain.enums.StatusTroca;
+import com.les.jakebooks.domain.Cupom;
 
 /**
  * Entidade que representa uma solicitação de troca de um pedido.
@@ -39,6 +40,12 @@ public class Troca {
     @ManyToOne
     @JoinColumn(name = "pedido_id")
     private Pedido pedido;
+
+    @ManyToOne
+    @JoinColumn(name = "cupom_id")
+    private Cupom cupom;
+
+    private String itens; // CSV de item_pedido ids selecionados para troca
 
     // Construtores
     public Troca() {
@@ -90,5 +97,21 @@ public class Troca {
 
     public void setPedido(Pedido pedido) {
         this.pedido = pedido;
+    }
+
+    public Cupom getCupom() {
+        return cupom;
+    }
+
+    public void setCupom(Cupom cupom) {
+        this.cupom = cupom;
+    }
+
+    public String getItens() {
+        return itens;
+    }
+
+    public void setItens(String itens) {
+        this.itens = itens;
     }
 }

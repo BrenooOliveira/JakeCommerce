@@ -252,7 +252,7 @@
                                             <form method="POST"
                                                   th:action="@{/admin/pedidos/{id}/despachar(id=${pedido.id})}"
                                                   style="display: inline;"
-                                                  th:onsubmit="'return confirm(\'Confirma despacho do pedido ' + ${pedido.codigoPedido} + '?\')'">
+                                                  onsubmit="return confirm('Confirma despacho do pedido?');">
                                                 <button type="submit" class="btn btn-info" title="Despachar pedido">
                                                     <i class="bi bi-truck"></i>
                                                 </button>
@@ -264,7 +264,7 @@
                                             <form method="POST"
                                                   th:action="@{/admin/pedidos/{id}/confirmar-entrega(id=${pedido.id})}"
                                                   style="display: inline;"
-                                                  th:onsubmit="'return confirm(\'Confirma entrega do pedido ' + ${pedido.codigoPedido} + '?\')'">
+                                                  onsubmit="return confirm('Confirma entrega do pedido?');">
                                                 <button type="submit" class="btn btn-success" title="Confirmar entrega">
                                                     <i class="bi bi-check-circle"></i>
                                                 </button>

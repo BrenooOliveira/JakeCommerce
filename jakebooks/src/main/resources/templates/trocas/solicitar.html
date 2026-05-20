@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{fragments/layout}">
 
 <head>
     <title>Solicitar Troca de Produto</title>
@@ -43,6 +43,28 @@
                     <form method="post" 
                           th:action="@{/trocas/pedidos/{id}/solicitar(id=${pedidoId})}"
                           novalidate>
+
+                        <!-- Lista de Itens para Seleção -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-list"></i>
+                                Selecione os itens que deseja trocar <span class="text-danger">*</span>
+                            </label>
+                            <div class="list-group">
+                                <div th:each="item : ${pedido.getItens()}" class="list-group-item d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" th:id="${'item-' + item.getId()}" th:name="itemIds" th:value="${item.getId()}" checked>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div><strong th:text="${item.getLivro().getTitulo()}"></strong></div>
+                                        <div class="small text-muted">Quantidade: <span th:text="${item.getQuantidade()}"></span></div>
+                                    </div>
+                                    <div class="text-end ms-3">
+                                        R$ <span class="font-monospace" th:text="${#numbers.formatDecimal(item.getValorUnitario(), 1, 2, 'POINT')}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Campo: Motivo -->
                         <div class="mb-3">

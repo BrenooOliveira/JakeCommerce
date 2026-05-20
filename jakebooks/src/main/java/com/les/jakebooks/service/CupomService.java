@@ -10,6 +10,7 @@ import com.les.jakebooks.exception.CupomNaoEncontradoException;
 import com.les.jakebooks.exception.CupomPromocionalDuplicadoException;
 import com.les.jakebooks.exception.RecursoNaoEncontradoException;
 import com.les.jakebooks.domain.enums.TipoCupom;
+import com.les.jakebooks.repository.ClienteRepository;
 import com.les.jakebooks.repository.CupomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,9 @@ public class CupomService {
 
     @Autowired
     private CupomRepository cupomRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @Autowired
     private LogService logService;
@@ -75,13 +79,7 @@ public class CupomService {
      * @throws CupomInvalidoException se cupom não existe, está inativo ou expirado
      */
     public CupomDTO validarCupomPromocional(String codigo) {
-        if (codigo == null || codigo.isBlank()) {
-            throw new CupomInvalidoException("Código do cupom é obrigatório", null, "CODIGO_VAZIO");
-        }
-
-        Cupom cupom = cupomRepository.findByCodigo(codigo.trim().toUpperCase())
-                .orElseThrow(() -> new CupomInvalidoException(
-                        "Cupom não encontrado: " + codigo, codigo, "NAO_ENCONTRADO"));
+        Cupom cupom = validarCupomBase(codigo);
 
         // Validar se é promocional
         if (!TipoCupom.PROMOCIONAL.equals(cupom.getTipo())) {
@@ -89,19 +87,81 @@ public class CupomService {
                     "Este não é um cupom promocional", codigo, "TIPO_INVALIDO");
         }
 
-        // Validar se está ativo
+        Cliente clienteLogado = obterClienteLogado();
+        if (cupom.getCliente() != null && (clienteLogado == null || !cupom.getCliente().getId().equals(clienteLogado.getId()))) {
+            throw new CupomInvalidoException(
+                    "Cupom não pertence ao cliente logado", codigo, "NAO_PERTENCE");
+        }
+
+        return converterParaDTO(cupom);
+    }
+
+    /**
+     * Valida cupom pelo código para uso no checkout.
+     * Aceita cupons promocionais públicos ou do cliente e cupons de troca do próprio cliente.
+     *
+     * @param codigo código do cupom
+     * @return DTO do cupom se válido
+     */
+    public CupomDTO validarCupomCheckout(String codigo) {
+        Cupom cupom = validarCupomBase(codigo);
+        Cliente clienteLogado = obterClienteLogado();
+
+        if (TipoCupom.TROCA.equals(cupom.getTipo())) {
+            if (clienteLogado == null || cupom.getCliente() == null || !cupom.getCliente().getId().equals(clienteLogado.getId())) {
+                throw new CupomInvalidoException(
+                        "Cupom de troca não pertence ao cliente logado", codigo, "NAO_PERTENCE");
+            }
+            return converterParaDTO(cupom);
+        }
+
+        if (TipoCupom.PROMOCIONAL.equals(cupom.getTipo())) {
+            if (cupom.getCliente() != null && (clienteLogado == null || !cupom.getCliente().getId().equals(clienteLogado.getId()))) {
+                throw new CupomInvalidoException(
+                        "Cupom não pertence ao cliente logado", codigo, "NAO_PERTENCE");
+            }
+            return converterParaDTO(cupom);
+        }
+
+        throw new CupomInvalidoException(
+                "Tipo de cupom não suportado no checkout", codigo, "TIPO_INVALIDO");
+    }
+
+    /**
+     * Valida um cupom por código, aplicando regras comuns de existência, ativo e validade.
+     */
+    private Cupom validarCupomBase(String codigo) {
+        if (codigo == null || codigo.isBlank()) {
+            throw new CupomInvalidoException("Código do cupom é obrigatório", null, "CODIGO_VAZIO");
+        }
+
+        Cupom cupom = cupomRepository.findByCodigoIgnoreCase(codigo.trim())
+                .orElseThrow(() -> new CupomInvalidoException(
+                        "Cupom não encontrado: " + codigo, codigo, "NAO_ENCONTRADO"));
+
         if (!Boolean.TRUE.equals(cupom.getAtivo())) {
             throw new CupomInvalidoException(
                     "Cupom inativo: " + codigo, codigo, "INATIVO");
         }
 
-        // Validar validade
         if (cupom.getDataValidade() != null && LocalDate.now().isAfter(cupom.getDataValidade())) {
             throw new CupomInvalidoException(
                     "Cupom expirado: " + codigo, codigo, "EXPIRADO");
         }
 
-        return converterParaDTO(cupom);
+        return cupom;
+    }
+
+    /**
+     * Resolve o cliente logado a partir do email autenticado.
+     */
+    private Cliente obterClienteLogado() {
+        String email = com.les.jakebooks.util.SecurityUtil.getEmailUsuarioLogado();
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+
+        return clienteRepository.findByEmail(email).orElse(null);
     }
 
     /**

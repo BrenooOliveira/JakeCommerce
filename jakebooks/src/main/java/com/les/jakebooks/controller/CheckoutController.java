@@ -233,12 +233,13 @@ public class CheckoutController {
             jakarta.servlet.http.HttpSession session,
             @RequestParam String codigo) {
 
-        // Apenas valida e retorna o valor do cupom promocional como JSON.
-        com.les.jakebooks.dto.CupomDTO dto = cupomService.validarCupomPromocional(codigo);
+        // Valida cupons promocionais e cupons de troca do cliente logado.
+        com.les.jakebooks.dto.CupomDTO dto = cupomService.validarCupomCheckout(codigo);
 
         java.util.Map<String, Object> body = java.util.Map.of(
                 "valor", dto.valor(),
-                "codigo", dto.codigo()
+            "codigo", dto.codigo(),
+            "tipo", dto.tipo().name()
         );
 
         return org.springframework.http.ResponseEntity.ok(body);

@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/clientes").permitAll()
                 .requestMatchers("/clientes/**").hasRole("CLIENTE")
 
-                .requestMatchers("/admin/trocas/pedidos/*/solicitar").hasRole("CLIENTE")
+                .requestMatchers("/trocas/**").hasRole("CLIENTE")
                 .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
 
                 .requestMatchers(

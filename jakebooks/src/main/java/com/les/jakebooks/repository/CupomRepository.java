@@ -31,6 +31,11 @@ public interface CupomRepository extends JpaRepository<Cupom, Long> {
      */
     Optional<Cupom> findByCodigo(String codigo);
 
+       /**
+        * Busca cupom apenas pelo código, ignorando maiúsculas e minúsculas.
+        */
+       Optional<Cupom> findByCodigoIgnoreCase(String codigo);
+
     /**
      * Busca cupons por tipo.
      */

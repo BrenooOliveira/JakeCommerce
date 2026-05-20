@@ -10,6 +10,7 @@ package com.les.jakebooks.domain.enums;
 public enum StatusTroca {
     SOLICITADA("Solicitada"),
     AUTORIZADA("Autorizada"),
+    DESCARTADA("Descartada"),
     RECEBIDA("Recebida"),
     CONCLUIDA("Concluída");
 

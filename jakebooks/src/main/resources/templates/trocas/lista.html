@@ -99,7 +99,7 @@
                         </td>
 
                         <!-- Data Solicitação -->
-                        <td th:text="${#temporals.format(troca.dataSolicitacao(), 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${#temporals.format(troca.dataSolicitacao, 'dd/MM/yyyy HH:mm')}"></td>
 
                         <!-- Status Badge -->
                         <td>
@@ -122,7 +122,7 @@
 
                         <!-- Ações -->
                         <td>
-                            <a th:href="@{/trocas/{id}(id=${troca.trocaId()})}"
+                            <a th:href="@{/admin/trocas/{id}(id=${troca.trocaId()})}"
                                class="btn btn-sm btn-outline-primary"
                                title="Ver detalhes">
                                 <i class="bi bi-eye"></i> Detalhes
@@ -131,7 +131,7 @@
                             <!-- Botão Autorizar (se SOLICITADA e ADMIN) -->
                             <th:block sec:authorize="hasRole('ADMIN')" th:if="${troca.status().toString() == 'SOLICITADA'}">
                                 <form method="post"
-                                      th:action="@{/trocas/{id}/autorizar(id=${troca.trocaId()})}"
+                                      th:action="@{/admin/trocas/{id}/autorizar(id=${troca.trocaId()})}"
                                       style="display: inline;"
                                       onsubmit="return confirm('Tem certeza que deseja autorizar esta troca?');">
                                     <button type="submit" class="btn btn-sm btn-success"
@@ -144,7 +144,7 @@
                             <!-- Botão Receber (se AUTORIZADA e ADMIN) -->
                             <th:block sec:authorize="hasRole('ADMIN')" th:if="${troca.status().toString() == 'AUTORIZADA'}">
                                 <form method="post"
-                                      th:action="@{/trocas/{id}/receber(id=${troca.trocaId()})}"
+                                      th:action="@{/admin/trocas/{id}/receber(id=${troca.trocaId()})}"
                                       style="display: inline;"
                                       onsubmit="return confirm('Tem certeza que deseja confirmar o recebimento desta troca?');">
                                     <button type="submit" class="btn btn-sm btn-info"

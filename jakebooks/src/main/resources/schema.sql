@@ -223,7 +223,10 @@ CREATE TABLE troca (
     status VARCHAR(50) NOT NULL,
     motivo TEXT,
     pedido_id BIGINT NOT NULL,
+    cupom_id BIGINT,
+    itens TEXT,
     CONSTRAINT fk_troca_pedido FOREIGN KEY (pedido_id) REFERENCES pedido(id) ON DELETE CASCADE
+    ,CONSTRAINT fk_troca_cupom FOREIGN KEY (cupom_id) REFERENCES cupom(id)
 );
 CREATE INDEX idx_troca_pedido ON troca(pedido_id);
 CREATE INDEX idx_troca_status ON troca(status);

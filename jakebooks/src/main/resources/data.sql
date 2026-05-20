@@ -158,3 +158,10 @@ INSERT INTO item_pedido (quantidade, valor_unitario, pedido_id, livro_id) VALUES
 (3, 72.50, 9, 6), (2, 52.80, 9, 4),
 (4, 45.50, 10, 1), (1, 38.90, 10, 2),
 (2, 42.90, 11, 9), (1, 45.50, 11, 1);
+
+-- Inserir Trocas
+INSERT INTO troca (data_solicitacao, status, motivo, pedido_id) VALUES
+('2024-01-20', 'SOLICITADA', 'Cliente solicitou troca por tamanho inadequado', 1),
+('2024-02-18', 'AUTORIZADA', 'Troca autorizada após validação do atendimento', 2),
+('2024-03-22', 'RECEBIDA', 'Produto recebido no centro de trocas para conferência', 3),
+('2024-04-15', 'CONCLUIDA', 'Troca concluída com emissão de cupom para o cliente', 4);

@@ -3,6 +3,7 @@ package com.les.jakebooks.dto;
 import com.les.jakebooks.domain.enums.StatusTroca;
 import java.time.LocalDate;
 import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * DTO para detalhes de uma troca (visualização admin).
@@ -20,6 +21,7 @@ public record TrocaDetalheDTO(
         StatusTroca status,
         String motivo,
         List<ItemCarrinhoDTO> itensRetornados,
-        String cupomGerado
+        String cupomGerado,
+        BigDecimal cupomValor
 ) {
 }

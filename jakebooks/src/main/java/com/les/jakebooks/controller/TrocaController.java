@@ -151,6 +151,29 @@ public class TrocaController {
     }
 
     /**
+     * Descarta/nega uma troca.
+     * POST /admin/trocas/{id}/descartar
+     */
+    @PostMapping("/{id}/descartar")
+    public String descartarTroca(
+            @PathVariable Long id,
+            @RequestParam(required = false) String motivo,
+            RedirectAttributes attrs) {
+
+        try {
+            trocaService.descartar(id, motivo);
+            attrs.addFlashAttribute("mensagemSucesso", "Troca descartada com sucesso.");
+            return "redirect:/admin/trocas/" + id;
+        } catch (ValidacaoNegocioException e) {
+            attrs.addFlashAttribute("mensagemErro", "Erro ao descartar troca: " + e.getMessage());
+            return "redirect:/admin/trocas/" + id;
+        } catch (RecursoNaoEncontradoException e) {
+            attrs.addFlashAttribute("mensagemErro", "Troca não encontrada");
+            return "redirect:/admin/trocas";
+        }
+    }
+
+    /**
      * Exibe formulário para solicitar troca de um pedido entregue.
      * GET /pedidos/{pedidoId}/solicitar-troca
      * RF0040: Solicitar troca

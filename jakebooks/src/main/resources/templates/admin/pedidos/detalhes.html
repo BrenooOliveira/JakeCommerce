@@ -94,7 +94,7 @@
                             <div th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).EM_PROCESSAMENTO}">
                                 <form method="POST"
                                       th:action="@{/admin/pedidos/{id}/despachar(id=${pedido.id})}"
-                                      th:onsubmit="'return confirm(\'Confirma despacho do pedido ' + ${pedido.codigoPedido} + '?\')'"
+                                      onsubmit="return confirm('Confirma despacho do pedido?');"
                                       class="d-inline">
                                     <button type="submit" class="btn btn-info">
                                         <i class="bi bi-truck"></i> Despachar Pedido
@@ -105,7 +105,7 @@
                             <div th:if="${pedido.status == T(com.les.jakebooks.domain.enums.StatusPedido).EM_TRANSPORTE}">
                                 <form method="POST"
                                       th:action="@{/admin/pedidos/{id}/confirmar-entrega(id=${pedido.id})}"
-                                      th:onsubmit="'return confirm(\'Confirma entrega do pedido ' + ${pedido.codigoPedido} + '?\')'"
+                                      onsubmit="return confirm('Confirma entrega do pedido?');"
                                       class="d-inline">
                                     <button type="submit" class="btn btn-success">
                                         <i class="bi bi-check-circle"></i> Confirmar Entrega

@@ -290,7 +290,7 @@ def test_login_success(driver):
     button_xpath = "/html/body/div[2]/div/main/div[2]/div/div[2]/form/button"
 
     fill_input(driver, email_xpath, "breno@teste.com", "Email")
-    fill_input(driver, password_xpath, "", "Senha")
+    fill_input(driver, password_xpath, "Brenets2009@", "Senha")
     click_element(driver, button_xpath, "Botão Login")
 
     time.sleep(2)
@@ -402,7 +402,7 @@ def test_select_address(driver):
     logger.info("="*60)
 
     # Selecionar endereço (segunda opção)
-    click_element(driver, "/html/body/div[2]/div/main/div[2]/div/form/div/div[1]/div[1]/div[2]/div/div/div/label[2]/input",
+    click_element(driver, "/html/body/div[2]/div/main/div[2]/div/div/div[1]/div[1]/div[2]/div[1]/div/div[1]/div/input",
                  "Selecionar Endereço")
 
     logger.info("✓ CHECKOUT - Endereço selecionado com sucesso\n")

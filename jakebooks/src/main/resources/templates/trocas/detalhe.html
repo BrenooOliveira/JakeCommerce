@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{fragments/layout}">
 
 <head>
     <title>Detalhes da Troca</title>
@@ -100,8 +100,8 @@
                                 <i class="bi bi-calendar-event text-info fs-5"></i>
                                 <h6 class="card-title ms-2 mb-0">Data de Solicitação</h6>
                             </div>
-                            <p class="mb-0"><strong th:text="${#temporals.format(troca.dataSolicitacao(), 'dd/MM/yyyy')}"></strong></p>
-                            <p class="text-muted small" th:text="${#temporals.format(troca.dataSolicitacao(), 'HH:mm')}"></p>
+                            <p class="mb-0"><strong th:text="${#temporals.format(troca.dataSolicitacao, 'dd/MM/yyyy')}"></strong></p>
+                            <p class="text-muted small" th:text="${#temporals.format(troca.dataSolicitacao, 'HH:mm')}"></p>
                         </div>
                     </div>
                 </div>
@@ -144,15 +144,15 @@
                                     Não há itens registrados
                                 </td>
                             </tr>
-                            <tr th:each="item : ${troca.itensRetornados()}" th:if="${!#lists.isEmpty(troca.itensRetornados())}">
+                            <tr th:each="item : ${troca.itensRetornados}" th:if="${!#lists.isEmpty(troca.itensRetornados)}">
                                 <td>
-                                    <strong th:text="${item.nomeLivro()}"></strong>
+                                    <strong th:text="${item.tituloLivro}"></strong>
                                     <br>
-                                    <small class="text-muted" th:text="${'ISBN: ' + item.isbn()}"></small>
+                                    <small class="text-muted" th:text="${'Código: ' + item.codigoLivro}"></small>
                                 </td>
-                                <td th:text="${item.quantidade()}"></td>
-                                <td th:text="${'R\$ ' + #numbers.formatDecimal(item.valorUnitario(), 1, 2, 'POINT')}"></td>
-                                <td><strong th:text="${'R\$ ' + #numbers.formatDecimal(item.quantidade() * item.valorUnitario(), 1, 2, 'POINT')}"></strong></td>
+                                <td th:text="${item.quantidade}"></td>
+                                <td th:text="${'R\\$ ' + #numbers.formatDecimal(item.valorUnitario, 1, 2, 'POINT')}"></td>
+                                <td><strong th:text="${'R\\$ ' + #numbers.formatDecimal(item.subtotal, 1, 2, 'POINT')}"></strong></td>
                             </tr>
                         </tbody>
                     </table>
@@ -160,7 +160,7 @@
             </div>
 
             <!-- Cupom Gerado -->
-            <th:block th:if="${troca.cupomGerado() != null}">
+            <th:block th:if="${troca.cupomGerado != null}">
                 <div class="card shadow-sm mb-4 border-success">
                     <div class="card-header bg-light border-bottom border-success">
                         <h6 class="mb-0 text-success">
@@ -169,8 +169,9 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-success mb-0">
-                            <strong>Código:</strong> <code th:text="${troca.cupomGerado()}"></code>
+                        <div class="alert alert-success coupon-alert mb-0">
+                            <div><strong>Código:</strong> <code th:text="${troca.cupomGerado}"></code></div>
+                            <div class="mt-2"><strong>Valor:</strong> <span th:text="${'R\$ ' + #numbers.formatDecimal(troca.cupomValor, 1, 2, 'POINT')}"></span></div>
                             <br>
                             <small>Este cupom pode ser utilizado em futuras compras como forma de pagamento.</small>
                         </div>
@@ -213,9 +214,9 @@
                     <div class="timeline mt-4">
                         <div class="timeline-item" th:classappend="${troca.status().toString() != 'SOLICITADA' ? 'completed' : 'active'}">
                             <strong>Solicitada</strong>
-                            <small class="text-muted" th:text="${#temporals.format(troca.dataSolicitacao(), 'dd/MM/yyyy HH:mm')}"></small>
+                            <small class="text-muted" th:text="${#temporals.format(troca.dataSolicitacao, 'dd/MM/yyyy HH:mm')}"></small>
                         </div>
-                        <div class="timeline-item" th:classappend="${troca.status().toString() == 'AUTORIZADA' || troca.status().toString() == 'CONCLUIDA' ? (troca.status().toString() == 'AUTORIZADA' ? 'active' : 'completed') : ''}">
+                            <div class="timeline-item" th:classappend="${troca.status().toString() == 'AUTORIZADA' ? 'active' : (troca.status().toString() == 'CONCLUIDA' ? 'completed' : '')}">
                             <strong>Autorizada</strong>
                             <small class="text-muted">Processar solicitação</small>
                         </div>
@@ -229,9 +230,7 @@
                     <div class="mt-4 pt-3 border-top">
                         <!-- Autorizar (SOLICITADA → AUTORIZADA) -->
                         <th:block th:if="${troca.status().toString() == 'SOLICITADA'}">
-                            <form method="post" 
-                                  th:action="@{/trocas/{id}/autorizar(id=${troca.trocaId()})}"
-                                  onsubmit="return confirm('Tem certeza que deseja autorizar esta troca?');">
+                            <form method="post" th:action="@{/admin/trocas/{id}/autorizar(id=${troca.trocaId()})}" onsubmit="return confirm('Tem certeza que deseja autorizar esta troca?');">
                                 <button type="submit" class="btn btn-success w-100 mb-2">
                                     <i class="bi bi-check-lg"></i> Autorizar Troca
                                 </button>
@@ -240,9 +239,7 @@
 
                         <!-- Receber (AUTORIZADA → CONCLUIDA) -->
                         <th:block th:if="${troca.status().toString() == 'AUTORIZADA'}">
-                            <form method="post" 
-                                  th:action="@{/trocas/{id}/receber(id=${troca.trocaId()})}"
-                                  onsubmit="return confirm('Tem certeza que deseja confirmar o recebimento desta troca?');">
+                            <form method="post" th:action="@{/admin/trocas/{id}/receber(id=${troca.trocaId()})}" onsubmit="return confirm('Tem certeza que deseja confirmar o recebimento desta troca?');">
                                 <button type="submit" class="btn btn-info w-100 mb-2">
                                     <i class="bi bi-box-seam"></i> Confirmar Recebimento
                                 </button>
