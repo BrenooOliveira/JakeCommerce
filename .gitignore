@@ -7,8 +7,7 @@
 # BlueJ files
 *.ctxt
 
-src/test/venv/
-
+jakebooks/src/test/venv/
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
