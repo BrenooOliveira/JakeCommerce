@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/",
                     "/login",
+                        "/chatbot",
                     "/acesso-negado",
                     "/error",
                     "/error/**",

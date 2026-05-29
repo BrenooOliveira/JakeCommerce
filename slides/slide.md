@@ -269,3 +269,70 @@ O UseCase documenta o fluxo completo de compra de livros, desde navegação no c
 > Logs do teste E2E - Finalização e Relatório
 
 ![alt text](image-27.png)
+
+---
+
+Entrega 07 – 18/05/2026
+- Caso de uso de venda completo
+
+---
+# Kanban de Tarefas
+![alt text](image-36.png)
+
+---
+# Tarefas concluidas
+✅ Cliente realizar compra;
+✅ Cliente pagar com todas possíveis combinações de meio de pagamento (uso de diferentes cartões e cupons);
+✅ Cliente pode registrar novo cartão e novo endereço de entrega no ato da compra;
+Usuário pode solicitar troca ou devolução de um item do pedido ou do pedido completo;
+
+---
+# Tarefas concluidas
+✅ O administrador confirma o pagamento;
+O administrador aceitar ou negar a troca / devolução;
+✅ O administrador define que o produto está EM TRANSPORTE;
+✅ O administrador confirma o recebimento do produto devolvido;
+O sistema gerar cupom de troca;
+✅ O administrador confirma que o produto foi ENTREGUE;
+Deverá ser apresentado por meio de um teste automatizado para cada cenário de caso de uso.
+
+---
+# Demonstração
+## Carrinho
+![alt text](image-28.png)
+
+---
+# Demonstração
+## Adição de novo endereço no checkout
+![alt text](image-29.png)
+
+---
+# Demonstração
+## Adição de novo carrinho no checkout
+![alt text](image-30.png)
+
+---
+# Demonstração
+## Adição de cupom de desconto de 10 reais
+![alt text](image-31.png)
+
+---
+# Demonstração
+## Pagamento com mais de um cartão + cupom
+![alt text](image-32.png)
+
+---
+# Demonstração
+## Pedido criado com sucesso - cliente
+![alt text](image-33.png)
+
+--- 
+# Demonstração
+## Despacho de Pedido - Admin
+![alt text](image-34.png)
+
+--- 
+# Demonstração
+## Confirmação de Pedido - Admin
+![alt text](image-35.png)
+

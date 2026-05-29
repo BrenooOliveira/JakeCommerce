@@ -25,10 +25,11 @@ def run(playwright: Playwright) -> None:
     with page.expect_navigation():
         page.get_by_role("button", name=" Entrar").click()
     logging.info("2: fez login como admin")
-    time.sleep(2)
+    time.sleep(3)
     page.goto("http://localhost:8080/admin/pedidos/12")
     logging.info("2: navegou para pedido 12")
     page.wait_for_load_state("networkidle")
+    time.sleep(3)
     despachar_btn = page.get_by_role("button", name=" Despachar Pedido")
     expect(despachar_btn).to_be_visible(timeout=60000)
     expect(despachar_btn).to_be_enabled(timeout=60000)
@@ -42,7 +43,7 @@ def run(playwright: Playwright) -> None:
     expect(confirmar_btn).to_be_enabled(timeout=60000)
     confirmar_btn.click(timeout=60000)
     logging.info("2: clicou Confirmar Entrega")
-    time.sleep(2)
+    time.sleep(3)
     page.goto("http://localhost:8080/admin/pedidos/12")
     page.wait_for_load_state("networkidle")
 
