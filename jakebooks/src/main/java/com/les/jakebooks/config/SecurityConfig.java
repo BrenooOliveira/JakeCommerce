@@ -90,7 +90,7 @@ public class SecurityConfig {
             )
             .exceptionHandling(ex -> ex.accessDeniedPage("/acesso-negado"))
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
+                .ignoringRequestMatchers("/h2-console/**", "/login")
             )
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable())
