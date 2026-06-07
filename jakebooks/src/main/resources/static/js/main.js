@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Auto-fechar alertas após 5 segundos
-    const alerts = document.querySelectorAll('.alert:not(.coupon-alert)');
+    const alerts = document.querySelectorAll('.alert:not(.coupon-alert):not(.alert-persist)');
     alerts.forEach(alert => {
         const bsAlert = new bootstrap.Alert(alert);
         setTimeout(() => {

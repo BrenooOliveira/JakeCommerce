@@ -2,7 +2,9 @@ package com.les.jakebooks.service;
 
 import com.les.jakebooks.dto.DadosGraficoDTO;
 import com.les.jakebooks.dto.PontoDTO;
+import com.les.jakebooks.domain.Categoria;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
+import com.les.jakebooks.repository.CategoriaRepository;
 import com.les.jakebooks.repository.ItemPedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,15 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
  * Service para análise de vendas.
- * RF0055: Analisar histórico por período comparando produtos ou categorias.
+ * RF0055: Analisar histórico por período por categoria selecionada.
  * RNF0055: Exibição em gráfico de linhas.
  */
 @Service
@@ -29,28 +34,31 @@ public class AnaliseService {
     @Autowired
     private ItemPedidoRepository itemPedidoRepository;
 
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /**
-     * Analisa as vendas de um período com agrupamento por produto ou categoria.
+     * Analisa o volume vendido por categoria em um período.
      * RF0055: Analisar histórico por período.
      * RNF0055: Exibição em gráfico de linhas.
      *
      * @param dataInicio   data de início do período
      * @param dataFim      data de fim do período
-     * @param agrupamento  tipo de agrupamento: "PRODUTO" ou "CATEGORIA"
+     * @param categoriaIds categorias selecionadas para análise
      * @return lista de DTOs com dados para gráfico
-     * @throws ValidacaoNegocioException se agrupamento inválido ou datas inválidas
+     * @throws ValidacaoNegocioException se categorias ou datas forem inválidas
      */
-    public List<DadosGraficoDTO> analisarVendasPorPeriodo(LocalDate dataInicio, LocalDate dataFim, String agrupamento) {
-        // Validar agrupamento
-        if (agrupamento == null || agrupamento.trim().isEmpty()) {
-            throw new ValidacaoNegocioException("Agrupamento é obrigatório");
-        }
+    public List<DadosGraficoDTO> analisarVendasPorPeriodo(LocalDate dataInicio, LocalDate dataFim, List<Long> categoriaIds) {
+        // Validar categorias
+        List<Long> categoriaIdsSelecionadas = categoriaIds == null ? List.of() : categoriaIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
-        String agrupamentoNormalizado = agrupamento.toUpperCase().trim();
-        if (!agrupamentoNormalizado.equals("PRODUTO") && !agrupamentoNormalizado.equals("CATEGORIA")) {
-            throw new ValidacaoNegocioException("Agrupamento deve ser PRODUTO ou CATEGORIA");
+        if (categoriaIdsSelecionadas.isEmpty()) {
+            throw new ValidacaoNegocioException("Selecione ao menos uma categoria");
         }
 
         // Validar período
@@ -62,31 +70,43 @@ public class AnaliseService {
             throw new ValidacaoNegocioException("Data de início não pode ser posterior à data de fim");
         }
 
-        // Buscar dados segundo agrupamento
-        List<Object> resultados;
-        if (agrupamentoNormalizado.equals("PRODUTO")) {
-            resultados = itemPedidoRepository.buscarVendasPorProduto(dataInicio, dataFim);
-        } else {
-            resultados = itemPedidoRepository.buscarVendasPorCategoria(dataInicio, dataFim);
+        // Buscar categorias para manter todas as linhas solicitadas, mesmo sem venda no período
+        List<Categoria> categoriasSelecionadas = categoriaRepository.findAllById(categoriaIdsSelecionadas);
+        if (categoriasSelecionadas.isEmpty()) {
+            throw new ValidacaoNegocioException("Nenhuma categoria válida foi encontrada");
         }
+
+        Map<Long, String> nomeCategoriaPorId = categoriasSelecionadas.stream()
+            .collect(Collectors.toMap(Categoria::getId, Categoria::getNome, (primeiro, segundo) -> primeiro, LinkedHashMap::new));
+
+        // Buscar dados apenas para as categorias selecionadas
+        List<Object> resultados = itemPedidoRepository.buscarVendasPorCategoria(dataInicio, dataFim, categoriaIdsSelecionadas);
 
         // Processar resultados em mapa
         Map<String, Map<String, BigDecimal>> dadosAgrupados = processarResultados(resultados);
 
+        List<String> labelsPeriodo = gerarLabelsPeriodo(dataInicio, dataFim);
+
         // Converter para DTOs
-        return dadosAgrupados.entrySet().stream()
-                .map(entry -> new DadosGraficoDTO(
-                        entry.getKey(),
-                        entry.getValue().entrySet().stream()
-                                .map(pontoEntry -> new PontoDTO(pontoEntry.getKey(), pontoEntry.getValue()))
-                                .collect(Collectors.toList())
-                ))
-                .collect(Collectors.toList());
+        return nomeCategoriaPorId.values().stream()
+            .map(nomeCategoria -> {
+                Map<String, BigDecimal> pontosCategoria = dadosAgrupados.getOrDefault(nomeCategoria, new HashMap<>());
+
+                List<PontoDTO> pontos = labelsPeriodo.stream()
+                    .map(periodo -> new PontoDTO(
+                        periodo,
+                        pontosCategoria.getOrDefault(periodo, BigDecimal.ZERO)
+                    ))
+                    .collect(Collectors.toList());
+
+                return new DadosGraficoDTO(nomeCategoria, pontos);
+            })
+            .collect(Collectors.toList());
     }
 
     /**
      * Processa os resultados das queries.
-     * Agrupa dados por label (produto ou categoria) e depois por data.
+    * Agrupa dados por categoria e depois por data.
      *
      * @param resultados resultados brutos das queries
      * @return mapa estruturado com label -> (data -> valor)
@@ -99,26 +119,41 @@ public class AnaliseService {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> mapa = (Map<String, Object>) resultado;
 
-                // Extrair label (titulo ou categoria)
-                String label = mapa.containsKey("titulo") ? 
-                    (String) mapa.get("titulo") : 
-                    (String) mapa.get("categoria");
+                // Extrair label da categoria
+                String label = (String) mapa.get("categoria");
 
                 // Extrair data e converter para string
                 Object dataObj = mapa.get("data");
                 String periodoStr = formatarData(dataObj);
 
-                // Extrair valor
-                Number valorNum = (Number) mapa.get("valor");
-                BigDecimal valor = BigDecimal.valueOf(valorNum.doubleValue());
+                // Extrair quantidade vendida
+                Number quantidadeNum = (Number) mapa.get("quantidade");
+                BigDecimal quantidade = BigDecimal.valueOf(quantidadeNum.doubleValue());
 
                 // Adicionar ao mapa agrupado com comparador de datas cronológicas
                 dadosAgrupados.computeIfAbsent(label, k -> new TreeMap<>(this::compararDatas))
-                        .put(periodoStr, valor);
+                        .put(periodoStr, quantidade);
             }
         }
 
         return dadosAgrupados;
+    }
+
+    /**
+     * Gera todos os dias entre a data inicial e final, inclusive.
+     *
+     * @param dataInicio data inicial
+     * @param dataFim data final
+     * @return lista ordenada de datas formatadas
+     */
+    private List<String> gerarLabelsPeriodo(LocalDate dataInicio, LocalDate dataFim) {
+        List<String> labels = new ArrayList<>();
+
+        for (LocalDate data = dataInicio; !data.isAfter(dataFim); data = data.plusDays(1)) {
+            labels.add(data.format(FORMATTER));
+        }
+
+        return labels;
     }
 
     /**

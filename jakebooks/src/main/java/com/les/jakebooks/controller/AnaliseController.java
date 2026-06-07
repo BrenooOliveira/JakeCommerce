@@ -1,7 +1,9 @@
 package com.les.jakebooks.controller;
 
+import com.les.jakebooks.domain.Categoria;
 import com.les.jakebooks.dto.DadosGraficoDTO;
 import com.les.jakebooks.exception.ValidacaoNegocioException;
+import com.les.jakebooks.repository.CategoriaRepository;
 import com.les.jakebooks.service.AnaliseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,6 +31,9 @@ public class AnaliseController {
     @Autowired
     private AnaliseService analiseService;
 
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
     /**
      * Exibe dashboard de análise com formulário de filtros.
      * GET /admin/analise
@@ -42,10 +47,14 @@ public class AnaliseController {
         // Dados padrão: última 30 dias
         LocalDate dataFim = LocalDate.now();
         LocalDate dataInicio = dataFim.minusDays(30);
+        List<Categoria> categorias = categoriaRepository.findAll();
 
         model.addAttribute("dataInicio", dataInicio);
         model.addAttribute("dataFim", dataFim);
-        model.addAttribute("agrupamento", "PRODUTO");
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("categoriaIdsSelecionadas", categorias.stream()
+                .map(Categoria::getId)
+                .toList());
 
         return "analise/dashboard";
     }
@@ -58,7 +67,7 @@ public class AnaliseController {
      *
      * @param dataInicio   data de início (formato: yyyy-MM-dd)
      * @param dataFim      data de fim (formato: yyyy-MM-dd)
-     * @param agrupamento  tipo de agrupamento: "PRODUTO" ou "CATEGORIA"
+     * @param categoriaIds categorias selecionadas para análise
      * @return ResponseEntity com lista de DadosGraficoDTO ou erro
      */
     @GetMapping("/dados")
@@ -66,7 +75,7 @@ public class AnaliseController {
     public ResponseEntity<?> obterDados(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam String agrupamento) {
+            @RequestParam List<Long> categoriaIds) {
 
         try {
             // Validar parâmetros
@@ -74,13 +83,13 @@ public class AnaliseController {
                 return ResponseEntity.badRequest().body("Datas são obrigatórias");
             }
 
-            if (agrupamento == null || agrupamento.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Agrupamento é obrigatório");
+            if (categoriaIds == null || categoriaIds.isEmpty()) {
+                return ResponseEntity.badRequest().body("Selecione ao menos uma categoria");
             }
 
             // Buscar dados
             List<DadosGraficoDTO> dados = analiseService.analisarVendasPorPeriodo(
-                    dataInicio, dataFim, agrupamento);
+                    dataInicio, dataFim, categoriaIds);
 
             // Retornar JSON
             return ResponseEntity.ok(dados);

@@ -60,17 +60,19 @@ public interface ItemPedidoRepository extends JpaRepository<ItemPedido, Long> {
     @Query("SELECT NEW map(" +
             "c.nome as categoria, " +
             "CAST(FUNCTION('DATE', p.dataCriacao) as date) as data, " +
-            "SUM(ip.valorUnitario * ip.quantidade) as valor) " +
+            "SUM(ip.quantidade) as quantidade) " +
             "FROM ItemPedido ip " +
             "JOIN ip.livro l " +
             "JOIN l.categorias c " +
             "JOIN ip.pedido p " +
             "WHERE p.dataCriacao BETWEEN :dataInicio AND :dataFim " +
             "AND (p.status = 'ENTREGUE' OR p.status = 'TROCADO') " +
+            "AND c.id IN :categoriaIds " +
             "GROUP BY c.nome, CAST(FUNCTION('DATE', p.dataCriacao) as date) " +
             "ORDER BY c.nome, CAST(FUNCTION('DATE', p.dataCriacao) as date)")
     List<Object> buscarVendasPorCategoria(
             @Param("dataInicio") LocalDate dataInicio,
-            @Param("dataFim") LocalDate dataFim
+            @Param("dataFim") LocalDate dataFim,
+            @Param("categoriaIds") List<Long> categoriaIds
     );
 }
